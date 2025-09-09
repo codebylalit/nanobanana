@@ -12,7 +12,7 @@ const CREDIT_PACKAGES = {
   "0d1fe4fa-e8c5-4d0c-8db1-e24c65165615": {
     name: "Starter Pack",
     credits: 20,
-    price: 500, // Price in cents ($5.00)
+    price: 20, // Price in cents ($5.00)
     currency: "USD",
     description: "20 credits = 20 images",
   },
