@@ -1,0 +1,391 @@
+// Gemini 2.5 Flash Image Preview API service
+const API_KEY = "AIzaSyBZyxJ3JolphkdvJpij0ic7XM8RvXeTpVI";
+const BASE_URL_TEXT =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const BASE_URL_IMAGE =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent";
+
+async function callGeminiAPI(
+  prompt,
+  imageData = null,
+  useImageModel = false,
+  retries = 2
+) {
+  if (!API_KEY) throw new Error("Missing Gemini API Key");
+
+  const contents = [{ parts: [{ text: prompt }] }];
+  if (imageData) {
+    contents[0].parts.push({
+      inline_data: { mime_type: imageData.mimeType, data: imageData.base64 },
+    });
+  }
+
+  const baseUrl = useImageModel ? BASE_URL_IMAGE : BASE_URL_TEXT;
+  const requestBody = { contents };
+  if (useImageModel) {
+    requestBody.generationConfig = { responseModalities: ["TEXT", "IMAGE"] };
+  }
+
+  try {
+    const res = await fetch(baseUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": API_KEY,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (res.status === 429 && retries > 0) {
+      const err = await res.json().catch(() => null);
+      const retryDelay =
+        err?.error?.details?.find((d) => d["@type"]?.includes("RetryInfo"))
+          ?.retryDelay || "60s";
+      const delayMs = parseInt(retryDelay) * 1000;
+      console.warn(`Rate limit hit. Retrying after ${delayMs / 1000}s...`);
+      await new Promise((r) => setTimeout(r, delayMs));
+      return callGeminiAPI(prompt, imageData, useImageModel, retries - 1);
+    }
+
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(`Gemini API error: ${res.status} ${error}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Gemini API failed:", err);
+    throw err;
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(",")[1];
+      resolve({
+        base64,
+        mimeType: file.type,
+      });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Helper function to create enhanced placeholder images
+function createPlaceholderImage(
+  label,
+  subtitle,
+  gradientColors = ["#1a1a2e", "#16213e"]
+) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'>
+    <defs>
+      <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0' stop-color='${gradientColors[0]}'/>
+        <stop offset='1' stop-color='${gradientColors[1]}'/>
+      </linearGradient>
+    </defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <text x='50%' y='50%' text-anchor='middle' fill='#FACC15' font-size='24' font-family='monospace' font-weight='bold'>${label}</text>
+    <text x='50%' y='60%' text-anchor='middle' fill='#ddd' font-size='14' font-family='monospace'>${
+      subtitle || ""
+    }</text>
+    <text x='50%' y='70%' text-anchor='middle' fill='#888' font-size='12' font-family='monospace'>Powered by Gemini AI</text>
+  </svg>`;
+  const base64 = btoa(unescape(encodeURIComponent(svg)));
+  return `data:image/svg+xml;base64,${base64}`;
+}
+
+export async function textToImage(prompt) {
+  if (!prompt || prompt.trim().length === 0) {
+    throw new Error("Prompt is required for image generation");
+  }
+
+  try {
+    console.log("Attempting to generate image with prompt:", prompt);
+
+    // Use the image generation model for actual image creation
+    const imagePrompt = `Generate a high-quality image based on this description: ${prompt}. Create a detailed, visually appealing image that matches the description.`;
+    const response = await callGeminiAPI(imagePrompt, null, true);
+
+    console.log("API Response:", response);
+
+    // Check if the response contains generated image data
+    if (
+      response.candidates &&
+      response.candidates[0] &&
+      response.candidates[0].content
+    ) {
+      const content = response.candidates[0].content;
+      console.log("Content parts:", content.parts);
+
+      // Look for image data in the response
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.mimeType.startsWith("image/")) {
+          console.log("Found image data!");
+          // Return the generated image as a data URL
+          return {
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            generated: true,
+          };
+        }
+      }
+    }
+
+    // If no image was generated, fall back to enhanced placeholder
+    console.warn(
+      "No image generated, using placeholder. Response structure:",
+      response
+    );
+    return {
+      url: createPlaceholderImage(
+        "AI Generated Image",
+        `${prompt.slice(0, 40)}...`,
+        ["#1a1a2e", "#16213e"]
+      ),
+      generated: false,
+    };
+  } catch (error) {
+    console.error("Text to Image Error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+
+    // If the API call fails, return a placeholder with error info
+    return {
+      url: createPlaceholderImage(
+        "Generation Failed",
+        `Error: ${error.message}`,
+        ["#dc2626", "#991b1b"]
+      ),
+      generated: false,
+    };
+  }
+}
+
+export async function imageToImage(file, prompt) {
+  if (!file) {
+    throw new Error("Image file is required for transformation");
+  }
+
+  try {
+    const imageData = await fileToBase64(file);
+    const transformationPrompt = `Transform this image according to: ${prompt}. Apply the requested changes while maintaining the overall composition and quality.`;
+    const response = await callGeminiAPI(transformationPrompt, imageData, true);
+
+    // Check if the response contains generated image data
+    if (
+      response.candidates &&
+      response.candidates[0] &&
+      response.candidates[0].content
+    ) {
+      const content = response.candidates[0].content;
+
+      // Look for image data in the response
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.mimeType.startsWith("image/")) {
+          // Return the generated image as a data URL
+          return {
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            generated: true,
+          };
+        }
+      }
+    }
+
+    // If no image was generated, fall back to enhanced placeholder
+    console.warn("No image generated, using placeholder");
+    return {
+      url: createPlaceholderImage(
+        "Image Transformed",
+        `Style: ${prompt || "Default transformation"}`,
+        ["#2d1b69", "#11998e"]
+      ),
+      generated: false,
+    };
+  } catch (error) {
+    console.error("Image to Image Error:", error);
+    return {
+      url: createPlaceholderImage(
+        "Transformation Failed",
+        "Please try again with a different prompt",
+        ["#dc2626", "#991b1b"]
+      ),
+      generated: false,
+    };
+  }
+}
+
+export async function generateHeadshot(file, prompt) {
+  if (!file) {
+    throw new Error("Photo is required for headshot generation");
+  }
+
+  try {
+    const imageData = await fileToBase64(file);
+    const headshotPrompt = `Create a professional headshot from this photo: ${
+      prompt || "professional corporate portrait"
+    }. Enhance the lighting, background, and overall professional appearance.`;
+    const response = await callGeminiAPI(headshotPrompt, imageData, true);
+
+    // Check if the response contains generated image data
+    if (
+      response.candidates &&
+      response.candidates[0] &&
+      response.candidates[0].content
+    ) {
+      const content = response.candidates[0].content;
+
+      // Look for image data in the response
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.mimeType.startsWith("image/")) {
+          // Return the generated image as a data URL
+          return {
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            generated: true,
+          };
+        }
+      }
+    }
+
+    // If no image was generated, fall back to enhanced placeholder
+    console.warn("No headshot generated, using placeholder");
+    return {
+      url: createPlaceholderImage(
+        "Professional Headshot",
+        `Style: ${prompt || "Corporate portrait"}`,
+        ["#667eea", "#764ba2"]
+      ),
+      generated: false,
+    };
+  } catch (error) {
+    console.error("Headshot Generation Error:", error);
+    return {
+      url: createPlaceholderImage(
+        "Headshot Failed",
+        "Please try again with a different photo",
+        ["#dc2626", "#991b1b"]
+      ),
+      generated: false,
+    };
+  }
+}
+
+export async function removeBackground(file) {
+  if (!file) {
+    throw new Error("Image file is required for background removal");
+  }
+
+  try {
+    const imageData = await fileToBase64(file);
+    const backgroundRemovalPrompt = `Remove the background from this image while keeping the main subject intact. Create a clean, professional result with transparent or solid background.`;
+    const response = await callGeminiAPI(
+      backgroundRemovalPrompt,
+      imageData,
+      true
+    );
+
+    // Check if the response contains generated image data
+    if (
+      response.candidates &&
+      response.candidates[0] &&
+      response.candidates[0].content
+    ) {
+      const content = response.candidates[0].content;
+
+      // Look for image data in the response
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.mimeType.startsWith("image/")) {
+          // Return the generated image as a data URL
+          return {
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            generated: true,
+          };
+        }
+      }
+    }
+
+    // If no image was generated, fall back to enhanced placeholder
+    console.warn("No background removal generated, using placeholder");
+    return {
+      url: createPlaceholderImage(
+        "Background Removed",
+        `Subject: ${file.name}`,
+        ["#ff9a9e", "#fecfef"]
+      ),
+      generated: false,
+    };
+  } catch (error) {
+    console.error("Background Removal Error:", error);
+    return {
+      url: createPlaceholderImage(
+        "Removal Failed",
+        "Please try again with a different image",
+        ["#dc2626", "#991b1b"]
+      ),
+      generated: false,
+    };
+  }
+}
+
+export async function editImageAdjustments(file, options) {
+  if (!file) {
+    throw new Error("Image file is required for editing");
+  }
+
+  try {
+    const imageData = await fileToBase64(file);
+    const adjustments = Object.entries(options || {})
+      .filter(([, v]) => v !== 0 && v != null)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(", ");
+
+    const editPrompt = `Apply these image adjustments to enhance this image: ${adjustments}. Focus on brightness, contrast, saturation, and overall enhancement while maintaining natural appearance.`;
+    const response = await callGeminiAPI(editPrompt, imageData, true);
+
+    // Check if the response contains generated image data
+    if (
+      response.candidates &&
+      response.candidates[0] &&
+      response.candidates[0].content
+    ) {
+      const content = response.candidates[0].content;
+
+      // Look for image data in the response
+      for (const part of content.parts) {
+        if (part.inlineData && part.inlineData.mimeType.startsWith("image/")) {
+          // Return the generated image as a data URL
+          return {
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            generated: true,
+          };
+        }
+      }
+    }
+
+    // If no image was generated, fall back to enhanced placeholder
+    console.warn("No image editing generated, using placeholder");
+    return {
+      url: createPlaceholderImage(
+        "Image Enhanced",
+        adjustments || "No adjustments applied",
+        ["#a8edea", "#fed6e3"]
+      ),
+      generated: false,
+    };
+  } catch (error) {
+    console.error("Image Editing Error:", error);
+    return {
+      url: createPlaceholderImage(
+        "Editing Failed",
+        "Please try again with different settings",
+        ["#dc2626", "#991b1b"]
+      ),
+      generated: false,
+    };
+  }
+}
