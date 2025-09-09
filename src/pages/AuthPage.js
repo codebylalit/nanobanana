@@ -33,7 +33,9 @@ export default function AuthPage() {
 
         <div className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-12 text-center backdrop-blur-sm">
           <div className="mb-8">
-            <div className="text-6xl mb-4">🍌</div>
+            <div className="text-6xl mb-4 flex justify-center">
+              <img src="/nano1.png" alt="Banana" className="w-20 h-20" />
+            </div>
             <h2 className="text-2xl font-bold mb-2 text-gray-900">
               Get Started
             </h2>
