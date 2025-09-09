@@ -35,7 +35,7 @@ export default function BackgroundRemovalPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-xl text-white/80 leading-relaxed">
+        <p className="text-xl text-gray-700 leading-relaxed">
           Remove backgrounds from your images instantly with AI-powered
           precision
         </p>
@@ -45,19 +45,19 @@ export default function BackgroundRemovalPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Left Column - Input Form */}
         <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 lg:p-8 min-h-[500px] flex flex-col">
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 lg:p-8 min-h-[500px] flex flex-col">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2 text-white">
+              <h2 className="text-2xl font-bold mb-2 text-gray-900">
                 Remove Background
               </h2>
-              <p className="text-white/70 text-lg">
+              <p className="text-gray-700 text-lg">
                 Each removal uses 1 credit
               </p>
             </div>
 
             <div className="flex-1 flex flex-col space-y-6">
               <div className="flex-1">
-                <label className="block text-white/90 text-lg font-medium mb-3">
+                <label className="block text-gray-900 text-lg font-medium mb-3">
                   Upload your image
                 </label>
                 <div className="relative">
@@ -65,11 +65,11 @@ export default function BackgroundRemovalPage() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-6 py-4 text-white file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-300 file:cursor-pointer cursor-pointer"
+                    className="w-full rounded-2xl bg-white border border-gray-300 px-6 py-4 text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-300 file:cursor-pointer cursor-pointer"
                   />
                 </div>
                 {file && (
-                  <div className="mt-3 p-3 rounded-xl bg-green-400/10 border border-green-400/20 text-green-200">
+                  <div className="mt-3 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700">
                     <HiOutlineCheck className="w-4 h-4 inline mr-1" />
                     {file.name} selected
                   </div>
@@ -101,16 +101,16 @@ export default function BackgroundRemovalPage() {
           {/* Status Messages */}
           <div className="space-y-4">
             {credits < 1 && (
-              <div className="rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-400/10 to-orange-400/5 p-4 text-yellow-200">
+              <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
                 <div className="flex items-center gap-3">
-                  <HiOutlineExclamation className="w-6 h-6 text-yellow-400" />
+                  <HiOutlineExclamation className="w-6 h-6 text-yellow-600" />
                   <div>
                     <h3 className="font-bold text-lg">Insufficient Credits</h3>
                     <p className="text-sm">
                       You need at least 1 credit to remove backgrounds.{" "}
                       <a
                         href="/dashboard-pricing"
-                        className="underline hover:text-yellow-100"
+                        className="underline hover:text-yellow-600"
                       >
                         Buy credits
                       </a>{" "}
@@ -125,7 +125,7 @@ export default function BackgroundRemovalPage() {
 
         {/* Right Column - Generated Image */}
         <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 lg:p-8 min-h-[500px] flex flex-col">
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 lg:p-8 min-h-[500px] flex flex-col">
             <h3 className="text-2xl font-bold mb-6 text-white">
               Processed Image
             </h3>
@@ -135,10 +135,10 @@ export default function BackgroundRemovalPage() {
                 {loading ? (
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-                    <p className="text-white/70 text-lg">
+                    <p className="text-gray-700 text-lg">
                       Removing background...
                     </p>
-                    <p className="text-white/50 text-sm mt-2">
+                    <p className="text-gray-500 text-sm mt-2">
                       This may take a few moments
                     </p>
                   </div>
@@ -147,12 +147,12 @@ export default function BackgroundRemovalPage() {
                     <img
                       src={img}
                       alt="Background removed result"
-                      className="w-full max-w-md mx-auto rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
+                      className="w-full max-w-md mx-auto rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-300"
                     />
                   </div>
                 ) : (
-                  <div className="text-center text-white/50">
-                    <HiOutlineScissors className="w-16 h-16 mx-auto mb-4 text-white/30" />
+                  <div className="text-center text-gray-500">
+                    <HiOutlineScissors className="w-16 h-16 mx:auto mb-4 text-gray-400" />
                     <p className="text-lg">
                       Your processed image will appear here
                     </p>
@@ -172,7 +172,7 @@ export default function BackgroundRemovalPage() {
                       link.download = "background-removed.png";
                       link.click();
                     }}
-                    className="w-full bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-all duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-yellow-400 text-black px-6 py-3 rounded-xl font-semibold hover:bg-yellow-300 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <HiOutlineDownload className="w-5 h-5" />
                     Download Image

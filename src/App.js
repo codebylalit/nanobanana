@@ -45,7 +45,7 @@ import ContactPage from "./pages/ContactPage";
 // Payments removedl nvcz
 function App() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       <Routes>
         <Route path="/" element={<PublicLanding />} />
         <Route
@@ -162,13 +162,13 @@ function DashboardLayout({ children }) {
   // No local toast state; global toast container handles timing
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <aside
         className={`${
           sidebarOpen ? "w-72" : "w-0"
-        } shrink-0 border-r border-white/10 bg-white/5 backdrop-blur flex flex-col transition-all duration-300 overflow-hidden fixed left-0 top-0 h-full z-10`}
+        } shrink-0 border-r border-gray-200 bg-white backdrop-blur flex flex-col transition-all duration-300 overflow-hidden fixed left-0 top-0 h-full z-10`}
       >
-        <div className="h-16 flex items-center px-4 border-b border-white/10 text-lg font-bold">
+        <div className="h-16 flex items-center px-4 border-b border-gray-200 text-lg font-bold">
           <img src="/banana.png" alt="Banana" className="w-6 h-6 mr-2" />
           NANO BANANA
         </div>
@@ -214,11 +214,11 @@ function DashboardLayout({ children }) {
           sidebarOpen ? "ml-72" : "ml-0"
         }`}
       >
-        <header className="h-16 border-b border-white/10 flex items-center justify-between px-6 sticky top-0 bg-black/80 backdrop-blur-md z-20">
+        <header className="h-16 border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 bg-white/80 backdrop-blur-md z-20 text-gray-900">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-md hover:bg-white/10 transition"
+              className="p-2 rounded-md hover:bg-gray-100 transition"
             >
               <svg
                 className="w-5 h-5"
@@ -241,9 +241,9 @@ function DashboardLayout({ children }) {
         {/* Global toast container handles rendering */}
         <main className="flex-1 p-6">
           {initialized && credits === 2 && user && (
-            <div className="mb-6 rounded-2xl border border-green-400/30 bg-gradient-to-r from-green-400/10 to-emerald-400/5 p-4 text-green-200">
+            <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
               <div className="flex items-center gap-3">
-                <HiOutlineSparkles className="w-6 h-6 text-green-400" />
+                <HiOutlineSparkles className="w-6 h-6 text-green-600" />
                 <div>
                   <h3 className="font-bold text-lg">Welcome to Nano Banana!</h3>
                   <p>
@@ -266,11 +266,11 @@ function DashboardLayout({ children }) {
 // Public landing sections
 function Navbar() {
   return (
-    <nav className="sticky top-0 z-40 backdrop-blur-md bg-black/80 border-b border-white/10">
+    <nav className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
         <a
           href="/"
-          className="text-2xl font-bold tracking-tight text-white hover:text-yellow-400 transition-colors duration-200 flex items-center"
+          className="text-2xl font-bold tracking-tight text-gray-900 hover:text-yellow-500 transition-colors duration-200 flex items-center"
         >
           <img src="/banana.png" alt="Banana" className="w-6 h-6 mr-2" />
           NANO BANANA
@@ -278,31 +278,31 @@ function Navbar() {
         <div className="hidden md:flex items-center gap-8">
           <a
             href="#gallery"
-            className="text-base text-white/80 hover:text-white transition-colors duration-200 font-medium"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             Gallery
           </a>
           <a
             href="#credits"
-            className="text-base text-white/80 hover:text-white transition-colors duration-200 font-medium"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             How credits work
           </a>
           <a
             href="#faq"
-            className="text-base text-white/80 hover:text-white transition-colors duration-200 font-medium"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             FAQ
           </a>
           <a
             href="#pricing"
-            className="text-base text-white/80 hover:text-white transition-colors duration-200 font-medium"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             Pricing
           </a>
           <a
             href="/contact"
-            className="text-base text-white/80 hover:text-white transition-colors duration-200 font-medium"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             Contact
           </a>
@@ -314,7 +314,7 @@ function Navbar() {
           </a>
         </div>
         {/* Mobile menu button */}
-        <button className="md:hidden p-2 text-white/80 hover:text-white transition-colors">
+        <button className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors">
           <svg
             className="w-6 h-6"
             fill="none"
@@ -336,20 +336,20 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-      <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/5 via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-400/10 via-transparent to-transparent" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-white via-gray-50 to-white">
+      <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-400/20 via-transparent to-transparent" />
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-32 lg:py-40 text-center">
         <div className="max-w-4xl mx-auto">
-          <p className="text-yellow-400 font-semibold text-lg mb-6 tracking-wide flex items-center justify-center gap-2">
+          <p className="text-yellow-600 font-semibold text-lg mb-6 tracking-wide flex items-center justify-center gap-2">
             {/* <HiOutlinePaperAirplane className="w-5 h-5" /> */}
             🚀 Powered by Google · Nano Banana
           </p>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight">
-            Create epic <span className="text-yellow-400">AI images</span>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-gray-900">
+            Create epic <span className="text-yellow-500">AI images</span>
           </h1>
-          <p className="text-xl sm:text-2xl text-white/90 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
+          <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
             Create beautiful images from your thoughts. Edit, generate, and
             transform images in seconds with cutting-edge AI technology.
           </p>
@@ -378,7 +378,7 @@ function Hero() {
                       key={i}
                       className={`relative ${
                         rotations[i % rotations.length]
-                      } w-36 sm:w-44 md:w-56 lg:w-64 aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-white/5 transform transition-all duration-300 hover:-translate-y-2`}
+                      } w-36 sm:w-44 md:w-56 lg:w-64 aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/10 bg-white transform transition-all duration-300 hover:-translate-y-2`}
                       style={{ zIndex: 10 + i }}
                     >
                       <img
@@ -391,7 +391,7 @@ function Hero() {
                           e.currentTarget.src = `https://picsum.photos/seed/hero-${i}/800/600`;
                         }}
                       />
-                      <div className="pointer-events-none absolute inset-0 shadow-[0_20px_60px_rgba(0,0,0,0.45)]" />
+                      <div className="pointer-events-none absolute inset-0 shadow-[0_20px_60px_rgba(0,0,0,0.25)]" />
                     </div>
                   ))}
                 </div>
@@ -407,7 +407,7 @@ function Hero() {
             </a>
             <a
               href="#pricing"
-              className="inline-flex items-center rounded-2xl border-2 border-white/20 px-8 py-4 text-lg font-semibold hover:bg-white/5 hover:border-white/40 transition-all duration-200"
+              className="inline-flex items-center rounded-2xl border-2 border-gray-200 px-8 py-4 text-lg font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
             >
               View pricing
             </a>
@@ -456,14 +456,14 @@ function Gallery() {
   return (
     <section
       id="gallery"
-      className="py-24 lg:py-32 bg-gradient-to-b from-black to-gray-900"
+      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
             Community Gallery
           </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
             Discover amazing AI-generated images created by our community
           </p>
         </div>
@@ -471,7 +471,7 @@ function Gallery() {
           {images.map((src, i) => (
             <div
               key={i}
-              className="aspect-square rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 hover:scale-105 transition-all duration-300 cursor-pointer group bg-white/5"
+              className="aspect-square rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:scale-105 transition-all duration-300 cursor-pointer group bg-white"
             >
               <img
                 src={src}
@@ -516,39 +516,39 @@ function RequireAuth({ children }) {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-gradient-to-b from-black to-gray-900">
+    <footer className="border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="text-white/70 text-lg font-medium">
+        <div className="text-gray-600 text-lg font-medium">
           © {new Date().getFullYear()} Nano Banana
         </div>
         <div className="flex items-center gap-8 text-base">
           <a
             href="#pricing"
-            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             Pricing
           </a>
           {/* <a
             href="#faq"
-            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             FAQ
           </a> */}
           <a
             href="#credits"
-            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             How credits work
           </a>
           <a
             href="/terms"
-            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             Terms
           </a>
           <a
             href="/privacy"
-            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
           >
             Privacy
           </a>
@@ -563,22 +563,22 @@ function CreditsBadge() {
   const { user, loading, signIn } = useAuth();
   const navigate = useNavigate();
   return (
-    <div className="flex items-center gap-3">
-      <div className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-sm">
+    <div className="flex items-center gap-3 text-gray-800">
+      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 text-sm bg-white">
         <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
         <span>Credits: {initialized ? credits : "..."}</span>
       </div>
       {loading ? null : user ? (
         <button
           onClick={() => navigate("/credit-history")}
-          className="text-sm text-white/90 hover:text-white underline-offset-4 hover:underline"
+          className="text-sm text-gray-700 hover:text-gray-900 underline-offset-4 hover:underline"
         >
           Purchase History
         </button>
       ) : (
         <button
           onClick={signIn}
-          className="text-sm text-white/80 hover:text-white"
+          className="text-sm text-gray-700 hover:text-gray-900"
         >
           Sign in with Google
         </button>
@@ -628,7 +628,7 @@ function PageTitle() {
   const currentPage = getPageTitle(pathname);
 
   return (
-    <h1 className="text-lg font-semibold text-white">
+    <h1 className="text-lg font-semibold text-gray-900">
       {currentPage === "Dashboard" ? "Dashboard" : `Dashboard > ${currentPage}`}
     </h1>
   );
@@ -640,12 +640,12 @@ function SidebarAccount() {
   const navigate = useNavigate();
   if (loading) return null;
   return user ? (
-    <div className="rounded-lg border border-white/10 p-3">
+    <div className="rounded-lg border border-gray-200 p-3 bg-white text-gray-900">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-white/80 text-sm truncate">
+        <div className="text-gray-700 text-sm truncate">
           {user.displayName || user.email}
         </div>
-        <div className="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-1 text-xs bg-white/5">
+        <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1 text-xs bg-gray-50">
           <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
           <span>{initialized ? credits : "..."}</span>
         </div>
@@ -655,7 +655,7 @@ function SidebarAccount() {
           await signOut();
           navigate("/");
         }}
-        className="w-full inline-flex items-center justify-center rounded-md border border-white/20 px-3 py-2 hover:bg-white/5 transition text-sm"
+        className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 transition text-sm"
       >
         Sign out
       </button>
@@ -663,7 +663,7 @@ function SidebarAccount() {
   ) : (
     <button
       onClick={signIn}
-      className="w-full inline-flex items-center justify-center rounded-md border border-white/20 px-3 py-2 hover:bg-white/5 transition text-sm"
+      className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 transition text-sm text-gray-900"
     >
       Sign in with Google
     </button>
@@ -678,7 +678,7 @@ function SidebarLink({ to, label, icon: Icon }) {
         `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
           isActive
             ? "bg-yellow-400 text-black"
-            : "text-white/80 hover:text-white hover:bg-white/10"
+            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
         }`
       }
     >
@@ -702,7 +702,7 @@ function PricingPage() {
     }
   }, []);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-24 lg:py-32">
         {showSuccess && (
           <div className="mb-6 rounded-2xl border border-green-400/30 bg-gradient-to-r from-green-400/10 to-emerald-400/5 p-4 text-green-200">
@@ -719,10 +719,10 @@ function PricingPage() {
           </div>
         )}
         <div className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
             Choose your plan
           </h1>
-          <p className="text-xl sm:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             Simple pricing. Credits never expire. Start creating amazing AI
             images today.
           </p>
@@ -774,7 +774,6 @@ function PricingPage() {
                 "120 premium credits",
                 "High-quality images",
                 "All generation types",
-                "Priority processing",
                 "Credits never expire",
                 "Best value for creators",
               ]}
@@ -784,11 +783,11 @@ function PricingPage() {
         </div>
 
         <div className="mt-16 text-center">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-4 text-white">
+          <div className="rounded-3xl border border-gray-200 bg-white p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold mb-4 text-gray-900">
               Need help choosing?
             </h3>
-            <p className="text-white/80 text-lg mb-6">
+            <p className="text-gray-700 text-lg mb-6">
               All plans include access to all AI tools. Credits never expire, so
               you can use them whenever you want.
             </p>
@@ -802,7 +801,7 @@ function PricingPage() {
               </a>
               <a
                 href="#faq"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-6 py-3 font-semibold hover:bg-white/5 hover:border-white/40 transition-all duration-200"
+                className="inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-6 py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
               >
                 <HiOutlineQuestionMarkCircle className="w-5 h-5" />
                 View FAQ
@@ -820,7 +819,7 @@ function Pricing() {
   return (
     <section
       id="pricing"
-      className="py-24 lg:py-32 bg-gradient-to-b from-gray-900 to-black"
+      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
     >
       <PricingPage />
     </section>
@@ -848,14 +847,14 @@ function HowCreditsWork() {
   return (
     <section
       id="credits"
-      className="py-24 lg:py-32 bg-gradient-to-b from-gray-900 to-black"
+      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
             How credits work
           </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
             Simple, transparent pricing with no hidden fees
           </p>
         </div>
@@ -863,11 +862,13 @@ function HowCreditsWork() {
           {items.map((it, i) => (
             <div
               key={i}
-              className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 hover:border-white/20 hover:scale-105 transition-all duration-300 group"
+              className="rounded-3xl border border-gray-200 bg-white p-8 hover:border-gray-300 hover:scale-105 transition-all duration-300 group"
             >
               <div className="text-4xl mb-4">{it.icon}</div>
-              <h3 className="text-2xl font-bold mb-4 text-white">{it.title}</h3>
-              <p className="text-white/80 text-lg leading-relaxed">{it.text}</p>
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">
+                {it.title}
+              </h3>
+              <p className="text-gray-700 text-lg leading-relaxed">{it.text}</p>
             </div>
           ))}
         </div>
@@ -898,14 +899,14 @@ function FAQSection() {
   return (
     <section
       id="faq"
-      className="py-24 lg:py-32 bg-gradient-to-b from-black to-gray-900"
+      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
     >
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
             Frequently asked questions
           </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
             Everything you need to know about Nano Banana
           </p>
         </div>
@@ -913,10 +914,10 @@ function FAQSection() {
           {faqs.map((f, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 hover:border-white/20 transition-all duration-300"
+              className="rounded-2xl border border-gray-200 bg-white p-8 hover:border-gray-300 transition-all duration-300"
             >
-              <h3 className="text-xl font-bold mb-3 text-white">{f.q}</h3>
-              <p className="text-white/80 text-lg leading-relaxed">{f.a}</p>
+              <h3 className="text-xl font-bold mb-3 text-gray-900">{f.q}</h3>
+              <p className="text-gray-700 text-lg leading-relaxed">{f.a}</p>
             </div>
           ))}
         </div>
@@ -1044,8 +1045,8 @@ function PlanCard({
     <div
       className={`relative rounded-3xl p-8 border transition-all duration-300 hover:scale-105 ${
         highlight
-          ? "border-yellow-400 shadow-[0_0_0_4px_rgba(234,179,8,0.15)] bg-gradient-to-br from-yellow-400/10 to-orange-400/5"
-          : "border-white/10 bg-gradient-to-br from-white/10 to-white/5 hover:border-white/20"
+          ? "border-yellow-300 bg-yellow-50 shadow-[0_0_0_4px_rgba(234,179,8,0.15)]"
+          : "border-gray-200 bg-white hover:border-gray-300"
       }`}
     >
       {highlight ? (
@@ -1053,22 +1054,22 @@ function PlanCard({
           Best Value
         </div>
       ) : null}
-      <div className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-white/10 mb-6">
+      <div className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-gray-100 text-gray-800 mb-6">
         <HiOutlineLightningBolt className="w-4 h-4" />
         <span className="font-semibold">{badge}</span>
       </div>
-      <h3 className="text-3xl font-bold mb-4 text-white">{title}</h3>
-      <div className="text-6xl font-extrabold text-yellow-400 mb-4">
+      <h3 className="text-3xl font-bold mb-4 text-gray-900">{title}</h3>
+      <div className="text-6xl font-extrabold text-yellow-500 mb-4">
         {price}
       </div>
-      <div className="text-white/90 text-lg mb-2 font-medium">{summary}</div>
-      <div className="text-yellow-300 text-base mb-8 font-semibold">
+      <div className="text-gray-800 text-lg mb-2 font-medium">{summary}</div>
+      <div className="text-yellow-700 text-base mb-8 font-semibold">
         {priceSub}
       </div>
-      <ul className="space-y-3 mb-8 text-white/80 text-base">
+      <ul className="space-y-3 mb-8 text-gray-700 text-base">
         {bullets.map((b, i) => (
           <li key={i} className="flex items-start gap-3">
-            <HiOutlineCheck className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+            <HiOutlineCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
             <span>{b}</span>
           </li>
         ))}
@@ -1128,7 +1129,7 @@ function PlanCard({
           className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-6 py-4 text-lg transition-all duration-200 ${
             highlight
               ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-              : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40"
+              : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
           }`}
         >
           Sign in to buy
@@ -1154,12 +1155,12 @@ function DashboardPricingPage() {
   return (
     <div className="max-w-6xl mx-auto">
       {showSuccess && (
-        <div className="mb-6 rounded-2xl border border-green-400/30 bg-gradient-to-r from-green-400/10 to-emerald-400/5 p-4 text-green-200">
+        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
           <div className="flex items-center gap-3">
-            <HiOutlineSparkles className="w-6 h-6 text-green-400" />
+            <HiOutlineSparkles className="w-6 h-6 text-green-600" />
             <div>
               <h3 className="font-bold text-lg">Payment successful!</h3>
-              <p>
+              <p className="text-green-700/90">
                 Your credits have been added to your account. You can now
                 continue creating amazing AI images.
               </p>
@@ -1169,10 +1170,10 @@ function DashboardPricingPage() {
       )}
 
       <div className="mb-8">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">
           Buy Credits
         </h1>
-        <p className="text-xl text-white/80 leading-relaxed">
+        <p className="text-xl text-gray-700 leading-relaxed">
           Choose a plan to get more credits and continue creating amazing AI
           images
         </p>
@@ -1183,7 +1184,7 @@ function DashboardPricingPage() {
           <PlanCard
             badge="Starter Pack"
             title="Try It Out"
-            price="$0.20"
+            price="$4"
             summary="15 credits = 15 images"
             priceSub="$0.01 per image"
             bullets={[
@@ -1225,7 +1226,6 @@ function DashboardPricingPage() {
               "120 premium credits",
               "High-quality images",
               "All generation types",
-              "Priority processing",
               "Credits never expire",
               "Best value for creators",
             ]}
@@ -1234,18 +1234,18 @@ function DashboardPricingPage() {
         </div>
       </div>
 
-      <div className="mt-12 rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8">
-        <h3 className="text-2xl font-bold mb-4 text-white">
+      <div className="mt-12 rounded-3xl border border-gray-200 bg-white p-8">
+        <h3 className="text-2xl font-bold mb-4 text-gray-900">
           Need help choosing?
         </h3>
-        <p className="text-white/80 text-lg mb-6">
+        <p className="text-gray-700 text-lg mb-6">
           All plans include access to all AI tools. Credits never expire, so you
           can use them whenever you want.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <a
             href="#faq"
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-6 py-3 font-semibold hover:bg-white/5 hover:border-white/40 transition-all duration-200"
+            className="inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-6 py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
           >
             <HiOutlineQuestionMarkCircle className="w-5 h-5" />
             View FAQ

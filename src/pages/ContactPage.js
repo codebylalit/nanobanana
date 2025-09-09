@@ -36,13 +36,13 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white text-gray-900">
       <div className="max-w-3xl mx-auto px-6 lg:px-8 py-24 lg:py-32">
         <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">
             Contact us
           </h1>
-          <p className="text-xl text-white/80 leading-relaxed">
+          <p className="text-xl text-gray-700 leading-relaxed">
             We would love to hear from you. Send us a message and we’ll respond
             shortly.
           </p>
@@ -50,7 +50,7 @@ export default function ContactPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 sm:p-10 space-y-6"
+          className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-10 space-y-6"
         >
           <input
             type="text"
@@ -61,51 +61,51 @@ export default function ContactPage() {
 
           <div className="grid sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name
               </label>
               <input
                 type="text"
                 name="name"
                 required
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 outline-none focus:border-yellow-400 transition"
+                className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 outline-none focus:border-yellow-400 transition"
                 placeholder="Jane Doe"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <input
                 type="email"
                 name="email"
                 required
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 outline-none focus:border-yellow-400 transition"
+                className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 outline-none focus:border-yellow-400 transition"
                 placeholder="jane@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/80 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Message
             </label>
             <textarea
               name="message"
               required
               rows={6}
-              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 outline-none focus:border-yellow-400 transition resize-y"
+              className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 outline-none focus:border-yellow-400 transition resize-y"
               placeholder="Tell us a bit about what you need..."
             />
           </div>
 
           {status === "success" ? (
-            <div className="rounded-xl border border-green-400/30 bg-green-400/10 text-green-200 px-4 py-3">
+            <div className="rounded-xl border border-green-200 bg-green-50 text-green-700 px-4 py-3">
               Thanks! Your message has been sent.
             </div>
           ) : null}
           {status === "error" ? (
-            <div className="rounded-xl border border-red-400/30 bg-red-400/10 text-red-200 px-4 py-3">
+            <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3">
               {errorMessage}
             </div>
           ) : null}
@@ -120,7 +120,7 @@ export default function ContactPage() {
             </button>
           </div>
 
-          <p className="text-center text-white/50 text-sm">
+          <p className="text-center text-gray-500 text-sm">
             Set your form ID via REACT_APP_FORMSPREE_ID or replace "yourid" in
             the code.
           </p>

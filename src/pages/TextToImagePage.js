@@ -58,7 +58,7 @@ export default function TextToImagePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-xl text-white/80 leading-relaxed">
+        <p className="text-xl text-gray-700 leading-relaxed">
           Transform your ideas into stunning visuals with AI-powered image
           generation
         </p>
@@ -68,26 +68,26 @@ export default function TextToImagePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Left Column - Input Form */}
         <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 lg:p-8 min-h-[500px] flex flex-col">
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 lg:p-8 min-h-[500px] flex flex-col">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2 text-white">
+              <h2 className="text-2xl font-bold mb-2 text-gray-900">
                 Create Your Image
               </h2>
-              <p className="text-white/70 text-lg">
+              <p className="text-gray-700 text-lg">
                 Each generation uses 1 credit
               </p>
             </div>
 
             <div className="flex-1 flex flex-col space-y-6">
               <div className="flex-1">
-                <label className="block text-white/90 text-lg font-medium mb-3">
+                <label className="block text-gray-900 text-lg font-medium mb-3">
                   Describe your image
                 </label>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="e.g., A futuristic city at sunset with flying cars, cyberpunk style, neon lights, detailed architecture"
-                  className="w-full h-32 rounded-2xl bg-black/40 border border-white/10 px-6 py-4 text-white placeholder-white/50 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none text-lg"
+                  className="w-full h-32 rounded-2xl bg-white border border-gray-300 px-6 py-4 text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none text-lg"
                 />
               </div>
 
@@ -116,7 +116,7 @@ export default function TextToImagePage() {
           {/* Status Messages */}
           <div className="space-y-4">
             {error && (
-              <div className="rounded-2xl border border-red-400/30 bg-gradient-to-r from-red-400/10 to-orange-400/5 p-4 text-red-200">
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">❌</span>
                   <div>
@@ -128,16 +128,16 @@ export default function TextToImagePage() {
             )}
 
             {credits < 1 && (
-              <div className="rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-400/10 to-orange-400/5 p-4 text-yellow-200">
+              <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
                 <div className="flex items-center gap-3">
-                  <HiOutlineExclamation className="w-6 h-6 text-yellow-400" />
+                  <HiOutlineExclamation className="w-6 h-6 text-yellow-600" />
                   <div>
                     <h3 className="font-bold text-lg">Insufficient Credits</h3>
                     <p className="text-sm">
                       You need at least 1 credit to generate an image.{" "}
                       <a
                         href="/dashboard-pricing"
-                        className="underline hover:text-yellow-100"
+                        className="underline hover:text-yellow-600"
                       >
                         Buy credits
                       </a>{" "}
@@ -152,7 +152,7 @@ export default function TextToImagePage() {
 
         {/* Right Column - Generated Image */}
         <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 lg:p-8 min-h-[500px] flex flex-col">
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 lg:p-8 min-h-[500px] flex flex-col">
             <h3 className="text-2xl font-bold mb-6 text-white">
               Generated Image
             </h3>
@@ -162,10 +162,10 @@ export default function TextToImagePage() {
                 {loading ? (
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-                    <p className="text-white/70 text-lg">
+                    <p className="text-gray-700 text-lg">
                       Generating your image...
                     </p>
-                    <p className="text-white/50 text-sm mt-2">
+                    <p className="text-gray-500 text-sm mt-2">
                       This may take a few moments
                     </p>
                   </div>
@@ -174,11 +174,11 @@ export default function TextToImagePage() {
                     <img
                       src={img}
                       alt="Generated result"
-                      className="w-full max-w-md mx-auto rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
+                      className="w-full max-w-md mx-auto rounded-2xl border border-gray-200 hover:border-gray-300 transition-all duration-300"
                     />
                   </div>
                 ) : (
-                  <div className="text-center text-white/50">
+                  <div className="text-center text-gray-500">
                     <HiOutlinePencil className="w-16 h-16 mx-auto mb-4 text-white/30" />
                     <p className="text-lg">
                       Your generated image will appear here
@@ -199,7 +199,7 @@ export default function TextToImagePage() {
                       link.download = "generated-image.png";
                       link.click();
                     }}
-                    className="w-full bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-all duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-yellow-400 text-black px-6 py-3 rounded-xl font-semibold hover:bg-yellow-300 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <HiOutlineDownload className="w-5 h-5" />
                     Download Image

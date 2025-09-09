@@ -10,32 +10,34 @@ export default function AuthPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-          <p className="text-white/70 text-lg">Loading…</p>
+          <p className="text-gray-600 text-lg">Loading…</p>
         </div>
       </div>
     );
   if (user) return <Navigate to={redirectTo} replace />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white text-gray-900 flex items-center justify-center px-6">
       <div className="w-full max-w-lg">
         <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">
             Welcome to <span className="text-yellow-400">Nano Banana</span>
           </h1>
-          <p className="text-xl text-white/80 leading-relaxed">
+          <p className="text-xl text-gray-700 leading-relaxed">
             Sign in with Google to start creating amazing AI images
           </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8 sm:p-12 text-center backdrop-blur-sm">
+        <div className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-12 text-center backdrop-blur-sm">
           <div className="mb-8">
             <div className="text-6xl mb-4">🍌</div>
-            <h2 className="text-2xl font-bold mb-2 text-white">Get Started</h2>
-            <p className="text-white/70 text-lg">
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">
+              Get Started
+            </h2>
+            <p className="text-gray-600 text-lg">
               Join thousands of creators using AI to bring their ideas to life
             </p>
           </div>
@@ -65,7 +67,7 @@ export default function AuthPage() {
             Continue with Google
           </button>
 
-          <p className="text-white/60 text-sm mt-6">
+          <p className="text-gray-500 text-sm mt-6">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>

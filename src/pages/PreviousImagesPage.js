@@ -39,15 +39,15 @@ export default function PreviousImagesPage() {
     <div className="max-w-7xl mx-auto">
       {/* Storage Warning */}
       {showStorageWarning && (
-        <div className="mb-6 rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-400/10 to-orange-400/10 p-4">
+        <div className="mb-6 rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <HiOutlineExclamation className="w-6 h-6 text-yellow-400" />
+              <HiOutlineExclamation className="w-6 h-6 text-yellow-600" />
               <div>
-                <h3 className="text-yellow-400 font-bold">
+                <h3 className="text-yellow-700 font-bold">
                   Storage Almost Full
                 </h3>
-                <p className="text-white/80 text-sm">
+                <p className="text-gray-700 text-sm">
                   You're using {storageInfo.sizeFormatted} of storage. Clear old
                   history to free up space.
                 </p>
@@ -64,11 +64,11 @@ export default function PreviousImagesPage() {
       )}
 
       {/* Storage Info */}
-      <div className="mb-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/2 p-4">
+      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-white font-semibold">Storage Usage</h3>
-            <p className="text-white/70 text-sm">
+            <h3 className="text-gray-900 font-semibold">Storage Usage</h3>
+            <p className="text-gray-700 text-sm">
               {storageInfo.itemCount} items • {storageInfo.sizeFormatted}
             </p>
           </div>
@@ -78,13 +78,13 @@ export default function PreviousImagesPage() {
                 setItems(loadHistory());
                 setStorageInfo(getStorageInfo());
               }}
-              className="bg-white/10 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
+              className="bg-gray-100 text-gray-900 px-3 py-2 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200"
             >
               Refresh
             </button>
             <button
               onClick={handleClearHistory}
-              className="bg-red-500/20 text-red-400 px-3 py-2 rounded-xl font-semibold hover:bg-red-500/30 transition-all duration-200"
+              className="bg-red-100 text-red-700 px-3 py-2 rounded-xl font-semibold hover:bg-red-200 transition-all duration-200"
             >
               Clear All
             </button>
@@ -93,16 +93,18 @@ export default function PreviousImagesPage() {
       </div>
 
       <div className="mb-8">
-        <p className="text-xl text-white/80 leading-relaxed">
+        <p className="text-xl text-gray-700 leading-relaxed">
           Browse and download your AI-generated images
         </p>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-12 text-center">
-          <HiOutlinePhotograph className="w-16 h-16 mx-auto mb-4 text-white/30" />
-          <h3 className="text-2xl font-bold mb-2 text-white">No images yet</h3>
-          <p className="text-white/70 text-lg mb-6">
+        <div className="rounded-3xl border border-gray-200 bg-white p-12 text-center">
+          <HiOutlinePhotograph className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <h3 className="text-2xl font-bold mb-2 text-gray-900">
+            No images yet
+          </h3>
+          <p className="text-gray-700 text-lg mb-6">
             Start creating amazing images with our AI tools!
           </p>
           <a
@@ -118,7 +120,7 @@ export default function PreviousImagesPage() {
           {items.map((it, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 overflow-hidden hover:border-white/20 hover:scale-105 transition-all duration-300"
+              className="rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-gray-300 hover:scale-105 transition-all duration-300"
             >
               <div className="relative">
                 <img
@@ -134,7 +136,7 @@ export default function PreviousImagesPage() {
                       link.download = `image-${i + 1}.png`;
                       link.click();
                     }}
-                    className="bg-black/50 border border-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-black/60 transition"
+                    className="bg-gray-900/70 border border-gray-200 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-900/80 transition"
                     title="Download"
                   >
                     Download
@@ -142,13 +144,13 @@ export default function PreviousImagesPage() {
                 </div>
               </div>
               <div className="p-4">
-                <div className="text-sm text-white/60 mb-1 capitalize">
+                <div className="text-sm text-gray-600 mb-1 capitalize">
                   {it.type}
                 </div>
-                <div className="text-white/90 text-sm line-clamp-2">
+                <div className="text-gray-900 text-sm line-clamp-2">
                   {it.prompt || "No description"}
                 </div>
-                <div className="text-white/50 text-xs mt-2">
+                <div className="text-gray-500 text-xs mt-2">
                   {new Date(
                     it.ts || it.timestamp || Date.now()
                   ).toLocaleDateString()}
