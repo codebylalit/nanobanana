@@ -118,7 +118,7 @@ export default function PreviousImagesPage() {
           {items.map((it, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 overflow-hidden hover:border-white/20 hover:scale-105 transition-all duration-300 group"
+              className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 overflow-hidden hover:border-white/20 hover:scale-105 transition-all duration-300"
             >
               <div className="relative">
                 <img
@@ -126,7 +126,7 @@ export default function PreviousImagesPage() {
                   alt={it.prompt || it.type}
                   className="w-full h-48 object-cover"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="absolute top-3 right-3">
                   <button
                     onClick={() => {
                       const link = document.createElement("a");
@@ -134,7 +134,8 @@ export default function PreviousImagesPage() {
                       link.download = `image-${i + 1}.png`;
                       link.click();
                     }}
-                    className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl font-semibold hover:bg-white/30 transition-all duration-200"
+                    className="bg-black/50 border border-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-black/60 transition"
+                    title="Download"
                   >
                     Download
                   </button>

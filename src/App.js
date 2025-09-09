@@ -38,6 +38,9 @@ import PreviousImagesPage from "./pages/PreviousImagesPage";
 import AuthPage from "./pages/AuthPage";
 import CreditHistoryPage from "./pages/CreditHistoryPage";
 import { useToast } from "./toastContext";
+import { loadHistory } from "./historyStore";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 // Payments removedl nvcz
 function App() {
   return (
@@ -128,6 +131,8 @@ function App() {
           }
         />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
@@ -364,7 +369,48 @@ function Hero() {
 }
 
 function Gallery() {
-  const placeholders = Array.from({ length: 12 });
+  const [images, setImages] = React.useState([]);
+  const UNSPLASH_AI_IMAGES = [
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1503602642458-232111445657?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1495562569060-2eec283d3391?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop",
+  ];
+  React.useEffect(() => {
+    // Load recently generated images from local history first
+    const history = loadHistory();
+    const urls = Array.from(
+      new Set((history || []).map((h) => h?.url).filter(Boolean))
+    ).slice(0, 12);
+    if (urls.length > 0) {
+      if (urls.length < 8) {
+        const needed = Math.max(0, 12 - urls.length);
+        const unsplash = UNSPLASH_AI_IMAGES.slice(0, needed);
+        setImages([...urls, ...unsplash]);
+        return;
+      }
+      setImages(urls);
+      return;
+    }
+    // Fallback to curated AI images
+    setImages([
+      "https://image.lexica.art/md/0a1bb5c9-9df8-4241-9c8d-8f8f3a8e8e88",
+      "https://image.lexica.art/md/3a7f0b8e-7d6a-4b3d-b6f0-6a3a0c3b5f71",
+      "https://image.lexica.art/md/4c9e2b7a-0f7e-4a3c-8d1d-7e2b3c9a1f55",
+      "https://image.lexica.art/md/8d2f4b6a-3c1e-4f7a-8b9d-1c2e3f4a5b6c",
+      "https://image.lexica.art/md/1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "https://image.lexica.art/md/9f8e7d6c-5b4a-3c2d-1e0f-9a8b7c6d5e4f",
+      "https://image.lexica.art/md/7c6d5e4f-3a2b-1c0d-9e8f-7a6b5c4d3e2f",
+      "https://image.lexica.art/md/5e4f3d2c-1b0a-9c8d-7e6f-5a4b3c2d1e0f",
+      "https://image.lexica.art/md/2d3c4b5a-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
+      "https://image.lexica.art/md/6f5e4d3c-2b1a-0c9d-8e7f-6a5b4c3d2e1f",
+      "https://image.lexica.art/md/0c1d2e3f-4a5b-6c7d-8e9f-0a1b2c3d4e5f",
+      "https://image.lexica.art/md/3f2e1d0c-9b8a-7d6c-5e4f-3a2b1c0d9e8f",
+    ]);
+  }, []);
   return (
     <section
       id="gallery"
@@ -380,12 +426,21 @@ function Gallery() {
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
-          {placeholders.map((_, i) => (
+          {images.map((src, i) => (
             <div
               key={i}
-              className="aspect-square rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 hover:border-white/20 hover:scale-105 transition-all duration-300 cursor-pointer group"
+              className="aspect-square rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 hover:scale-105 transition-all duration-300 cursor-pointer group bg-white/5"
             >
-              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-yellow-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <img
+                src={src}
+                alt={`Community image ${i + 1}`}
+                className="w-full h-full object-cover group-hover:opacity-95 transition-opacity duration-300"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `https://picsum.photos/seed/${i}-${Date.now()}/800/800`;
+                }}
+              />
             </div>
           ))}
         </div>
@@ -442,6 +497,18 @@ function Footer() {
             className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
           >
             How credits work
+          </a>
+          <a
+            href="/terms"
+            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+          >
+            Terms
+          </a>
+          <a
+            href="/privacy"
+            className="text-white/70 hover:text-white transition-colors duration-200 font-medium"
+          >
+            Privacy
           </a>
         </div>
       </div>
