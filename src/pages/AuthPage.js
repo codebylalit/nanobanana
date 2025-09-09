@@ -24,10 +24,7 @@ export default function AuthPage() {
       <div className="w-full max-w-lg">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-            Welcome to{" "}
-            <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
-              Nano Banana
-            </span>
+            Welcome to <span className="text-yellow-400">Nano Banana</span>
           </h1>
           <p className="text-xl text-white/80 leading-relaxed">
             Sign in with Google to start creating amazing AI images
