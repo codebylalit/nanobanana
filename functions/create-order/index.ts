@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -11,24 +12,24 @@ const corsHeaders = {
 const CREDIT_PACKAGES = {
   "0d1fe4fa-e8c5-4d0c-8db1-e24c65165615": {
     name: "Starter Pack",
-    credits: 20,
-    price: 20, // Price in cents ($5.00)
+    credits: 15,
+    price: 20, // Price in cents ($0.20) - test
     currency: "USD",
-    description: "20 credits = 20 images",
+    description: "15 credits = 15 images",
   },
   "3022ce85-ceb2-4fae-9729-a82cf949bcb7": {
     name: "Basic Pack",
-    credits: 50,
-    price: 1200, // Price in cents ($12.00)
+    credits: 45,
+    price: 900, // Price in cents ($9.00)
     currency: "USD",
-    description: "50 credits = 50 images",
+    description: "45 credits = 45 images",
   },
   "4917da3b-46a3-41d2-b231-41e17ab1dd7d": {
     name: "Premium Pack",
-    credits: 150,
-    price: 2500, // Price in cents ($25.00)
+    credits: 120,
+    price: 1700, // Price in cents ($17.00)
     currency: "USD",
-    description: "150 credits = 150 images",
+    description: "120 credits = 120 images",
   },
 };
 

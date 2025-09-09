@@ -623,12 +623,12 @@ function PricingPage() {
             <PlanCard
               badge="Starter Pack"
               title="Try It Out"
-              price="$5"
-              summary="20 credits = 20 images"
-              priceSub="$0.25 per image"
+              price="$0.20"
+              summary="15 credits = 15 images"
+              priceSub="$0.27 per image"
               bullets={[
-                "20 premium credits",
-                "20 high-quality images",
+                "15 premium credits",
+                "High-quality images",
                 "All generation types",
                 "Credits never expire",
                 "Perfect for testing",
@@ -639,13 +639,13 @@ function PricingPage() {
           <div className="w-full">
             <PlanCard
               badge="Basic Pack"
-              title="Perfect to Start"
-              price="$12"
-              summary="50 credits = 50 images"
-              priceSub="$0.24 per image"
+              title="Most Popular"
+              price="$9"
+              summary="45 credits = 45 images"
+              priceSub="$0.20 per image"
               bullets={[
-                "50 premium credits",
-                "50 high-quality images",
+                "45 premium credits",
+                "High-quality images",
                 "All generation types",
                 "Credits never expire",
                 "Most popular choice",
@@ -658,12 +658,12 @@ function PricingPage() {
               badge="Premium Pack"
               highlight="Best Value"
               title="Best Value"
-              price="$25"
-              summary="150 credits = 150 images"
-              priceSub="$0.17 per image - Best Deal!"
+              price="$17"
+              summary="120 credits = 120 images"
+              priceSub="$0.14 per image - Best Deal!"
               bullets={[
-                "150 premium credits",
-                "150 high-quality images",
+                "120 premium credits",
+                "High-quality images",
                 "All generation types",
                 "Priority processing",
                 "Credits never expire",
@@ -1045,12 +1045,12 @@ function DashboardPricingPage() {
           <PlanCard
             badge="Starter Pack"
             title="Try It Out"
-            price="$5"
-            summary="20 credits = 20 images"
-            priceSub="$0.25 per image"
+            price="$3.99"
+            summary="15 credits = 15 images"
+            priceSub="$0.27 per image"
             bullets={[
-              "20 premium credits",
-              "20 high-quality images",
+              "15 premium credits",
+              "High-quality images",
               "All generation types",
               "Credits never expire",
               "Perfect for testing",
@@ -1061,13 +1061,13 @@ function DashboardPricingPage() {
         <div className="w-full">
           <PlanCard
             badge="Basic Pack"
-            title="Perfect to Start"
-            price="$12"
-            summary="50 credits = 50 images"
-            priceSub="$0.24 per image"
+            title="Most Popular"
+            price="$8.99"
+            summary="45 credits = 45 images"
+            priceSub="$0.20 per image"
             bullets={[
-              "50 premium credits",
-              "50 high-quality images",
+              "45 premium credits",
+              "High-quality images",
               "All generation types",
               "Credits never expire",
               "Most popular choice",
@@ -1080,12 +1080,12 @@ function DashboardPricingPage() {
             badge="Premium Pack"
             highlight="Best Value"
             title="Best Value"
-            price="$25"
-            summary="150 credits = 150 images"
-            priceSub="$0.17 per image - Best Deal!"
+            price="$16.99"
+            summary="120 credits = 120 images"
+            priceSub="$0.14 per image - Best Deal!"
             bullets={[
-              "150 premium credits",
-              "150 high-quality images",
+              "120 premium credits",
+              "High-quality images",
               "All generation types",
               "Priority processing",
               "Credits never expire",

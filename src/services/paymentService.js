@@ -19,21 +19,21 @@ export const CREDIT_PACKAGES = {
   "0d1fe4fa-e8c5-4d0c-8db1-e24c65165615": {
     name: "Starter Pack",
     credits: 15,
-    price: 20, // $3.99
+    price: 20, // $0.20 (test)
     currency: "USD",
     description: "15 credits = 15 images",
   },
   "3022ce85-ceb2-4fae-9729-a82cf949bcb7": {
     name: "Basic Pack",
     credits: 45,
-    price: 899, // $8.99
+    price: 900, // $9.00
     currency: "USD",
     description: "45 credits = 45 images",
   },
   "4917da3b-46a3-41d2-b231-41e17ab1dd7d": {
     name: "Premium Pack",
     credits: 120,
-    price: 1699, // $16.99
+    price: 1700, // $17.00
     currency: "USD",
     description: "120 credits = 120 images",
   },
