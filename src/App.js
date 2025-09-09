@@ -623,7 +623,7 @@ function PricingPage() {
             <PlanCard
               badge="Starter Pack"
               title="Try It Out"
-              price="$0.20"
+              price="$4"
               summary="15 credits = 15 images"
               priceSub="$0.27 per image"
               bullets={[
@@ -841,6 +841,11 @@ function PlanCard({
 
     setIsProcessing(true);
     setPaymentError(null);
+    show({
+      title: "Starting checkout",
+      message: "Preparing payment...",
+      type: "info",
+    });
 
     try {
       // Load Razorpay script
@@ -848,9 +853,19 @@ function PlanCard({
       if (!scriptLoaded) {
         throw new Error("Failed to load Razorpay script");
       }
+      show({
+        title: "Loaded",
+        message: "Payment widget ready",
+        type: "success",
+      });
 
       // Create order
       const order = await createRazorpayOrder(productId, user);
+      show({
+        title: "Order created",
+        message: `Amount: ${(order.amount / 100).toFixed(2)} ${order.currency}`,
+        type: "success",
+      });
 
       // Initialize payment
       initializeRazorpayPayment(
@@ -892,6 +907,20 @@ function PlanCard({
             type: "error",
           });
           setIsProcessing(false);
+        },
+        {
+          onOpen: () =>
+            show({
+              title: "Payment",
+              message: "Opening secure checkout...",
+              type: "info",
+            }),
+          onDismiss: () =>
+            show({
+              title: "Checkout closed",
+              message: "You can try again anytime.",
+              type: "warning",
+            }),
         }
       );
     } catch (error) {
@@ -1045,9 +1074,9 @@ function DashboardPricingPage() {
           <PlanCard
             badge="Starter Pack"
             title="Try It Out"
-            price="$3.99"
+            price="$0.20"
             summary="15 credits = 15 images"
-            priceSub="$0.27 per image"
+            priceSub="$0.01 per image"
             bullets={[
               "15 premium credits",
               "High-quality images",
@@ -1062,7 +1091,7 @@ function DashboardPricingPage() {
           <PlanCard
             badge="Basic Pack"
             title="Most Popular"
-            price="$8.99"
+            price="$9"
             summary="45 credits = 45 images"
             priceSub="$0.20 per image"
             bullets={[
@@ -1080,7 +1109,7 @@ function DashboardPricingPage() {
             badge="Premium Pack"
             highlight="Best Value"
             title="Best Value"
-            price="$16.99"
+            price="$17"
             summary="120 credits = 120 images"
             priceSub="$0.14 per image - Best Deal!"
             bullets={[

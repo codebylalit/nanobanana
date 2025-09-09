@@ -19,7 +19,7 @@ export const CREDIT_PACKAGES = {
   "0d1fe4fa-e8c5-4d0c-8db1-e24c65165615": {
     name: "Starter Pack",
     credits: 15,
-    price: 20, // $0.20 (test)
+    price: 400, // $4.00
     currency: "USD",
     description: "15 credits = 15 images",
   },
@@ -82,7 +82,13 @@ export const createRazorpayOrder = async (productId, user) => {
 };
 
 // Initialize Razorpay payment
-export const initializeRazorpayPayment = (order, user, onSuccess, onError) => {
+export const initializeRazorpayPayment = (
+  order,
+  user,
+  onSuccess,
+  onError,
+  { onOpen, onDismiss } = {}
+) => {
   if (!window.Razorpay) {
     onError(new Error("Razorpay not loaded"));
     return;
@@ -131,7 +137,22 @@ export const initializeRazorpayPayment = (order, user, onSuccess, onError) => {
   };
 
   const razorpayInstance = new window.Razorpay(options);
+  try {
+    if (typeof onOpen === "function") {
+      onOpen();
+    }
+  } catch (_) {}
   razorpayInstance.open();
+  // Hook modal dismiss to external callback
+  if (options.modal && typeof onDismiss === "function") {
+    const originalDismiss = options.modal.ondismiss;
+    options.modal.ondismiss = () => {
+      try {
+        onDismiss();
+      } catch (_) {}
+      if (typeof originalDismiss === "function") originalDismiss();
+    };
+  }
 };
 
 // Verify payment using backend API
