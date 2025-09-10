@@ -11,11 +11,11 @@ export default function Gallery() {
     "/img23.jpg",
     "/img30.jpg",
     "/img7.jpg",
-    "/img8.jpg",
     "/img15.jpg",
     "/img25.jpg",
-    "/img14.jpg",
-    "/img25.jpg",
+    "/img8.jpg",
+    "/img6.jpg",
+    "/img4.jpg",
   ];
   React.useEffect(() => {
     const history = loadHistory();
@@ -46,7 +46,7 @@ export default function Gallery() {
             Community Gallery
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed px-2">
-            Discover amazing AI-generated images created by our community
+            See incredible AI-generated images made by our growing community
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8">
@@ -67,6 +67,29 @@ export default function Gallery() {
               />
             </div>
           ))}
+        </div>
+      </div>
+      <div className="text-center mt-12 sm:mt-12 lg:mt-16 px-4 sm:px-6">
+        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 text-gray-900">
+        Get featured in our gallery!
+        </h2>
+        <p className="text-sm sm:text-base md:text-lg text-gray-700 max-w-xl mx-auto leading-relaxed mb-4 sm:mb-6">
+          Create and showcase your AI images. Be part of our community of
+          creators!
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+          <a
+            href="/auth"
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl lg:rounded-2xl bg-yellow-400 text-black font-semibold px-4 sm:px-5 py-2 sm:py-3 text-sm sm:text-base lg:text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-md sm:shadow-lg hover:shadow-yellow-400/30"
+          >
+            Create Now
+          </a>
+          <a
+            href="#pricing"
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl lg:rounded-2xl border-2 border-gray-200 px-4 sm:px-5 py-2 sm:py-3 text-sm sm:text-base lg:text-lg font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+          >
+            See Plans
+          </a>
         </div>
       </div>
     </section>
