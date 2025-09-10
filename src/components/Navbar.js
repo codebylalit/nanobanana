@@ -21,7 +21,7 @@ export default function Navbar() {
           <img
             src="/nano0.png"
             alt="Banana"
-            className="w-6 h-6 sm:w-10 sm:h-10 lg:w-10 lg:h-10 mr-1 sm:mr-1"
+            className="w-6 h-6 sm:w-10 sm:h-10 lg:w-10 lg:h-10"
           />
           <span className="sm:inline">Nano Banana</span>
         </a>
