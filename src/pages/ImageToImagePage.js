@@ -5,7 +5,9 @@ import {
   imageToImage,
   improvePrompt,
   suggestPromptIdeas,
+  getFriendlyErrorMessage,
 } from "../services/gemini";
+import { useToast } from "../toastContext";
 import {
   HiOutlineExclamation,
   HiOutlineDownload,
@@ -22,6 +24,7 @@ export default function ImageToImagePage() {
   const [error, setError] = React.useState(null);
   const [ideas, setIdeas] = React.useState([]);
   const [improving, setImproving] = React.useState(false);
+  const { show } = useToast();
 
   async function onGenerate() {
     if (credits < 1 || !file) return;
@@ -42,10 +45,14 @@ export default function ImageToImagePage() {
           ts: Date.now(),
         });
       } else {
-        setError("No image was generated. No credits deducted.");
+        const msg = getFriendlyErrorMessage("No image generated");
+        setError(msg);
+        show({ title: "Transformation failed", message: msg, type: "error" });
       }
     } catch (err) {
-      setError(err.message);
+      const msg = getFriendlyErrorMessage(err?.message);
+      setError(msg);
+      show({ title: "Transformation failed", message: msg, type: "error" });
     } finally {
       setLoading(false);
     }
@@ -84,11 +91,14 @@ export default function ImageToImagePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-0">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-          Transform and style your existing images with AI-powered editing
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          Image to Image
+        </h1>
+        <p className="text-gray-600 text-base sm:text-lg">
+          Transform and style your existing images with AI‑powered editing
         </p>
       </div>
 
@@ -154,6 +164,43 @@ export default function ImageToImagePage() {
                   >
                     Suggest ideas
                   </button>
+                </div>
+                {/* Prompt Ideas */}
+                <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-2">
+                      💡 Prompt Ideas
+                    </h3>
+                    <button
+                      onClick={onSuggest}
+                      disabled={credits < 1}
+                      className="flex items-center gap-1 text-xs sm:text-sm font-medium text-yellow-600 hover:text-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <HiOutlineRefresh className="w-4 h-4" />
+                      Refresh
+                    </button>
+                  </div>
+
+                  {ideas.length === 0 ? (
+                    <p className="text-gray-500 text-sm italic">
+                      Click <span className="font-medium">Refresh</span> to get
+                      ideas based on your current prompt.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1">
+                      {ideas.map((idea, i) => (
+                        <button
+                          key={i}
+                          onClick={() =>
+                            setPrompt((p) => (p ? `${p} — ${idea}` : idea))
+                          }
+                          className="rounded-full border border-gray-300 px-3 py-1.5 text-sm bg-gray-50 hover:bg-yellow-50 hover:border-yellow-400 transition shadow-sm"
+                        >
+                          {idea}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -278,41 +325,28 @@ export default function ImageToImagePage() {
               )}
             </div>
           </div>
-
-          {/* Prompt ideas */}
-          <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Prompt ideas
-              </h3>
-              <button
-                onClick={onSuggest}
-                disabled={credits < 1}
-                className="text-sm font-semibold underline hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Refresh
-              </button>
-            </div>
-            {ideas.length === 0 ? (
-              <p className="text-gray-600 text-sm">
-                Click Refresh to get ideas for image transformations.
-              </p>
+        </div>
+      </div>
+      {/* Sticky Transform Bar (mobile) */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3">
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={onGenerate}
+            disabled={loading || credits < 1 || !file}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-400 text-black font-bold px-4 py-3 text-base hover:bg-yellow-300 transition disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                Transforming...
+              </>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {ideas.map((idea, i) => (
-                  <button
-                    key={i}
-                    onClick={() =>
-                      setPrompt((p) => (p ? `${p} — ${idea}` : idea))
-                    }
-                    className="rounded-full border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
-                  >
-                    {idea}
-                  </button>
-                ))}
-              </div>
+              <>
+                <HiOutlineRefresh className="w-5 h-5" />
+                Transform (1 credit)
+              </>
             )}
-          </div>
+          </button>
         </div>
       </div>
     </div>

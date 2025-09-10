@@ -149,17 +149,12 @@ export async function textToImage(prompt) {
     };
   } catch (error) {
     console.error("Text to Image Error:", error);
-    console.error("Error details:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-    });
 
     // If the API call fails, return a placeholder with error info
     return {
       url: createPlaceholderImage(
-        "Generation Failed",
-        `Error: ${error.message}`,
+        "We couldn't create this image",
+        friendlyErrorSubtitle(error?.message),
         ["#dc2626", "#991b1b"]
       ),
       generated: false,
@@ -211,8 +206,8 @@ export async function imageToImage(file, prompt) {
     console.error("Image to Image Error:", error);
     return {
       url: createPlaceholderImage(
-        "Transformation Failed",
-        "Please try again with a different prompt",
+        "We couldn't transform this image",
+        friendlyErrorSubtitle(error?.message),
         ["#dc2626", "#991b1b"]
       ),
       generated: false,
@@ -266,8 +261,8 @@ export async function generateHeadshot(file, prompt) {
     console.error("Headshot Generation Error:", error);
     return {
       url: createPlaceholderImage(
-        "Headshot Failed",
-        "Please try again with a different photo",
+        "We couldn't generate a headshot",
+        friendlyErrorSubtitle(error?.message),
         ["#dc2626", "#991b1b"]
       ),
       generated: false,
@@ -323,8 +318,8 @@ export async function removeBackground(file) {
     console.error("Background Removal Error:", error);
     return {
       url: createPlaceholderImage(
-        "Removal Failed",
-        "Please try again with a different image",
+        "We couldn't remove the background",
+        friendlyErrorSubtitle(error?.message),
         ["#dc2626", "#991b1b"]
       ),
       generated: false,
@@ -381,8 +376,8 @@ export async function editImageAdjustments(file, options) {
     console.error("Image Editing Error:", error);
     return {
       url: createPlaceholderImage(
-        "Editing Failed",
-        "Please try again with different settings",
+        "We couldn't enhance this image",
+        friendlyErrorSubtitle(error?.message),
         ["#dc2626", "#991b1b"]
       ),
       generated: false,
@@ -430,4 +425,32 @@ export async function suggestPromptIdeas(topic) {
     "Studio portrait of astronaut, dramatic rim lighting",
     "Surreal staircase to clouds, minimal, clean white",
   ];
+}
+
+// --- Friendly error helpers ---
+export function getFriendlyErrorMessage(raw = "") {
+  const msg = String(raw || "").toLowerCase();
+  if (msg.includes("429") || msg.includes("rate") || msg.includes("quota"))
+    return "We're a bit busy right now. Please try again in a minute.";
+  if (
+    msg.includes("timeout") ||
+    msg.includes("network") ||
+    msg.includes("fetch")
+  )
+    return "Network issue. Check your connection and try again.";
+  if (msg.includes("400") || msg.includes("invalid") || msg.includes("prompt"))
+    return "The prompt may be too complex. Try simplifying or shortening it.";
+  if (
+    msg.includes("403") ||
+    msg.includes("api key") ||
+    msg.includes("unauthorized")
+  )
+    return "Service is temporarily unavailable. Please try again later.";
+  if (msg.includes("500") || msg.includes("server"))
+    return "The server had a hiccup. Please try again.";
+  return "Something went wrong. Please try again.";
+}
+
+function friendlyErrorSubtitle(raw) {
+  return getFriendlyErrorMessage(raw).replace(/\.$/, "");
 }

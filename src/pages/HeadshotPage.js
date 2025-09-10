@@ -11,6 +11,7 @@ import {
   HiOutlineDownload,
   HiOutlineCheck,
   HiOutlineUser,
+  HiOutlineRefresh,
 } from "react-icons/hi";
 
 export default function HeadshotPage() {
@@ -59,11 +60,14 @@ export default function HeadshotPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-0">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-          Create professional headshots from your photos with AI-powered
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          Headshot Generator
+        </h1>
+        <p className="text-gray-600 text-base sm:text-lg">
+          Create professional headshots from your photos with AI‑powered
           enhancement
         </p>
       </div>
@@ -130,6 +134,43 @@ export default function HeadshotPage() {
                   >
                     Suggest ideas
                   </button>
+                </div>
+                {/* Prompt Ideas */}
+                <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-2">
+                      💡 Prompt Ideas
+                    </h3>
+                    <button
+                      onClick={onSuggest}
+                      disabled={credits < 1}
+                      className="flex items-center gap-1 text-xs sm:text-sm font-medium text-yellow-600 hover:text-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <HiOutlineRefresh className="w-4 h-4" />
+                      Refresh
+                    </button>
+                  </div>
+
+                  {ideas.length === 0 ? (
+                    <p className="text-gray-500 text-sm italic">
+                      Click <span className="font-medium">Refresh</span> to get
+                      ideas based on your current prompt.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1">
+                      {ideas.map((idea, i) => (
+                        <button
+                          key={i}
+                          onClick={() =>
+                            setPrompt((p) => (p ? `${p} — ${idea}` : idea))
+                          }
+                          className="rounded-full border border-gray-300 px-3 py-1.5 text-sm bg-gray-50 hover:bg-yellow-50 hover:border-yellow-400 transition shadow-sm"
+                        >
+                          {idea}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -240,41 +281,28 @@ export default function HeadshotPage() {
               )}
             </div>
           </div>
-
-          {/* Prompt ideas */}
-          <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Prompt ideas
-              </h3>
-              <button
-                onClick={onSuggest}
-                disabled={credits < 1}
-                className="text-sm font-semibold underline hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Refresh
-              </button>
-            </div>
-            {ideas.length === 0 ? (
-              <p className="text-gray-600 text-sm">
-                Click Refresh to get headshot style ideas.
-              </p>
+        </div>
+      </div>
+      {/* Sticky Generate Bar (mobile) */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3">
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={onGenerate}
+            disabled={loading || credits < 1 || !file}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-400 text-black font-bold px-4 py-3 text-base hover:bg-yellow-300 transition disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                Generating...
+              </>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {ideas.map((idea, i) => (
-                  <button
-                    key={i}
-                    onClick={() =>
-                      setPrompt((p) => (p ? `${p} — ${idea}` : idea))
-                    }
-                    className="rounded-full border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
-                  >
-                    {idea}
-                  </button>
-                ))}
-              </div>
+              <>
+                <HiOutlineUser className="w-5 h-5" />
+                Generate Headshot (1 credit)
+              </>
             )}
-          </div>
+          </button>
         </div>
       </div>
     </div>

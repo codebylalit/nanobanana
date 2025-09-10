@@ -32,11 +32,14 @@ export default function BackgroundRemovalPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-0">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-          Remove backgrounds from your images instantly with AI-powered
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          Background Change / Removal
+        </h1>
+        <p className="text-gray-600 text-base sm:text-lg">
+          Remove or replace backgrounds from your images with AI‑powered
           precision
         </p>
       </div>
@@ -48,7 +51,7 @@ export default function BackgroundRemovalPage() {
           <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8 min-h-[350px] sm:min-h-[500px] flex flex-col">
             <div className="mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
-                Remove Background
+                Change or Remove Background
               </h2>
               <p className="text-gray-700 text-base sm:text-lg">
                 Each removal uses 1 credit
@@ -185,6 +188,28 @@ export default function BackgroundRemovalPage() {
               )}
             </div>
           </div>
+        </div>
+      </div>
+      {/* Sticky Remove Bar (mobile) */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3">
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={onProcess}
+            disabled={loading || credits < 1 || !file}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-400 text-black font-bold px-4 py-3 text-base hover:bg-yellow-300 transition disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                Processing...
+              </>
+            ) : (
+              <>
+                <HiOutlineScissors className="w-5 h-5" />
+                Remove Background (1 credit)
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

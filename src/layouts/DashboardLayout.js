@@ -88,7 +88,7 @@ export default function DashboardLayout({ children }) {
           />
           <SidebarLink
             to="/background-removal"
-            label="Background Removal"
+            label="Background Change / Removal"
             icon={HiOutlineScissors}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
