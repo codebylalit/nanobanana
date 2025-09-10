@@ -1,34 +1,13 @@
 import React from "react";
 import "./App.css";
 import "./index.css";
-import {
-  Routes,
-  Route,
-  NavLink,
-  Navigate,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./authContext";
-import { useCredits } from "./creditsContext";
 import {
-  HiOutlineDocumentText,
-  HiOutlineRefresh,
-  HiOutlineUser,
-  HiOutlineScissors,
-  HiOutlinePhotograph,
-  HiOutlineCheck,
-  HiOutlineLightningBolt,
   HiOutlineQuestionMarkCircle,
-  HiOutlineCreditCard,
-  HiOutlineClock,
   HiOutlinePaperAirplane,
 } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
-import {
-  createRazorpayOrder,
-  initializeRazorpayPayment,
-  loadRazorpayScript,
-} from "./services/paymentService";
 import TextToImagePage from "./pages/TextToImagePage";
 import ImageToImagePage from "./pages/ImageToImagePage";
 import HeadshotPage from "./pages/HeadshotPage";
@@ -37,11 +16,17 @@ import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
 import PreviousImagesPage from "./pages/PreviousImagesPage";
 import AuthPage from "./pages/AuthPage";
 import CreditHistoryPage from "./pages/CreditHistoryPage";
-import { useToast } from "./toastContext";
-import { loadHistory } from "./historyStore";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import ContactPage from "./pages/ContactPage";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Gallery from "./components/Gallery";
+import HowCreditsWork from "./components/HowCreditsWork";
+import FAQSection from "./components/FAQSection";
+import Footer from "./components/Footer";
+import PlanCard from "./components/PlanCard";
+import DashboardLayout from "./layouts/DashboardLayout";
 // Payments removedl nvcz
 function App() {
   return (
@@ -141,355 +126,7 @@ function App() {
   );
 }
 
-function DashboardLayout({ children }) {
-  const { user } = useAuth();
-  const { credits, initialized } = useCredits();
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const { show } = useToast();
-
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("payment") === "success") {
-      show({
-        title: "Payment successful",
-        message: "Your credits were added to your account.",
-        type: "success",
-      });
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, []);
-
-  // No local toast state; global toast container handles timing
-
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside
-        className={`${
-          sidebarOpen ? "w-72" : "w-0"
-        } shrink-0 border-r border-gray-200 bg-white backdrop-blur flex flex-col transition-all duration-300 overflow-hidden fixed left-0 top-0 h-full z-10`}
-      >
-        <div className="h-16 flex items-center px-4 border-b border-gray-200 text-lg font-bold">
-          <img src="/banana.png" alt="Banana" className="w-6 h-6 mr-2" />
-          NANO BANANA
-        </div>
-        <nav className="p-2 space-y-1">
-          <SidebarLink
-            to="/text-to-image"
-            label="Text to Image"
-            icon={HiOutlineDocumentText}
-          />
-          <SidebarLink
-            to="/image-to-image"
-            label="Image to Image"
-            icon={HiOutlineRefresh}
-          />
-          <SidebarLink
-            to="/headshot-generator"
-            label="Headshot Generator"
-            icon={HiOutlineUser}
-          />
-          <SidebarLink
-            to="/background-removal"
-            label="Background Removal"
-            icon={HiOutlineScissors}
-          />
-          {/* <SidebarLink
-            to="/image-editor"
-            label="Image Editor"
-            icon={HiOutlineAdjustments}
-          /> */}
-          <SidebarLink
-            to="/previous-images"
-            label="Previous Images"
-            icon={HiOutlinePhotograph}
-          />
-        </nav>
-        <div className="mt-auto p-4 text-sm text-white/70 space-y-3">
-          <BuyCreditsButton />
-          <SidebarAccount />
-        </div>
-      </aside>
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarOpen ? "ml-72" : "ml-0"
-        }`}
-      >
-        <header className="h-16 border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 bg-white/80 backdrop-blur-md z-20 text-gray-900">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-md hover:bg-gray-100 transition"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-            <PageTitle />
-          </div>
-          <CreditsBadge />
-        </header>
-        {/* Global toast container handles rendering */}
-        <main className="flex-1 p-6">
-          {initialized && credits === 2 && user && (
-            <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
-              <div className="flex items-center gap-3">
-                <HiOutlineSparkles className="w-6 h-6 text-green-600" />
-                <div>
-                  <h3 className="font-bold text-lg">Welcome to Nano Banana!</h3>
-                  <p>
-                    You've received 2 trial credits to get started. Try creating
-                    your first AI image!
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
-
 // Placeholder removed (unused)
-
-// Public landing sections
-function Navbar() {
-  return (
-    <nav className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
-        <a
-          href="/"
-          className="text-2xl font-bold tracking-tight text-gray-900 hover:text-yellow-500 transition-colors duration-200 flex items-center"
-        >
-          <img src="/banana.png" alt="Banana" className="w-6 h-6 mr-2" />
-          NANO BANANA
-        </a>
-        <div className="hidden md:flex items-center gap-8">
-          <a
-            href="#gallery"
-            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            Gallery
-          </a>
-          <a
-            href="#credits"
-            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            How credits work
-          </a>
-          <a
-            href="#faq"
-            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            FAQ
-          </a>
-          <a
-            href="#pricing"
-            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            Pricing
-          </a>
-          <a
-            href="/contact"
-            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            Contact
-          </a>
-          <a
-            href="/auth"
-            className="inline-flex items-center rounded-xl bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-yellow-400/25"
-          >
-            Get Started
-          </a>
-        </div>
-        {/* Mobile menu button */}
-        <button className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors">
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-      </div>
-    </nav>
-  );
-}
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-white via-gray-50 to-white">
-      <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-400/20 via-transparent to-transparent" />
-
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-32 lg:py-40 text-center">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-yellow-600 font-semibold text-lg mb-6 tracking-wide flex items-center justify-center gap-2">
-            {/* <HiOutlinePaperAirplane className="w-5 h-5" /> */}
-            🚀 Powered by Google · Nano Banana
-          </p>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-gray-900">
-            Create epic <span className="text-yellow-500">AI images</span>
-          </h1>
-          <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
-            Create beautiful images from your thoughts. Edit, generate, and
-            transform images in seconds with cutting-edge AI technology.
-          </p>
-          {(() => {
-            const sampleImages = [
-              "/img5.jpg",
-              "/img12.jpg",
-              "/img13.jpg",
-              "/img22.jpg",
-              "/img10.jpg",
-              "/img9.jpg",
-            ];
-            const rotations = [
-              "-rotate-6",
-              "-rotate-3",
-              "rotate-0",
-              "rotate-3",
-              "rotate-6",
-              "rotate-3",
-            ];
-            return (
-              <div className="relative mb-12 flex justify-center">
-                <div className="flex -space-x-6">
-                  {sampleImages.slice(0, 6).map((src, i) => (
-                    <div
-                      key={i}
-                      className={`relative ${
-                        rotations[i % rotations.length]
-                      } w-36 sm:w-44 md:w-56 lg:w-64 aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/10 bg-white transform transition-all duration-300 hover:-translate-y-2`}
-                      style={{ zIndex: 10 + i }}
-                    >
-                      <img
-                        src={src}
-                        alt={`Sample ${i + 1}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = `https://picsum.photos/seed/hero-${i}/800/600`;
-                        }}
-                      />
-                      <div className="pointer-events-none absolute inset-0 shadow-[0_20px_60px_rgba(0,0,0,0.25)]" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <a
-              href="/auth"
-              className="inline-flex items-center rounded-2xl bg-yellow-400 text-black font-bold px-8 py-4 text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-yellow-400/25"
-            >
-              Try free
-            </a>
-            <a
-              href="#pricing"
-              className="inline-flex items-center rounded-2xl border-2 border-gray-200 px-8 py-4 text-lg font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
-            >
-              View pricing
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Gallery() {
-  const [images, setImages] = React.useState([]);
-  const LOCAL_GALLERY_IMAGES = [
-    "/img1.jpg",
-    "/img3.jpg",
-    "/img21.jpg",
-    "/img14.jpg",
-    "/img23.jpg",
-    "/img30.jpg",
-    "/img7.jpg",
-    "/img8.jpg",
-    "/img15.jpg",
-    "/img25.jpg",
-    "/img14.jpg",
-    "/img25.jpg",
-  ];
-  React.useEffect(() => {
-    // Load recently generated images from local history first
-    const history = loadHistory();
-    const urls = Array.from(
-      new Set((history || []).map((h) => h?.url).filter(Boolean))
-    ).slice(0, 12);
-    if (urls.length > 0) {
-      if (urls.length < 8) {
-        const needed = Math.max(0, 12 - urls.length);
-        const localFill = LOCAL_GALLERY_IMAGES.slice(0, needed);
-        setImages([...urls, ...localFill]);
-        return;
-      }
-      setImages(urls);
-      return;
-    }
-    // Fallback to local curated images in /public
-    setImages(LOCAL_GALLERY_IMAGES);
-  }, []);
-  return (
-    <section
-      id="gallery"
-      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
-    >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
-            Community Gallery
-          </h2>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-            Discover amazing AI-generated images created by our community
-          </p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
-          {images.map((src, i) => (
-            <div
-              key={i}
-              className="aspect-square rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:scale-105 transition-all duration-300 cursor-pointer group bg-white"
-            >
-              <img
-                src={src}
-                alt={`Community image ${i + 1}`}
-                className="w-full h-full object-cover group-hover:opacity-95 transition-opacity duration-300"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = `https://picsum.photos/seed/${i}-${Date.now()}/800/800`;
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function PublicLanding() {
   return (
@@ -512,180 +149,6 @@ function RequireAuth({ children }) {
   if (loading) return <div className="p-6 text-white/70">Loading…</div>;
   if (!user) return <Navigate to="/" replace />;
   return children;
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-gray-200 bg-gradient-to-b from-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="text-gray-600 text-lg font-medium">
-          © {new Date().getFullYear()} Nano Banana
-        </div>
-        <div className="flex items-center gap-8 text-base">
-          <a
-            href="#pricing"
-            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            Pricing
-          </a>
-          {/* <a
-            href="#faq"
-            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            FAQ
-          </a> */}
-          <a
-            href="#credits"
-            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            How credits work
-          </a>
-          <a
-            href="/terms"
-            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            Terms
-          </a>
-          <a
-            href="/privacy"
-            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-          >
-            Privacy
-          </a>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-function CreditsBadge() {
-  const { credits, initialized } = useCredits();
-  const { user, loading, signIn } = useAuth();
-  const navigate = useNavigate();
-  return (
-    <div className="flex items-center gap-3 text-gray-800">
-      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1 text-sm bg-white">
-        <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
-        <span>Credits: {initialized ? credits : "..."}</span>
-      </div>
-      {loading ? null : user ? (
-        <button
-          onClick={() => navigate("/credit-history")}
-          className="text-sm text-gray-700 hover:text-gray-900 underline-offset-4 hover:underline"
-        >
-          Purchase History
-        </button>
-      ) : (
-        <button
-          onClick={signIn}
-          className="text-sm text-gray-700 hover:text-gray-900"
-        >
-          Sign in with Google
-        </button>
-      )}
-    </div>
-  );
-}
-
-function BuyCreditsButton() {
-  const navigate = useNavigate();
-  return (
-    <button
-      onClick={() => navigate("/dashboard-pricing")}
-      className="w-full inline-flex items-center justify-center rounded-md bg-yellow-400 text-black font-semibold px-4 py-2 hover:bg-yellow-300 transition"
-    >
-      Buy credits
-    </button>
-  );
-}
-
-function PageTitle() {
-  const pathname = window.location.pathname;
-
-  const getPageTitle = (path) => {
-    switch (path) {
-      case "/text-to-image":
-        return "Text to Image";
-      case "/image-to-image":
-        return "Image to Image";
-      case "/headshot-generator":
-        return "Headshot Generator";
-      case "/background-removal":
-        return "Background Removal";
-      case "/image-editor":
-        return "Image Editor";
-      case "/previous-images":
-        return "Previous Images";
-      case "/credit-history":
-        return "Credit History";
-      case "/pricing":
-        return "Pricing";
-      default:
-        return "Dashboard";
-    }
-  };
-
-  const currentPage = getPageTitle(pathname);
-
-  return (
-    <h1 className="text-lg font-semibold text-gray-900">
-      {currentPage === "Dashboard" ? "Dashboard" : `Dashboard > ${currentPage}`}
-    </h1>
-  );
-}
-
-function SidebarAccount() {
-  const { user, loading, signIn, signOut } = useAuth();
-  const { credits, initialized } = useCredits();
-  const navigate = useNavigate();
-  if (loading) return null;
-  return user ? (
-    <div className="rounded-lg border border-gray-200 p-3 bg-white text-gray-900">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-gray-700 text-sm truncate">
-          {user.displayName || user.email}
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1 text-xs bg-gray-50">
-          <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
-          <span>{initialized ? credits : "..."}</span>
-        </div>
-      </div>
-      <button
-        onClick={async () => {
-          await signOut();
-          navigate("/");
-        }}
-        className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 transition text-sm"
-      >
-        Sign out
-      </button>
-    </div>
-  ) : (
-    <button
-      onClick={signIn}
-      className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 transition text-sm text-gray-900"
-    >
-      Sign in with Google
-    </button>
-  );
-}
-
-function SidebarLink({ to, label, icon: Icon }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          isActive
-            ? "bg-yellow-400 text-black"
-            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-        }`
-      }
-    >
-      <Icon className="w-5 h-5" />
-      {label}
-    </NavLink>
-  );
 }
 
 // legacy landing generator removed in favor of TextToImagePage
@@ -826,319 +289,6 @@ function Pricing() {
   );
 }
 
-function HowCreditsWork() {
-  const items = [
-    {
-      title: "What is a credit?",
-      text: "1 credit = 1 image generation. Each tool uses exactly 1 credit per operation.",
-      icon: <HiOutlineCreditCard className="w-8 h-8" />,
-    },
-    {
-      title: "Do credits expire?",
-      text: "No. Your credits stay in your account until you use them.",
-      icon: <HiOutlineClock className="w-8 h-8" />,
-    },
-    {
-      title: "What if a job fails?",
-      text: "Failed generations automatically refund credits.",
-      icon: <HiOutlineRefresh className="w-8 h-8" />,
-    },
-  ];
-  return (
-    <section
-      id="credits"
-      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
-    >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
-            How credits work
-          </h2>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-            Simple, transparent pricing with no hidden fees
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {items.map((it, i) => (
-            <div
-              key={i}
-              className="rounded-3xl border border-gray-200 bg-white p-8 hover:border-gray-300 hover:scale-105 transition-all duration-300 group"
-            >
-              <div className="text-4xl mb-4">{it.icon}</div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                {it.title}
-              </h3>
-              <p className="text-gray-700 text-lg leading-relaxed">{it.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FAQSection() {
-  const faqs = [
-    {
-      q: "Which tools are included?",
-      a: "Text-to-Image, Image-to-Image, Headshots, Background Removal, and Image Editor.",
-    },
-    {
-      q: "Can I use results commercially?",
-      a: "Yes. You own the images you generate; see terms in checkout.",
-    },
-    {
-      q: "Do I need a subscription?",
-      a: "No subscription required. Buy credits once and use anytime. New users get 2 trial credits to start!",
-    },
-    {
-      q: "How do I sign in?",
-      a: "Use your Google account for quick and secure access.",
-    },
-  ];
-  return (
-    <section
-      id="faq"
-      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
-    >
-      <div className="max-w-5xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
-            Frequently asked questions
-          </h2>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-            Everything you need to know about Nano Banana
-          </p>
-        </div>
-        <div className="space-y-4">
-          {faqs.map((f, i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-gray-200 bg-white p-8 hover:border-gray-300 transition-all duration-300"
-            >
-              <h3 className="text-xl font-bold mb-3 text-gray-900">{f.q}</h3>
-              <p className="text-gray-700 text-lg leading-relaxed">{f.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PlanCard({
-  badge,
-  highlight,
-  title,
-  price,
-  summary,
-  priceSub,
-  bullets,
-  productId,
-}) {
-  const { user } = useAuth();
-  const { fetchCredits } = useCredits();
-  const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = React.useState(false);
-  const [paymentError, setPaymentError] = React.useState(null);
-  const { show } = useToast();
-
-  const handlePayment = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    setIsProcessing(true);
-    setPaymentError(null);
-    show({
-      title: "Starting checkout",
-      message: "Preparing payment...",
-      type: "info",
-    });
-
-    try {
-      // Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error("Failed to load Razorpay script");
-      }
-      show({
-        title: "Loaded",
-        message: "Payment widget ready",
-        type: "success",
-      });
-
-      // Create order
-      const order = await createRazorpayOrder(productId, user);
-      show({
-        title: "Order created",
-        message: `Amount: ${(order.amount / 100).toFixed(2)} ${order.currency}`,
-        type: "success",
-      });
-
-      // Initialize payment
-      initializeRazorpayPayment(
-        order,
-        user,
-        async (paymentData) => {
-          try {
-            // Payment verification is already handled in initializeRazorpayPayment
-            // paymentData contains the verification result
-
-            // Refresh credits from database
-            await fetchCredits();
-
-            // Redirect to dashboard with success message
-            navigate("/dashboard-pricing?payment=success");
-            show({
-              title: "Credits added",
-              message: `${paymentData.credits} credits added to your account`,
-              type: "success",
-            });
-          } catch (error) {
-            console.error("Payment processing error:", error);
-            setPaymentError(error.message);
-            show({
-              title: "Payment error",
-              message: error.message,
-              type: "error",
-            });
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        (error) => {
-          console.error("Payment failed:", error);
-          setPaymentError("Payment failed. Please try again.");
-          show({
-            title: "Payment failed",
-            message: "Please try again.",
-            type: "error",
-          });
-          setIsProcessing(false);
-        },
-        {
-          onOpen: () =>
-            show({
-              title: "Payment",
-              message: "Opening secure checkout...",
-              type: "info",
-            }),
-          onDismiss: () =>
-            show({
-              title: "Checkout closed",
-              message: "You can try again anytime.",
-              type: "warning",
-            }),
-        }
-      );
-    } catch (error) {
-      console.error("Payment initialization error:", error);
-      setPaymentError(error.message);
-      show({ title: "Payment error", message: error.message, type: "error" });
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <div
-      className={`relative rounded-3xl p-8 border transition-all duration-300 hover:scale-105 ${
-        highlight
-          ? "border-yellow-300 bg-yellow-50 shadow-[0_0_0_4px_rgba(234,179,8,0.15)]"
-          : "border-gray-200 bg-white hover:border-gray-300"
-      }`}
-    >
-      {highlight ? (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-sm px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold shadow-lg">
-          Best Value
-        </div>
-      ) : null}
-      <div className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-gray-100 text-gray-800 mb-6">
-        <HiOutlineLightningBolt className="w-4 h-4" />
-        <span className="font-semibold">{badge}</span>
-      </div>
-      <h3 className="text-3xl font-bold mb-4 text-gray-900">{title}</h3>
-      <div className="text-6xl font-extrabold text-yellow-500 mb-4">
-        {price}
-      </div>
-      <div className="text-gray-800 text-lg mb-2 font-medium">{summary}</div>
-      <div className="text-yellow-700 text-base mb-8 font-semibold">
-        {priceSub}
-      </div>
-      <ul className="space-y-3 mb-8 text-gray-700 text-base">
-        {bullets.map((b, i) => (
-          <li key={i} className="flex items-start gap-3">
-            <HiOutlineCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
-
-      {paymentError && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
-          {paymentError}
-        </div>
-      )}
-
-      {user ? (
-        <button
-          onClick={handlePayment}
-          disabled={isProcessing}
-          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-6 py-4 text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-            highlight
-              ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-              : "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-          }`}
-        >
-          {isProcessing ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            "Buy Now"
-          )}
-        </button>
-      ) : (
-        <a
-          href="/auth"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("/auth");
-          }}
-          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-6 py-4 text-lg transition-all duration-200 ${
-            highlight
-              ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-              : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-          }`}
-        >
-          Sign in to buy
-        </a>
-      )}
-    </div>
-  );
-}
-
 function DashboardPricingPage() {
   const [showSuccess, setShowSuccess] = React.useState(false);
 
@@ -1153,14 +303,16 @@ function DashboardPricingPage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       {showSuccess && (
-        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
-          <div className="flex items-center gap-3">
-            <HiOutlineSparkles className="w-6 h-6 text-green-600" />
+        <div className="mb-4 sm:mb-6 rounded-2xl border border-green-200 bg-green-50 p-3 sm:p-4 text-green-700">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" />
             <div>
-              <h3 className="font-bold text-lg">Payment successful!</h3>
-              <p className="text-green-700/90">
+              <h3 className="font-bold text-base sm:text-lg">
+                Payment successful!
+              </h3>
+              <p className="text-green-700/90 text-xs sm:text-sm">
                 Your credits have been added to your account. You can now
                 continue creating amazing AI images.
               </p>
@@ -1169,17 +321,17 @@ function DashboardPricingPage() {
         </div>
       )}
 
-      <div className="mb-8">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-gray-900">
           Buy Credits
         </h1>
-        <p className="text-xl text-gray-700 leading-relaxed">
+        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
           Choose a plan to get more credits and continue creating amazing AI
           images
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-12">
         <div className="w-full">
           <PlanCard
             badge="Starter Pack"
@@ -1234,20 +386,20 @@ function DashboardPricingPage() {
         </div>
       </div>
 
-      <div className="mt-12 rounded-3xl border border-gray-200 bg-white p-8">
-        <h3 className="text-2xl font-bold mb-4 text-gray-900">
+      <div className="mt-8 sm:mt-12 rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8">
+        <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">
           Need help choosing?
         </h3>
-        <p className="text-gray-700 text-lg mb-6">
+        <p className="text-gray-700 text-base sm:text-lg mb-4 sm:mb-6">
           All plans include access to all AI tools. Credits never expire, so you
           can use them whenever you want.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <a
             href="#faq"
-            className="inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-6 py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+            className="inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-4 sm:px-6 py-2 sm:py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base"
           >
-            <HiOutlineQuestionMarkCircle className="w-5 h-5" />
+            <HiOutlineQuestionMarkCircle className="w-4 h-4 sm:w-5 sm:h-5" />
             View FAQ
           </a>
         </div>

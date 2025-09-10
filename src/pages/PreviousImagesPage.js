@@ -36,18 +36,18 @@ export default function PreviousImagesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Storage Warning */}
       {showStorageWarning && (
-        <div className="mb-6 rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
+        <div className="mb-4 sm:mb-6 rounded-2xl border border-yellow-200 bg-yellow-50 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <HiOutlineExclamation className="w-6 h-6 text-yellow-600" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <HiOutlineExclamation className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 flex-shrink-0" />
               <div>
-                <h3 className="text-yellow-700 font-bold">
+                <h3 className="text-yellow-700 font-bold text-sm sm:text-base">
                   Storage Almost Full
                 </h3>
-                <p className="text-gray-700 text-sm">
+                <p className="text-gray-700 text-xs sm:text-sm">
                   You're using {storageInfo.sizeFormatted} of storage. Clear old
                   history to free up space.
                 </p>
@@ -64,11 +64,13 @@ export default function PreviousImagesPage() {
       )}
 
       {/* Storage Info */}
-      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4">
-        <div className="flex items-center justify-between">
+      <div className="mb-4 sm:mb-6 rounded-2xl border border-gray-200 bg-white p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
           <div>
-            <h3 className="text-gray-900 font-semibold">Storage Usage</h3>
-            <p className="text-gray-700 text-sm">
+            <h3 className="text-gray-900 font-semibold text-sm sm:text-base">
+              Storage Usage
+            </h3>
+            <p className="text-gray-700 text-xs sm:text-sm">
               {storageInfo.itemCount} items • {storageInfo.sizeFormatted}
             </p>
           </div>
@@ -78,13 +80,13 @@ export default function PreviousImagesPage() {
                 setItems(loadHistory());
                 setStorageInfo(getStorageInfo());
               }}
-              className="bg-gray-100 text-gray-900 px-3 py-2 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200"
+              className="bg-gray-100 text-gray-900 px-3 py-2 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 text-xs sm:text-sm"
             >
               Refresh
             </button>
             <button
               onClick={handleClearHistory}
-              className="bg-red-100 text-red-700 px-3 py-2 rounded-xl font-semibold hover:bg-red-200 transition-all duration-200"
+              className="bg-red-100 text-red-700 px-3 py-2 rounded-xl font-semibold hover:bg-red-200 transition-all duration-200 text-xs sm:text-sm"
             >
               Clear All
             </button>
@@ -92,19 +94,19 @@ export default function PreviousImagesPage() {
         </div>
       </div>
 
-      <div className="mb-8">
-        <p className="text-xl text-gray-700 leading-relaxed">
+      <div className="mb-6 sm:mb-8">
+        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
           Browse and download your AI-generated images
         </p>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-3xl border border-gray-200 bg-white p-12 text-center">
-          <HiOutlinePhotograph className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-2xl font-bold mb-2 text-gray-900">
+        <div className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-12 text-center">
+          <HiOutlinePhotograph className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-400" />
+          <h3 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
             No images yet
           </h3>
-          <p className="text-gray-700 text-lg mb-6">
+          <p className="text-gray-700 text-base sm:text-lg mb-4 sm:mb-6">
             Start creating amazing images with our AI tools!
           </p>
           <a
@@ -116,7 +118,7 @@ export default function PreviousImagesPage() {
           </a>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {items.map((it, i) => (
             <div
               key={i}
@@ -126,9 +128,9 @@ export default function PreviousImagesPage() {
                 <img
                   src={it.url}
                   alt={it.prompt || it.type}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-32 sm:h-40 lg:h-48 object-cover"
                 />
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-2 right-2">
                   <button
                     onClick={() => {
                       const link = document.createElement("a");
@@ -136,21 +138,21 @@ export default function PreviousImagesPage() {
                       link.download = `image-${i + 1}.png`;
                       link.click();
                     }}
-                    className="bg-gray-900/70 border border-gray-200 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-900/80 transition"
+                    className="bg-gray-900/70 border border-gray-200 text-white px-2 py-1 rounded-lg text-xs font-semibold hover:bg-gray-900/80 transition"
                     title="Download"
                   >
                     Download
                   </button>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="text-sm text-gray-600 mb-1 capitalize">
+              <div className="p-2 sm:p-3 lg:p-4">
+                <div className="text-xs text-gray-600 mb-1 capitalize">
                   {it.type}
                 </div>
-                <div className="text-gray-900 text-sm line-clamp-2">
+                <div className="text-gray-900 text-xs sm:text-sm line-clamp-2">
                   {it.prompt || "No description"}
                 </div>
-                <div className="text-gray-500 text-xs mt-2">
+                <div className="text-gray-500 text-xs mt-1 sm:mt-2">
                   {new Date(
                     it.ts || it.timestamp || Date.now()
                   ).toLocaleDateString()}

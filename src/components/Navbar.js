@@ -1,30 +1,69 @@
-import { HiOutlineBanana } from "react-icons/hi2";
+import React from "react";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-40 backdrop-blur bg-black/60 border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <nav className="sticky top-0 z-40 backdrop-blur-md bg-white/80 border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
         <a
           href="/"
-          className="text-xl font-bold tracking-tight flex items-center"
+          className="text-2xl font-bold tracking-tight text-gray-900 hover:text-yellow-500 transition-colors duration-200 flex items-center"
         >
-          <div className="text-xl mb-4">🍌</div>
+          <img src="/banana.png" alt="Banana" className="w-6 h-6 mr-2" />
           NANO BANANA
         </a>
-        <div className="hidden sm:flex items-center gap-4">
-          <a href="#gallery" className="text-sm text-white/80 hover:text-white">
+        <div className="hidden md:flex items-center gap-8">
+          <a
+            href="#gallery"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
+          >
             Gallery
           </a>
-          <a href="/pricing" className="text-sm text-white/80 hover:text-white">
+          <a
+            href="#credits"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
+          >
+            How credits work
+          </a>
+          <a
+            href="#faq"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
+          >
+            FAQ
+          </a>
+          <a
+            href="#pricing"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
+          >
             Pricing
           </a>
           <a
-            href="/text-to-image"
-            className="inline-flex items-center rounded-md bg-yellow-400 text-black font-medium px-3 py-2 hover:bg-yellow-300 transition"
+            href="/contact"
+            className="text-base text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
+          >
+            Contact
+          </a>
+          <a
+            href="/auth"
+            className="inline-flex items-center rounded-xl bg-yellow-400 text-black font-semibold px-6 py-3 hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-yellow-400/25"
           >
             Get Started
           </a>
         </div>
+        <button className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors">
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
       </div>
     </nav>
   );
