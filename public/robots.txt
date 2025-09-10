@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://nanobanana.app/sitemap.xml
+Sitemap: https://nenobanana.site/sitemap.xml
 
 # Disallow admin or private areas (if any)
 # Disallow: /admin/
