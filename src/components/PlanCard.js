@@ -92,6 +92,7 @@ export default function PlanCard({
           onDismiss: () => {
             setStatusMessage("Checkout closed. You can try again.");
             setStatusType("warning");
+            setIsProcessing(false);
           },
         }
       );
@@ -118,7 +119,9 @@ export default function PlanCard({
       icon = <HiOutlineExclamationCircle className="w-5 h-5 text-yellow-600" />;
       styles = "bg-yellow-50 border-yellow-200 text-yellow-700";
     } else {
-      icon = <HiOutlineRefresh className="w-5 h-5 animate-spin text-blue-600" />;
+      icon = (
+        <HiOutlineRefresh className="w-5 h-5 animate-spin text-blue-600" />
+      );
     }
 
     return (
@@ -236,4 +239,3 @@ export default function PlanCard({
     </div>
   );
 }
-

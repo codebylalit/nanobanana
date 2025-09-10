@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../authContext";
 import { useCredits } from "../creditsContext";
 import { useToast } from "../toastContext";
+// preferences handled within Profile page
 import {
   HiOutlineDocumentText,
   HiOutlineRefresh,
@@ -95,6 +96,12 @@ export default function DashboardLayout({ children }) {
             icon={HiOutlinePhotograph}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
+          {/* <SidebarLink
+            to="/profile"
+            label="Profile"
+            icon={HiOutlineUser}
+            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+          /> */}
         </nav>
         <div className="mt-auto p-4 text-sm text-gray-900 space-y-3">
           <BuyCreditsButton />
@@ -210,6 +217,8 @@ function PageTitle() {
         return "Previous Images";
       case "/credit-history":
         return "Credit History";
+      case "/profile":
+        return "Profile";
       case "/pricing":
         return "Pricing";
       default:
@@ -233,8 +242,10 @@ function PageTitle() {
 
 function SidebarAccount() {
   const { user, loading, signIn, signOut } = useAuth();
-  const { credits, initialized } = useCredits();
+  // credits badge removed; quick settings link instead
   const navigate = useNavigate();
+  // preferences handled on Profile page
+
   if (loading) return null;
   return user ? (
     <div className="rounded-lg border border-gray-200 p-3 bg-white text-gray-900">
@@ -242,19 +253,26 @@ function SidebarAccount() {
         <div className="text-gray-700 text-xs sm:text-sm truncate">
           {user.displayName || user.email}
         </div>
-        <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-2 sm:px-3 py-1 text-xs bg-gray-50">
-          <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
-          <span>{initialized ? credits : "..."}</span>
-        </div>
+        <button
+          onClick={async () => {
+            await signOut();
+            navigate("/");
+          }}
+          className="inline-flex items-center justify-center rounded-md px-4 py-1 text-xs border border-gray-200 hover:bg-gray-50 text-gray-700 transition"
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          Sign out
+        </button>
       </div>
+
+      {/* Minimal sidebar; preferences moved to Profile page */}
+
       <button
-        onClick={async () => {
-          await signOut();
-          navigate("/");
-        }}
-        className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 transition text-xs sm:text-sm"
+        onClick={() => navigate("/profile")}
+        className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 mt-1 hover:bg-gray-50 transition text-xs sm:text-sm"
       >
-        Sign out
+        Manage Account
       </button>
     </div>
   ) : (

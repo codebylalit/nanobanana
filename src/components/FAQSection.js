@@ -4,25 +4,46 @@ export default function FAQSection() {
   const faqs = [
     {
       q: "Which tools are included?",
-      a: "Text-to-Image, Image-to-Image, Headshots, Background Removal, and Image Editor.",
+      a: "Text-to-Image, Image-to-Image, Headshots, Background Removal, Variations, Image Editor, and more on the way!",
     },
     {
       q: "Can I use results commercially?",
-      a: "Yes. You own the images you generate; see terms in checkout.",
+      a: "Yes! You own the images you generate, so you can use them for personal or commercial projects. Check terms at checkout for details.",
     },
     {
       q: "Do I need a subscription?",
-      a: "No subscription required. Buy credits once and use anytime. New users get 2 trial credits to start!",
+      a: "No subscription required. Buy credits once and use them anytime. New users get 2 trial credits to start!",
     },
     {
       q: "How do I sign in?",
-      a: "Use your Google account for quick and secure access.",
+      a: "Use your Google account for quick, secure access.",
     },
     {
       q: "What is the Prompt Helper?",
-      a: "The Prompt Helper assists you in crafting detailed, high-quality prompts. It can rewrite your idea, suggest new ideas, and provide one-click chips to quickly enhance your prompts for better AI image generation.",
+      a: "The Prompt Helper helps you craft high-quality prompts. It can rewrite your ideas, suggest new ones, and provides one-click chips to boost your AI image results.",
+    },
+    {
+      q: "How many images can I generate?",
+      a: "It depends on the credits you have. Each image generation consumes a specific number of credits, which you can track in your account.",
+    },
+    {
+      q: "Can I edit images after generating them?",
+      a: "Yes! Our Image Editor lets you tweak, enhance, and modify your AI-generated images to perfection.",
+    },
+    {
+      q: "Is there a free trial?",
+      a: "Yes! Every new user gets 2 free credits to explore and generate images before purchasing more.",
+    },
+    {
+      q: "Are my images private?",
+      a: "Absolutely. Your creations are private unless you choose to share or feature them in our gallery.",
+    },
+    {
+      q: "What devices are supported?",
+      a: "Nano Banana works on desktop, tablet, and mobile devices with modern browsers for a seamless experience.",
     },
   ];
+
   return (
     <section
       id="faq"
@@ -31,10 +52,11 @@ export default function FAQSection() {
       <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 text-gray-900">
-            Frequently asked questions
+            Frequently Asked Questions
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed px-2">
-            Everything you need to know about Nano Banana
+            Everything you need to know about Nano Banana, from tools to usage
+            and privacy.
           </p>
         </div>
         <div className="space-y-2 sm:space-y-3 lg:space-y-4">

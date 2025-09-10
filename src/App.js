@@ -17,6 +17,7 @@ import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
 import PreviousImagesPage from "./pages/PreviousImagesPage";
 import AuthPage from "./pages/AuthPage";
 import CreditHistoryPage from "./pages/CreditHistoryPage";
+import ProfilePage from "./pages/ProfilePage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import ContactPage from "./pages/ContactPage";
@@ -98,6 +99,16 @@ function App() {
           }
         />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <DashboardLayout>
+                <ProfilePage />
+              </DashboardLayout>
+            </RequireAuth>
+          }
+        />
         <Route
           path="/credit-history"
           element={

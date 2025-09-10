@@ -1,39 +1,53 @@
 import React from "react";
 import { loadHistory } from "../historyStore";
+import { getFeatureOptIn } from "../userPrefs";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Gallery() {
   const [images, setImages] = React.useState([]);
-  const LOCAL_GALLERY_IMAGES = [
-    "/img1.jpg",
-    "/img3.jpg",
-    "/img21.jpg",
-    "/img14.jpg",
-    "/img23.jpg",
-    "/img30.jpg",
-    "/img7.jpg",
-    "/img15.jpg",
-    "/img25.jpg",
-    "/img8.jpg",
-    "/img6.jpg",
-    "/img4.jpg",
-  ];
+  const LOCAL_GALLERY_IMAGES = React.useMemo(
+    () => [
+      "/img1.jpg",
+      "/img3.jpg",
+      "/img21.jpg",
+      "/img14.jpg",
+      "/img23.jpg",
+      "/img30.jpg",
+      "/img7.jpg",
+      "/img15.jpg",
+      "/img25.jpg",
+      "/img8.jpg",
+      "/img6.jpg",
+      "/img4.jpg",
+    ],
+    []
+  );
   React.useEffect(() => {
-    const history = loadHistory();
-    const urls = Array.from(
-      new Set((history || []).map((h) => h?.url).filter(Boolean))
-    ).slice(0, 12);
-    if (urls.length > 0) {
-      if (urls.length < 8) {
-        const needed = Math.max(0, 12 - urls.length);
-        const localFill = LOCAL_GALLERY_IMAGES.slice(0, needed);
-        setImages([...urls, ...localFill]);
+    const unsub = onAuthStateChanged(auth, (u) => {
+      const isOptedIn = u?.uid ? getFeatureOptIn(u.uid) : false;
+      if (!isOptedIn) {
+        setImages(LOCAL_GALLERY_IMAGES);
         return;
       }
-      setImages(urls);
-      return;
-    }
-    setImages(LOCAL_GALLERY_IMAGES);
-  }, []);
+      const history = loadHistory();
+      const urls = Array.from(
+        new Set((history || []).map((h) => h?.url).filter(Boolean))
+      ).slice(0, 12);
+      if (urls.length > 0) {
+        if (urls.length < 8) {
+          const needed = Math.max(0, 12 - urls.length);
+          const localFill = LOCAL_GALLERY_IMAGES.slice(0, needed);
+          setImages([...urls, ...localFill]);
+          return;
+        }
+        setImages(urls);
+        return;
+      }
+      setImages(LOCAL_GALLERY_IMAGES);
+    });
+    return () => unsub();
+  }, [LOCAL_GALLERY_IMAGES]);
 
   return (
     <section
@@ -57,7 +71,7 @@ export default function Gallery() {
             >
               <img
                 src={src}
-                alt={`Community image ${i + 1}`}
+                alt={`Community ${i + 1}`}
                 className="w-full h-full object-cover group-hover:opacity-95 transition-opacity duration-300"
                 loading="lazy"
                 onError={(e) => {
@@ -71,7 +85,7 @@ export default function Gallery() {
       </div>
       <div className="text-center mt-12 sm:mt-12 lg:mt-16 px-4 sm:px-6">
         <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 text-gray-900">
-        Get featured in our gallery!
+          Get featured in our gallery!
         </h2>
         <p className="text-sm sm:text-base md:text-lg text-gray-700 max-w-xl mx-auto leading-relaxed mb-4 sm:mb-6">
           Create and showcase your AI images. Be part of our community of

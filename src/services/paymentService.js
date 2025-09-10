@@ -131,6 +131,9 @@ export const initializeRazorpayPayment = (
     },
     modal: {
       ondismiss: () => {
+        try {
+          if (typeof onDismiss === "function") onDismiss();
+        } catch (_) {}
         console.log("Payment modal dismissed");
       },
     },
@@ -143,16 +146,6 @@ export const initializeRazorpayPayment = (
     }
   } catch (_) {}
   razorpayInstance.open();
-  // Hook modal dismiss to external callback
-  if (options.modal && typeof onDismiss === "function") {
-    const originalDismiss = options.modal.ondismiss;
-    options.modal.ondismiss = () => {
-      try {
-        onDismiss();
-      } catch (_) {}
-      if (typeof originalDismiss === "function") originalDismiss();
-    };
-  }
 };
 
 // Verify payment using backend API
