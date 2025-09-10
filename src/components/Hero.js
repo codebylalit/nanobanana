@@ -21,21 +21,25 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 via-transparent to-transparent" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-400/20 via-transparent to-transparent" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-32 xl:py-40 text-center">
-        <div className="max-w-5xl mx-auto">
-          <p className="font-semibold text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 lg:mb-6 tracking-wide flex items-center justify-center gap-2">
-            <span className="text-base sm:text-lg lg:text-xl">🚀</span>
-            <span className="xs:inline flex items-center gap-1">
-              <span className="text-gray-500">Image generation by</span>{" "}
-              <span className="inline-flex font-bold">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-18 lg:py-28 xl:py-34 text-center">
+        <div className="max-w-5xl mx-auto ">
+          <p className="inline-flex items-center px-2 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-full text-yellow-400 text-[10px] sm:text-sm md:text-base font-medium gap-1 flex-wrap mb-4 sm:mb-6">
+            <span className="text-[10px] sm:text-sm md:text-base">🚀</span>
+            <span className="flex items-center gap-1 flex-wrap">
+              <span className="text-gray-500 text-[8px] sm:text-xs md:text-sm">
+                Powered by
+              </span>
+              <span className="inline-flex font-bold text-[10px] sm:text-sm md:text-base">
                 <span className="text-blue-500">G</span>
                 <span className="text-red-500">o</span>
                 <span className="text-yellow-500">o</span>
                 <span className="text-blue-500">g</span>
                 <span className="text-green-500">l</span>
                 <span className="text-red-500">e</span>
-              </span>{" "}
-              <span className="text-yellow-600 font-bold">· Nano Banana</span>
+              </span>
+              <span className="text-yellow-600 font-bold text-[10px] sm:text-sm md:text-base">
+                · Nano Banana
+              </span>
             </span>
           </p>
 
