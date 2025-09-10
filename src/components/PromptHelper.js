@@ -17,7 +17,7 @@ export default function PromptHelperAutoDemo() {
 
   const defaultPrompt = "A cozy cabin by a lake at golden hour";
   const makeImproved = (text) =>
-    `🎨 Improved: ${text}, with rich details, soft golden light, and a cinematic atmosphere.`;
+    `${text}, with rich details, soft golden light, and a cinematic atmosphere.`;
 
   const [userPrompt, setUserPrompt] = useState("");
   const [improvedPrompt, setImprovedPrompt] = useState("");
@@ -100,22 +100,22 @@ export default function PromptHelperAutoDemo() {
     switch (status) {
       case "writing":
         return (
-          <div className="flex items-center gap-1 text-sm text-gray-600">
-            <HiOutlinePencilAlt className="w-4 h-4 text-yellow-500 animate-pulse" />
+          <div className="flex items-center gap-1 text-sm font-semibold text-gray-600">
+            <HiOutlinePencilAlt className="w-4 h-4 text-yellow-500  animate-pulse" />
             Writing prompt…
           </div>
         );
       case "improving":
         return (
-          <div className="flex items-center gap-1 text-sm text-gray-600">
+          <div className="flex items-center gap-1 font-semibold text-sm text-gray-600">
             <HiOutlineSparkles className="w-4 h-4 text-yellow-500 animate-spin" />
             Improving prompt…
           </div>
         );
       case "done":
         return (
-          <div className="flex items-center gap-1 text-sm text-green-600">
-            <HiCheckCircle className="w-4 h-4" />
+          <div className="flex items-center gap-1 font-semibold text-sm text-gray-600">
+            <HiCheckCircle className="w-4 h-4 text-yellow-500" />
             Improved
           </div>
         );
