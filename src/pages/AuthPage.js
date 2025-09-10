@@ -17,38 +17,43 @@ export default function AuthPage() {
         </div>
       </div>
     );
+
   if (user) return <Navigate to={redirectTo} replace />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white text-gray-900 flex items-center justify-center px-6">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white text-gray-900 flex items-center justify-center px-4 sm:px-6">
+      <div className="w-full max-w-md sm:max-w-lg">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4 text-gray-900">
             Welcome to <span className="text-yellow-400">Nano Banana</span>
           </h1>
-          <p className="text-xl text-gray-700 leading-relaxed">
+          <p className="text-base sm:text-xl text-gray-700 leading-relaxed">
             Sign in with Google to start creating amazing AI images
           </p>
         </div>
 
-        <div className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-12 text-center backdrop-blur-sm">
-          <div className="mb-8">
-            <div className="text-6xl mb-4 flex justify-center">
-              <img src="/nano1.png" alt="Banana" className="w-20 h-20" />
+        <div className="rounded-2xl sm:rounded-3xl border border-gray-200 bg-white p-6 sm:p-12 text-center backdrop-blur-sm">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex justify-center mb-4">
+              <img
+                src="/nano1.png"
+                alt="Banana"
+                className="w-16 h-16 sm:w-20 sm:h-20"
+              />
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-gray-900">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
               Get Started
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-sm sm:text-lg">
               Join thousands of creators using AI to bring their ideas to life
             </p>
           </div>
 
           <button
             onClick={signIn}
-            className="w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-yellow-400 text-black font-bold px-8 py-4 text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-yellow-400/25"
+            className="w-full inline-flex items-center justify-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl bg-yellow-400 text-black font-bold px-4 py-3 sm:px-8 sm:py-4 text-base sm:text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-yellow-400/25"
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -69,7 +74,7 @@ export default function AuthPage() {
             Continue with Google
           </button>
 
-          <p className="text-gray-500 text-sm mt-6">
+          <p className="text-gray-500 text-xs sm:text-sm mt-6">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>

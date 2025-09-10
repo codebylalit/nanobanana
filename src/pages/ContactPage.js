@@ -37,12 +37,12 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white text-gray-900">
-      <div className="max-w-3xl mx-auto px-6 lg:px-8 py-24 lg:py-32">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-gray-900">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
+        <div className="text-center mb-10 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4 text-gray-900">
             Contact us
           </h1>
-          <p className="text-xl text-gray-700 leading-relaxed">
+          <p className="text-base sm:text-xl text-gray-700 leading-relaxed">
             We would love to hear from you. Send us a message and we’ll respond
             shortly.
           </p>
@@ -50,7 +50,7 @@ export default function ContactPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-gray-200 bg-white p-8 sm:p-10 space-y-6"
+          className="rounded-2xl sm:rounded-3xl border border-gray-200 bg-white p-6 sm:p-10 space-y-6"
         >
           <input
             type="text"
@@ -68,7 +68,7 @@ export default function ContactPage() {
                 type="text"
                 name="name"
                 required
-                className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 outline-none focus:border-yellow-400 transition"
+                className="w-full rounded-lg sm:rounded-xl bg-white border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 outline-none focus:border-yellow-400 transition"
                 placeholder="Jane Doe"
               />
             </div>
@@ -80,7 +80,7 @@ export default function ContactPage() {
                 type="email"
                 name="email"
                 required
-                className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 outline-none focus:border-yellow-400 transition"
+                className="w-full rounded-lg sm:rounded-xl bg-white border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 outline-none focus:border-yellow-400 transition"
                 placeholder="jane@example.com"
               />
             </div>
@@ -93,19 +93,19 @@ export default function ContactPage() {
             <textarea
               name="message"
               required
-              rows={6}
-              className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 outline-none focus:border-yellow-400 transition resize-y"
+              rows={5}
+              className="w-full rounded-lg sm:rounded-xl bg-white border border-gray-300 px-3 sm:px-4 py-2.5 sm:py-3 outline-none focus:border-yellow-400 transition resize-y"
               placeholder="Tell us a bit about what you need..."
             />
           </div>
 
           {status === "success" ? (
-            <div className="rounded-xl border border-green-200 bg-green-50 text-green-700 px-4 py-3">
+            <div className="rounded-lg sm:rounded-xl border border-green-200 bg-green-50 text-green-700 px-4 py-3 text-sm sm:text-base">
               Thanks! Your message has been sent.
             </div>
           ) : null}
           {status === "error" ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3">
+            <div className="rounded-lg sm:rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm sm:text-base">
               {errorMessage}
             </div>
           ) : null}
@@ -114,16 +114,11 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={status === "submitting"}
-              className="inline-flex items-center rounded-2xl bg-yellow-400 text-black font-bold px-8 py-4 text-lg hover:bg-yellow-300 transition disabled:opacity-60"
+              className="inline-flex items-center rounded-lg sm:rounded-2xl bg-yellow-400 text-black font-bold px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg hover:bg-yellow-300 transition disabled:opacity-60"
             >
               {status === "submitting" ? "Sending..." : "Send message"}
             </button>
           </div>
-
-          <p className="text-center text-gray-500 text-sm">
-            Set your form ID via REACT_APP_FORMSPREE_ID or replace "yourid" in
-            the code.
-          </p>
         </form>
       </div>
     </div>

@@ -57,7 +57,7 @@ export default function Hero() {
                       key={i}
                       className={`relative ${
                         rotations[i % rotations.length]
-                      } w-14 xs:w-16 sm:w-20 md:w-28 lg:w-36 xl:w-44 aspect-[4/3] rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl ring-1 ring-black/10 bg-white transform transition-all duration-300 hover:-translate-y-1 sm:hover:-translate-y-2`}
+                      } w-16 xs:w-18 sm:w-24 md:w-30 lg:w-38 xl:w-48 aspect-[4/4] rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl ring-1 ring-black/10 bg-white transform transition-all duration-300 hover:-translate-y-1 sm:hover:-translate-y-2`}
                       style={{ zIndex: 10 + i }}
                     >
                       <img
@@ -77,16 +77,31 @@ export default function Hero() {
               </div>
             );
           })()}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 lg:gap-6 px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 lg:gap-6 px-3 sm:px-4">
             <a
               href="/auth"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl sm:rounded-2xl bg-yellow-400 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-yellow-400/25"
+              className="w-full sm:w-auto inline-flex items-center justify-center 
+    rounded-lg sm:rounded-xl lg:rounded-2xl 
+    bg-yellow-400 text-black font-bold 
+    px-4 py-2 text-xs 
+    sm:px-6 sm:py-3 sm:text-sm 
+    lg:px-8 lg:py-4 lg:text-lg
+    hover:bg-yellow-300 hover:scale-105 transition-all duration-200 
+    shadow-md sm:shadow-lg hover:shadow-yellow-400/25"
             >
               Try free
             </a>
             <a
               href="#pricing"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl sm:rounded-2xl border-2 border-gray-200 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center 
+    rounded-lg sm:rounded-xl lg:rounded-2xl 
+    border-2 border-gray-200 
+    px-4 py-2 text-xs 
+    sm:px-6 sm:py-3 sm:text-sm 
+    lg:px-8 lg:py-4 lg:text-lg
+    font-semibold 
+    hover:bg-gray-50 hover:border-gray-300 
+    transition-all duration-200"
             >
               View pricing
             </a>
