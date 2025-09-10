@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false);
   const mobileTrackRef = useRef(null);
-  const autoScrollTimerRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -15,32 +14,6 @@ export default function Hero() {
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
-  // Mobile auto-scroll behavior (always on, no pause on interactions)
-  useEffect(() => {
-    if (!isMobile) return;
-    const el = mobileTrackRef.current;
-    if (!el) return;
-
-    const speedPxPerFrame = 0.35; // smooth constant speed
-    let rafId;
-
-    const step = () => {
-      if (el) {
-        el.scrollLeft += speedPxPerFrame;
-        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
-          el.scrollLeft = 0; // seamless loop
-        }
-      }
-      rafId = requestAnimationFrame(step);
-    };
-
-    rafId = requestAnimationFrame(step);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-    };
-  }, [isMobile]);
 
   return (
     <section className="relative overflow-visible bg-gradient-to-br from-white via-gray-50 to-white">
@@ -110,35 +83,39 @@ export default function Hero() {
             ];
 
             if (isMobile) {
+              const yAngles = [-14, -10, -6, -2, 2, 6, 10, 14];
+              const mobileImages = sampleImages.concat(sampleImages);
               return (
-                <div className="relative mb-6 flex justify-center overflow-visible -mx-4 px-4">
+                <div
+                  className="relative mb-6 flex justify-center overflow-hidden -mx-4 px-4"
+                  style={{ perspective: "1000px" }}
+                >
                   {/* edge fades */}
                   <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white to-transparent" />
                   <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent" />
-                  <div
-                    ref={mobileTrackRef}
-                    className="no-scrollbar flex w-full overflow-x-auto snap-x snap-mandatory gap-3 pb-2"
-                  >
-                    {sampleImages
-                      .concat(sampleImages)
-                      .concat(sampleImages)
-                      .map((src, i) => (
-                        <div
-                          key={i}
-                          className="snap-center shrink-0 w-48 aspect-[4/3] rounded-xl overflow-hidden bg-white ring-1 ring-black/10 shadow-lg transform-gpu transition-transform duration-300 active:scale-95 hover:scale-105"
-                        >
-                          <img
-                            src={src}
-                            alt={`Sample ${i + 1}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = `https://picsum.photos/seed/hero-${i}/800/600`;
-                            }}
-                          />
-                        </div>
-                      ))}
+                  <div className="w-[200%] flex gap-3 auto-marquee">
+                    {mobileImages.concat(mobileImages).map((src, i) => (
+                      <div
+                        key={i}
+                        className="shrink-0 w-48 aspect-[4/3] rounded-xl overflow-hidden bg-white ring-1 ring-black/10 shadow-lg transform-gpu"
+                        style={{
+                          transform: `rotateY(${
+                            yAngles[i % yAngles.length]
+                          }deg)`,
+                        }}
+                      >
+                        <img
+                          src={src}
+                          alt={`Sample ${i + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = `https://picsum.photos/seed/hero-${i}/800/600`;
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               );

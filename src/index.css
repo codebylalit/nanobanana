@@ -39,24 +39,6 @@ h1, h2, h3, h4, .display-heading {
     max-width: 100%;
     height: auto;
   }
-  
-  /* Better spacing for mobile hero section */
-  .hero-mobile {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-  
-  /* Reduce image overlap on mobile */
-  .hero-images {
-    margin-left: -0.25rem;
-    margin-right: -0.25rem;
-  }
-  
-  /* Better button spacing on mobile */
-  .hero-buttons {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
 }
 
 /* Extra small screens (xs) - for very small phones */
@@ -70,9 +52,13 @@ h1, h2, h3, h4, .display-heading {
   }
 }
 
-/* Ensure proper spacing on very large screens */
-@media (min-width: 1920px) {
-  .container {
-    max-width: 1400px;
-  }
+/* Auto marquee animation for mobile carousel */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
+.auto-marquee {
+  animation: marquee-left 20s linear infinite;
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
