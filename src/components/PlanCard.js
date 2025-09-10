@@ -3,14 +3,7 @@ import { useAuth } from "../authContext";
 import { useCredits } from "../creditsContext";
 import { useToast } from "../toastContext";
 import { useNavigate } from "react-router-dom";
-import {
-  HiOutlineLightningBolt,
-  HiOutlineCheck,
-  HiOutlineXCircle,
-  HiOutlineRefresh,
-  HiOutlineCheckCircle,
-  HiOutlineExclamationCircle,
-} from "react-icons/hi";
+import { HiOutlineLightningBolt, HiOutlineCheck } from "react-icons/hi";
 import {
   createRazorpayOrder,
   initializeRazorpayPayment,
@@ -31,9 +24,8 @@ export default function PlanCard({
   const { fetchCredits } = useCredits();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const [paymentError, setPaymentError] = React.useState(null);
-  const [statusMessage, setStatusMessage] = React.useState(null);
-  const [statusType, setStatusType] = React.useState(null); // success | error | info
+  // kept for potential logging; UI feedback via toasts
+  const [, setPaymentError] = React.useState(null);
   const { show } = useToast();
 
   const handlePayment = async () => {
@@ -44,22 +36,14 @@ export default function PlanCard({
 
     setIsProcessing(true);
     setPaymentError(null);
-    setStatusMessage("Preparing payment...");
-    setStatusType("info");
 
     try {
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error("Failed to load Razorpay script");
       }
-      setStatusMessage("Payment widget ready");
-      setStatusType("success");
 
       const order = await createRazorpayOrder(productId, user);
-      setStatusMessage(
-        `Order created: ${(order.amount / 100).toFixed(2)} ${order.currency}`
-      );
-      setStatusType("success");
 
       initializeRazorpayPayment(
         order,
@@ -68,71 +52,61 @@ export default function PlanCard({
           try {
             await fetchCredits();
             navigate("/dashboard-pricing?payment=success");
-            setStatusMessage("✅ Payment successful! Credits added.");
-            setStatusType("success");
+            show({
+              title: "Payment successful",
+              message: "Your credits were added to your account.",
+              type: "success",
+            });
           } catch (error) {
             setPaymentError(error.message);
-            setStatusMessage("⚠️ Error while adding credits.");
-            setStatusType("error");
+            show({
+              title: "Credits update error",
+              message: "Payment captured but updating credits failed.",
+              type: "error",
+            });
           } finally {
             setIsProcessing(false);
           }
         },
         (error) => {
           setPaymentError("Payment failed. Please try again.");
-          setStatusMessage("❌ Payment failed. Please try again.");
-          setStatusType("error");
+          show({
+            title: "Payment failed",
+            message: "The transaction did not complete. Please try again.",
+            type: "error",
+          });
           setIsProcessing(false);
         },
         {
           onOpen: () => {
-            setStatusMessage("Opening secure checkout...");
-            setStatusType("info");
+            show({
+              title: "Opening checkout",
+              message: "Launching secure Razorpay widget...",
+              type: "info",
+            });
           },
           onDismiss: () => {
-            setStatusMessage("Checkout closed. You can try again.");
-            setStatusType("warning");
+            show({
+              title: "Checkout closed",
+              message: "You can try again when ready.",
+              type: "warning",
+            });
             setIsProcessing(false);
           },
         }
       );
     } catch (error) {
       setPaymentError(error.message);
-      setStatusMessage("❌ Payment error: " + error.message);
-      setStatusType("error");
+      show({
+        title: "Payment error",
+        message: error.message || "Unexpected error during payment.",
+        type: "error",
+      });
       setIsProcessing(false);
     }
   };
 
-  const renderStatus = () => {
-    if (!statusMessage) return null;
-    let icon;
-    let styles = "bg-blue-50 border-blue-200 text-blue-700"; // default info
-
-    if (statusType === "success") {
-      icon = <HiOutlineCheckCircle className="w-5 h-5 text-green-600" />;
-      styles = "bg-green-50 border-green-200 text-green-700";
-    } else if (statusType === "error") {
-      icon = <HiOutlineXCircle className="w-5 h-5 text-red-600" />;
-      styles = "bg-red-50 border-red-200 text-red-700";
-    } else if (statusType === "warning") {
-      icon = <HiOutlineExclamationCircle className="w-5 h-5 text-yellow-600" />;
-      styles = "bg-yellow-50 border-yellow-200 text-yellow-700";
-    } else {
-      icon = (
-        <HiOutlineRefresh className="w-5 h-5 animate-spin text-blue-600" />
-      );
-    }
-
-    return (
-      <div
-        className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border text-xs sm:text-sm flex items-center gap-2 ${styles}`}
-      >
-        {icon}
-        <span>{statusMessage}</span>
-      </div>
-    );
-  };
+  // Inline status removed
 
   return (
     <div
@@ -178,8 +152,7 @@ export default function PlanCard({
         ))}
       </ul>
 
-      {/* Status messages */}
-      {renderStatus()}
+      {/* Status messages replaced by toasts */}
 
       {/* Payment button */}
       {user ? (

@@ -274,31 +274,56 @@ serve(async (req) => {
 
     console.log("Razorpay API response status:", razorpayResponse.status);
 
+    let paymentData: any = null;
     if (!razorpayResponse.ok) {
       const errorText = await razorpayResponse.text();
       console.error("Razorpay API error:", errorText);
-      return new Response(
-        JSON.stringify({ error: "Payment verification failed" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      // Try to parse JSON if possible
+      try {
+        paymentData = JSON.parse(errorText);
+      } catch (_) {}
+    } else {
+      paymentData = await razorpayResponse.json();
     }
-
-    const paymentData = await razorpayResponse.json();
     console.log("Razorpay payment data:", {
       status: paymentData.status,
       amount: paymentData.amount,
     });
 
     // Check if payment is successful
-    if (paymentData.status !== "captured") {
-      console.error("Payment not captured, status:", paymentData.status);
-      return new Response(JSON.stringify({ error: "Payment not successful" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!paymentData || paymentData.status !== "captured") {
+      const failureCode = paymentData?.error_code || paymentData?.error?.code;
+      const failureReason =
+        paymentData?.error_description ||
+        paymentData?.error?.description ||
+        paymentData?.status ||
+        "Payment not successful";
+
+      // Update order with failure details
+      await supabaseClient
+        .from("orders")
+        .update({
+          status: "failed",
+          payment_status: paymentData?.status ?? null,
+          failure_code: failureCode ?? null,
+          failure_reason: failureReason ?? null,
+        })
+        .eq("razorpay_order_id", orderId)
+        .eq("user_id", userId);
+
+      console.error("Payment not captured", {
+        status: paymentData?.status,
+        failureCode,
+        failureReason,
       });
+
+      return new Response(
+        JSON.stringify({ error: failureReason || "Payment not successful" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     console.log("Payment verified with Razorpay API successfully");
@@ -309,6 +334,7 @@ serve(async (req) => {
       .from("orders")
       .update({
         status: "completed",
+        payment_status: paymentData.status,
         payment_id: paymentId,
         completed_at: new Date().toISOString(),
       })

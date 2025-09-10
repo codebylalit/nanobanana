@@ -11,6 +11,7 @@ import {
   HiOutlineScissors,
   HiOutlinePhotograph,
 } from "react-icons/hi";
+import { HiOutlineChevronRight } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
 
 export default function DashboardLayout({ children }) {
@@ -111,10 +112,11 @@ export default function DashboardLayout({ children }) {
 
       <div className="flex-1 flex flex-col lg:ml-0">
         <header className="h-16 border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 bg-white/80 backdrop-blur-md z-20 text-gray-900">
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-5">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 rounded-md hover:bg-gray-100 transition"
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
               <svg
                 className="w-5 h-5"
@@ -229,14 +231,22 @@ function PageTitle() {
   const currentPage = getPageTitle(pathname);
 
   return (
-    <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
-      <span className="hidden sm:inline">
-        {currentPage === "Dashboard"
-          ? "Dashboard"
-          : `Dashboard > ${currentPage}`}
-      </span>
-      <span className="sm:hidden">{currentPage}</span>
-    </h1>
+    <div className="flex items-center text-gray-900">
+      {/* Desktop breadcrumb */}
+      <nav className="hidden sm:flex items-center text-base font-medium">
+        <span className="text-gray-700">Dashboard</span>
+        {currentPage !== "Dashboard" && (
+          <>
+            <HiOutlineChevronRight className="w-4 h-4 mx-2 text-gray-400" />
+            <span className="text-gray-900">{currentPage}</span>
+          </>
+        )}
+      </nav>
+      {/* Mobile title */}
+      <div className="sm:hidden text-sm font-semibold truncate">
+        {currentPage}
+      </div>
+    </div>
   );
 }
 

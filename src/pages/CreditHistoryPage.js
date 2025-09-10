@@ -15,7 +15,7 @@ export default function CreditHistoryPage() {
     let query = supabase
       .from("orders")
       .select(
-        "id, user_id, product_id, amount, currency, credits, status, created_at, completed_at, payment_id, razorpay_order_id"
+        "id, user_id, product_id, amount, currency, credits, status, created_at, completed_at, payment_id, razorpay_order_id, payment_status, failure_code, failure_reason"
       )
       .eq("user_id", user.uid)
       .order("created_at", { ascending: false });
@@ -36,7 +36,15 @@ export default function CreditHistoryPage() {
         statusFilter === "all" ? true : o.status === statusFilter;
       const q = search.trim().toLowerCase();
       const matchesSearch = q
-        ? [o.product_id, o.payment_id, o.razorpay_order_id, o.status]
+        ? [
+            o.product_id,
+            o.payment_id,
+            o.razorpay_order_id,
+            o.status,
+            o.payment_status,
+            o.failure_code,
+            o.failure_reason,
+          ]
             .filter(Boolean)
             .some((v) => String(v).toLowerCase().includes(q))
         : true;
@@ -117,12 +125,51 @@ export default function CreditHistoryPage() {
                           ? "border-green-500/30 text-green-700 bg-green-100"
                           : o.status === "failed" || o.status === "refunded"
                           ? "border-red-500/30 text-red-700 bg-red-100"
+                          : o.status === "created"
+                          ? "border-yellow-500/30 text-yellow-800 bg-yellow-100"
                           : "border-gray-300 text-gray-700 bg-gray-100"
                       }
                     `}
+                    title={
+                      o.status === "created"
+                        ? "Order created and pending payment"
+                        : o.status === "completed"
+                        ? o.completed_at
+                          ? `Completed at ${new Date(
+                              o.completed_at
+                            ).toLocaleString()}`
+                          : "Payment completed"
+                        : o.status === "failed"
+                        ? o.failure_reason || "Payment failed or rejected"
+                        : o.status === "refunded"
+                        ? "Payment refunded"
+                        : "Status unknown"
+                    }
                   >
-                    {o.status}
+                    {o.status === "created"
+                      ? "Pending"
+                      : o.status === "completed"
+                      ? "Completed"
+                      : o.status === "failed"
+                      ? "Failed"
+                      : o.status === "refunded"
+                      ? "Refunded"
+                      : o.status || "Unknown"}
                   </span>
+                  {o.status !== "completed" &&
+                  (o.failure_code || o.failure_reason || o.payment_status) ? (
+                    <div className="mt-1 text-xs text-gray-600">
+                      {o.payment_status ? (
+                        <span className="mr-2">State: {o.payment_status}</span>
+                      ) : null}
+                      {o.failure_code ? (
+                        <span className="mr-2">Code: {o.failure_code}</span>
+                      ) : null}
+                      {o.failure_reason ? (
+                        <span>Reason: {o.failure_reason}</span>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
