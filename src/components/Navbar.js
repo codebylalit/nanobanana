@@ -23,7 +23,7 @@ export default function Navbar() {
             alt="Banana"
             className="w-6 h-6 sm:w-10 sm:h-10 lg:w-10 lg:h-10 mr-1 sm:mr-1"
           />
-          <span className="sm:inline">NANO BANANA</span>
+          <span className="sm:inline">Nano Banana</span>
         </a>
 
         {/* Desktop Navigation */}
