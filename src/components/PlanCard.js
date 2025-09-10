@@ -208,7 +208,7 @@ export default function PlanCard({
               : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
           }`}
         >
-          Sign in to buy
+          Start creating
         </a>
       )}
     </div>

@@ -6,6 +6,7 @@ import { useAuth } from "./authContext";
 import {
   HiOutlineQuestionMarkCircle,
   HiOutlinePaperAirplane,
+  HiOutlineBadgeCheck,
 } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import TextToImagePage from "./pages/TextToImagePage";
@@ -261,8 +262,8 @@ function PricingPage() {
                 href="/auth"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-yellow-400 text-black font-bold px-4 sm:px-6 py-3 text-sm sm:text-base hover:bg-yellow-300 hover:scale-105 transition-all duration-200"
               >
-                <HiOutlinePaperAirplane className="w-4 h-4 sm:w-5 sm:h-5" />
-                Get Started Free
+                <HiOutlineBadgeCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                Try It Out
               </a>
               <a
                 href="#faq"

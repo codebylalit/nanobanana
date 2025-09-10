@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { HiOutlineRocketLaunch } from "react-icons/hi2";
 
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false);
@@ -22,10 +23,22 @@ export default function Hero() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-32 xl:py-40 text-center">
         <div className="max-w-5xl mx-auto">
-          <p className="text-yellow-600 font-semibold text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 lg:mb-6 tracking-wide flex items-center justify-center gap-2">
+          <p className="font-semibold text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 lg:mb-6 tracking-wide flex items-center justify-center gap-2">
             <span className="text-base sm:text-lg lg:text-xl">🚀</span>
-            <span className="xs:inline">Powered by Google · Nano Banana</span>
+            <span className="xs:inline flex items-center gap-1">
+              <span>Powered by</span>{" "}
+              <span className="inline-flex font-bold">
+                <span className="text-blue-500">G</span>
+                <span className="text-red-500">o</span>
+                <span className="text-yellow-500">o</span>
+                <span className="text-blue-500">g</span>
+                <span className="text-green-500">l</span>
+                <span className="text-red-500">e</span>
+              </span>{" "}
+              <span className="text-yellow-600">· Nano Banana</span>
+            </span>
           </p>
+
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight mb-4 sm:mb-6 lg:mb-8 leading-tight text-gray-900">
             Create epic <span className="text-yellow-500">AI images</span>
           </h1>
@@ -152,29 +165,26 @@ export default function Hero() {
             <a
               href="/auth"
               className="w-full sm:w-auto inline-flex items-center justify-center 
-    rounded-lg sm:rounded-xl lg:rounded-2xl 
-    bg-yellow-400 text-black font-bold 
-    px-4 py-2 text-xs 
-    sm:px-6 sm:py-3 sm:text-sm 
-    lg:px-8 lg:py-4 lg:text-lg
-    hover:bg-yellow-300 hover:scale-105 transition-all duration-200 
-    shadow-md sm:shadow-lg hover:shadow-yellow-400/25"
+      rounded-xl lg:rounded-2xl 
+      bg-yellow-400 text-black font-semibold 
+      px-5 py-3 text-sm sm:text-base lg:text-lg
+      hover:bg-yellow-300 hover:scale-105 transition-all duration-200 
+      shadow-md sm:shadow-lg hover:shadow-yellow-400/30"
             >
-              Try free
+              <HiOutlineRocketLaunch className="w-5 h-5 mr-2" />
+              Start Free Trial
             </a>
             <a
               href="#pricing"
               className="w-full sm:w-auto inline-flex items-center justify-center 
-    rounded-lg sm:rounded-xl lg:rounded-2xl 
-    border-2 border-gray-200 
-    px-4 py-2 text-xs 
-    sm:px-6 sm:py-3 sm:text-sm 
-    lg:px-8 lg:py-4 lg:text-lg
-    font-semibold 
-    hover:bg-gray-50 hover:border-gray-300 
-    transition-all duration-200"
+      rounded-xl lg:rounded-2xl 
+      border-2 border-gray-200 
+      px-5 py-3 text-sm sm:text-base lg:text-lg
+      font-semibold 
+      hover:bg-gray-50 hover:border-gray-300 
+      transition-all duration-200"
             >
-              View pricing
+              View Pricing
             </a>
           </div>
         </div>
