@@ -16,7 +16,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-12 sm:h-14 lg:h-20 flex items-center justify-between">
         <a
           href="/"
-          className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-gray-900 hover:text-yellow-500 transition-colors duration-200 flex items-center"
+          className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-gray-900 transition-colors duration-200 flex items-center"
         >
           <img
             src="/nano0.png"
@@ -60,7 +60,7 @@ export default function Navbar() {
           </a>
           <a
             href="/auth"
-            className="inline-flex items-center rounded-xl bg-yellow-400 text-black font-semibold px-4 lg:px-6 py-2 lg:py-3 hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-yellow-400/25 text-sm lg:text-base"
+            className="inline-flex items-center rounded-xl bg-yellow-500 text-black font-semibold px-4 lg:px-6 py-2 lg:py-3 hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-yellow-400/25 text-sm lg:text-base"
           >
             Get Started
           </a>
