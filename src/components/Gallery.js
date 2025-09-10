@@ -38,22 +38,22 @@ export default function Gallery() {
   return (
     <section
       id="gallery"
-      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
+      className="py-12 sm:py-16 lg:py-20 xl:py-24 bg-gradient-to-b from-white to-gray-50"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 text-gray-900">
             Community Gallery
           </h2>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed px-2">
             Discover amazing AI-generated images created by our community
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8">
           {images.map((src, i) => (
             <div
               key={i}
-              className="aspect-square rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:scale-105 transition-all duration-300 cursor-pointer group bg-white"
+              className="aspect-square rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:scale-105 transition-all duration-300 cursor-pointer group bg-white shadow-sm hover:shadow-md"
             >
               <img
                 src={src}

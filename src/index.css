@@ -14,3 +14,65 @@ h1, h2, h3, h4, .display-heading {
   font-family: 'Sora', 'Inter', ui-sans-serif, system-ui;
   letter-spacing: -0.01em;
 }
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  /* Improve touch targets */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better text rendering on mobile */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Improve image loading */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Better spacing for mobile hero section */
+  .hero-mobile {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  
+  /* Reduce image overlap on mobile */
+  .hero-images {
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+  }
+  
+  /* Better button spacing on mobile */
+  .hero-buttons {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Extra small screens (xs) - for very small phones */
+@media (max-width: 475px) {
+  .xs\:hidden {
+    display: none !important;
+  }
+  
+  .xs\:inline {
+    display: inline !important;
+  }
+}
+
+/* Ensure proper spacing on very large screens */
+@media (min-width: 1920px) {
+  .container {
+    max-width: 1400px;
+  }
+}

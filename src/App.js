@@ -166,31 +166,33 @@ function PricingPage() {
   }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-24 lg:py-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 xl:py-32">
         {showSuccess && (
-          <div className="mb-6 rounded-2xl border border-green-400/30 bg-gradient-to-r from-green-400/10 to-emerald-400/5 p-4 text-green-200">
-            <div className="flex items-center gap-3">
-              <HiOutlineSparkles className="w-6 h-6 text-green-400" />
+          <div className="mb-4 sm:mb-6 rounded-xl sm:rounded-2xl border border-green-400/30 bg-gradient-to-r from-green-400/10 to-emerald-400/5 p-3 sm:p-4 text-green-200">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0" />
               <div>
-                <h3 className="font-bold text-lg">Payment successful</h3>
-                <p>
-                  Your credits were added. If you don’t see them yet, wait a few
+                <h3 className="font-bold text-base sm:text-lg">
+                  Payment successful
+                </h3>
+                <p className="text-sm sm:text-base">
+                  Your credits were added. If you don't see them yet, wait a few
                   seconds.
                 </p>
               </div>
             </div>
           </div>
         )}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
+        <div className="text-center mb-12 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 text-gray-900">
             Choose your plan
           </h1>
-          <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl lg:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed px-2">
             Simple pricing. Credits never expire. Start creating amazing AI
             images today.
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
           <div className="w-full">
             <PlanCard
               badge="Starter Pack"
@@ -225,7 +227,7 @@ function PricingPage() {
               productId="3022ce85-ceb2-4fae-9729-a82cf949bcb7"
             />
           </div>
-          <div className="w-full">
+          <div className="w-full md:col-span-2 lg:col-span-1">
             <PlanCard
               badge="Premium Pack"
               highlight="Best Value"
@@ -245,28 +247,28 @@ function PricingPage() {
           </div>
         </div>
 
-        <div className="mt-16 text-center">
-          <div className="rounded-3xl border border-gray-200 bg-white p-8 max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">
+        <div className="mt-12 sm:mt-16 text-center">
+          <div className="rounded-2xl sm:rounded-3xl border border-gray-200 bg-white p-6 sm:p-8 max-w-4xl mx-auto">
+            <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">
               Need help choosing?
             </h3>
-            <p className="text-gray-700 text-lg mb-6">
+            <p className="text-gray-700 text-base sm:text-lg mb-4 sm:mb-6">
               All plans include access to all AI tools. Credits never expire, so
               you can use them whenever you want.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <a
                 href="/auth"
-                className="inline-flex items-center gap-2 rounded-2xl bg-yellow-400 text-black font-bold px-6 py-3 hover:bg-yellow-300 hover:scale-105 transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-yellow-400 text-black font-bold px-4 sm:px-6 py-3 text-sm sm:text-base hover:bg-yellow-300 hover:scale-105 transition-all duration-200"
               >
-                <HiOutlinePaperAirplane className="w-5 h-5" />
+                <HiOutlinePaperAirplane className="w-4 h-4 sm:w-5 sm:h-5" />
                 Get Started Free
               </a>
               <a
                 href="#faq"
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-6 py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-300 px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
               >
-                <HiOutlineQuestionMarkCircle className="w-5 h-5" />
+                <HiOutlineQuestionMarkCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 View FAQ
               </a>
             </div>
@@ -282,7 +284,7 @@ function Pricing() {
   return (
     <section
       id="pricing"
-      className="py-24 lg:py-32 bg-gradient-to-b from-white to-gray-50"
+      className="py-12 sm:py-16 lg:py-20 xl:py-24 bg-gradient-to-b from-white to-gray-50"
     >
       <PricingPage />
     </section>
@@ -303,16 +305,16 @@ function DashboardPricingPage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8">
       {showSuccess && (
-        <div className="mb-4 sm:mb-6 rounded-2xl border border-green-200 bg-green-50 p-3 sm:p-4 text-green-700">
+        <div className="mb-3 sm:mb-4 lg:mb-6 rounded-xl sm:rounded-2xl border border-green-200 bg-green-50 p-3 sm:p-4 text-green-700">
           <div className="flex items-center gap-2 sm:gap-3">
-            <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" />
+            <HiOutlineSparkles className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600 flex-shrink-0" />
             <div>
-              <h3 className="font-bold text-base sm:text-lg">
+              <h3 className="font-bold text-sm sm:text-base lg:text-lg">
                 Payment successful!
               </h3>
-              <p className="text-green-700/90 text-xs sm:text-sm">
+              <p className="text-green-700/90 text-xs sm:text-sm lg:text-base">
                 Your credits have been added to your account. You can now
                 continue creating amazing AI images.
               </p>
@@ -321,17 +323,17 @@ function DashboardPricingPage() {
         </div>
       )}
 
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-gray-900">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-3 lg:mb-4 text-gray-900">
           Buy Credits
         </h1>
-        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
+        <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed">
           Choose a plan to get more credits and continue creating amazing AI
           images
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 xl:gap-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 xl:gap-8">
         <div className="w-full">
           <PlanCard
             badge="Starter Pack"
@@ -386,20 +388,20 @@ function DashboardPricingPage() {
         </div>
       </div>
 
-      <div className="mt-8 sm:mt-12 rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8">
-        <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">
+      <div className="mt-6 sm:mt-8 lg:mt-12 rounded-2xl sm:rounded-3xl border border-gray-200 bg-white p-3 sm:p-4 lg:p-6 xl:p-8">
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2 sm:mb-3 lg:mb-4 text-gray-900">
           Need help choosing?
         </h3>
-        <p className="text-gray-700 text-base sm:text-lg mb-4 sm:mb-6">
+        <p className="text-gray-700 text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 lg:mb-6">
           All plans include access to all AI tools. Credits never expire, so you
           can use them whenever you want.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4">
           <a
             href="#faq"
-            className="inline-flex items-center gap-2 rounded-2xl border border-gray-300 px-4 sm:px-6 py-2 sm:py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base"
+            className="inline-flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-xs sm:text-sm lg:text-base"
           >
-            <HiOutlineQuestionMarkCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+            <HiOutlineQuestionMarkCircle className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
             View FAQ
           </a>
         </div>
