@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false);
+  const mobileTrackRef = useRef(null);
+  const autoScrollTimerRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -13,12 +15,39 @@ export default function Hero() {
 
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Mobile auto-scroll behavior (always on, no pause on interactions)
+  useEffect(() => {
+    if (!isMobile) return;
+    const el = mobileTrackRef.current;
+    if (!el) return;
+
+    const speedPxPerFrame = 0.35; // smooth constant speed
+    let rafId;
+
+    const step = () => {
+      if (el) {
+        el.scrollLeft += speedPxPerFrame;
+        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
+          el.scrollLeft = 0; // seamless loop
+        }
+      }
+      rafId = requestAnimationFrame(step);
+    };
+
+    rafId = requestAnimationFrame(step);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [isMobile]);
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-white via-gray-50 to-white">
+    <section className="relative overflow-visible bg-gradient-to-br from-white via-gray-50 to-white">
       <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/10 via-transparent to-transparent" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-400/20 via-transparent to-transparent" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-28 xl:py-36 text-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-32 xl:py-40 text-center">
         <div className="max-w-5xl mx-auto">
           <p className="text-yellow-600 font-semibold text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 lg:mb-6 tracking-wide flex items-center justify-center gap-2">
             <span className="text-base sm:text-lg lg:text-xl">🚀</span>
@@ -40,37 +69,102 @@ export default function Hero() {
               "/img10.jpg",
               "/img9.jpg",
             ];
-            const rotations = [
-              "-rotate-6",
-              "-rotate-3",
-              "rotate-0",
-              "rotate-3",
-              "rotate-6",
-              "rotate-3",
+
+            const layout = [
+              {
+                rotate: "-rotate-6",
+                translate: "translate-y-8 sm:translate-y-10",
+                size: "w-20 sm:w-28 lg:w-40",
+                z: 10,
+              },
+              {
+                rotate: "-rotate-3",
+                translate: "translate-y-5 sm:translate-y-6",
+                size: "w-24 sm:w-32 lg:w-44",
+                z: 12,
+              },
+              {
+                rotate: "-rotate-1",
+                translate: "translate-y-2",
+                size: "w-28 sm:w-36 lg:w-52",
+                z: 14,
+              },
+              {
+                rotate: "rotate-1",
+                translate: "translate-y-2",
+                size: "w-28 sm:w-36 lg:w-52",
+                z: 14,
+              },
+              {
+                rotate: "rotate-3",
+                translate: "translate-y-5 sm:translate-y-6",
+                size: "w-24 sm:w-32 lg:w-44",
+                z: 12,
+              },
+              {
+                rotate: "rotate-6",
+                translate: "translate-y-8 sm:translate-y-10",
+                size: "w-20 sm:w-28 lg:w-40",
+                z: 10,
+              },
             ];
+
+            if (isMobile) {
+              return (
+                <div className="relative mb-6 flex justify-center overflow-visible -mx-4 px-4">
+                  {/* edge fades */}
+                  <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white to-transparent" />
+                  <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent" />
+                  <div
+                    ref={mobileTrackRef}
+                    className="no-scrollbar flex w-full overflow-x-auto snap-x snap-mandatory gap-3 pb-2"
+                  >
+                    {sampleImages
+                      .concat(sampleImages)
+                      .concat(sampleImages)
+                      .map((src, i) => (
+                        <div
+                          key={i}
+                          className="snap-center shrink-0 w-48 aspect-[4/3] rounded-xl overflow-hidden bg-white ring-1 ring-black/10 shadow-lg transform-gpu transition-transform duration-300 active:scale-95 hover:scale-105"
+                        >
+                          <img
+                            src={src}
+                            alt={`Sample ${i + 1}`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = `https://picsum.photos/seed/hero-${i}/800/600`;
+                            }}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              );
+            }
+
             return (
-              <div className="relative mb-6 sm:mb-8 lg:mb-12 flex justify-center overflow-hidden px-2 sm:px-4">
-                <div className="flex -space-x-1 sm:-space-x-2 md:-space-x-4 lg:-space-x-6 xl:-space-x-8">
-                  {/* Show fewer images on mobile for better UX */}
-                  {sampleImages.slice(0, isMobile ? 4 : 6).map((src, i) => (
+              <div className="relative mb-6 sm:mb-8 lg:mb-12 flex justify-center overflow-visible px-2 sm:px-4">
+                <div className="flex items-end -space-x-2 sm:-space-x-4 lg:-space-x-6">
+                  {layout.map((cfg, i) => (
                     <div
                       key={i}
-                      className={`relative ${
-                        rotations[i % rotations.length]
-                      } w-16 xs:w-18 sm:w-24 md:w-30 lg:w-38 xl:w-48 aspect-[4/4] rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl md:shadow-2xl ring-1 ring-black/10 bg-white transform transition-all duration-300 hover:-translate-y-1 sm:hover:-translate-y-2`}
-                      style={{ zIndex: 10 + i }}
+                      className={`relative ${cfg.rotate} ${cfg.translate} ${cfg.size} aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-white ring-1 ring-black/10 shadow-xl transition-transform duration-300 transform-gpu will-change-transform scale-95 hover:scale-110 hover:z-50`}
+                      style={{ zIndex: cfg.z }}
                     >
+                      <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-white/70" />
                       <img
-                        src={src}
+                        src={sampleImages[i % sampleImages.length]}
                         alt={`Sample ${i + 1}`}
-                        className="w-full h-full object-cover"
+                        className="relative w-full h-full object-cover"
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = `https://picsum.photos/seed/hero-${i}/800/600`;
                         }}
                       />
-                      <div className="pointer-events-none absolute inset-0 shadow-[0_6px_20px_rgba(0,0,0,0.1)] sm:shadow-[0_12px_30px_rgba(0,0,0,0.12)] md:shadow-[0_20px_60px_rgba(0,0,0,0.25)]" />
+                      <div className="pointer-events-none absolute inset-0 shadow-[0_12px_40px_rgba(0,0,0,0.18)]" />
                     </div>
                   ))}
                 </div>
