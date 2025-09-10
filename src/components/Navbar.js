@@ -19,9 +19,9 @@ export default function Navbar() {
           className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-gray-900 hover:text-yellow-500 transition-colors duration-200 flex items-center"
         >
           <img
-            src="/banana.png"
+            src="/nano0.png"
             alt="Banana"
-            className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mr-1 sm:mr-2"
+            className="w-6 h-6 sm:w-10 sm:h-10 lg:w-10 lg:h-10 mr-1 sm:mr-1"
           />
           <span className="sm:inline">NANO BANANA</span>
         </a>
