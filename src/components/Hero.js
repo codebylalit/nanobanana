@@ -35,7 +35,7 @@ export default function Hero() {
                 <span className="text-green-500">l</span>
                 <span className="text-red-500">e</span>
               </span>{" "}
-              <span className="text-yellow-500 font-bold">· Nano Banana</span>
+              <span className="text-yellow-600 font-bold">· Nano Banana</span>
             </span>
           </p>
 

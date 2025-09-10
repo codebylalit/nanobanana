@@ -18,12 +18,7 @@ export default function FAQSection() {
       q: "How do I sign in?",
       a: "Use your Google account for quick and secure access.",
     },
-    {
-      q: "What is the Prompt Helper?",
-      a: "The Prompt Helper assists you in crafting detailed, high-quality prompts. It can rewrite your idea, suggest new ideas, and provide one-click chips to quickly enhance your prompts for better AI image generation.",
-    },
   ];
-
   return (
     <section
       id="faq"

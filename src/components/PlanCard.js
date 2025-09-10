@@ -3,7 +3,14 @@ import { useAuth } from "../authContext";
 import { useCredits } from "../creditsContext";
 import { useToast } from "../toastContext";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineLightningBolt, HiOutlineCheck } from "react-icons/hi";
+import {
+  HiOutlineLightningBolt,
+  HiOutlineCheck,
+  HiOutlineXCircle,
+  HiOutlineRefresh,
+  HiOutlineCheckCircle,
+  HiOutlineExclamationCircle,
+} from "react-icons/hi";
 import {
   createRazorpayOrder,
   initializeRazorpayPayment,
@@ -25,6 +32,8 @@ export default function PlanCard({
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [paymentError, setPaymentError] = React.useState(null);
+  const [statusMessage, setStatusMessage] = React.useState(null);
+  const [statusType, setStatusType] = React.useState(null); // success | error | info
   const { show } = useToast();
 
   const handlePayment = async () => {
@@ -35,29 +44,22 @@ export default function PlanCard({
 
     setIsProcessing(true);
     setPaymentError(null);
-    show({
-      title: "Starting checkout",
-      message: "Preparing payment...",
-      type: "info",
-    });
+    setStatusMessage("Preparing payment...");
+    setStatusType("info");
 
     try {
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error("Failed to load Razorpay script");
       }
-      show({
-        title: "Loaded",
-        message: "Payment widget ready",
-        type: "success",
-      });
+      setStatusMessage("Payment widget ready");
+      setStatusType("success");
 
       const order = await createRazorpayOrder(productId, user);
-      show({
-        title: "Order created",
-        message: `Amount: ${(order.amount / 100).toFixed(2)} ${order.currency}`,
-        type: "success",
-      });
+      setStatusMessage(
+        `Order created: ${(order.amount / 100).toFixed(2)} ${order.currency}`
+      );
+      setStatusType("success");
 
       initializeRazorpayPayment(
         order,
@@ -66,51 +68,67 @@ export default function PlanCard({
           try {
             await fetchCredits();
             navigate("/dashboard-pricing?payment=success");
-            show({
-              title: "Credits added",
-              message: `${paymentData.credits} credits added to your account`,
-              type: "success",
-            });
+            setStatusMessage("✅ Payment successful! Credits added.");
+            setStatusType("success");
           } catch (error) {
             setPaymentError(error.message);
-            show({
-              title: "Payment error",
-              message: error.message,
-              type: "error",
-            });
+            setStatusMessage("⚠️ Error while adding credits.");
+            setStatusType("error");
           } finally {
             setIsProcessing(false);
           }
         },
         (error) => {
           setPaymentError("Payment failed. Please try again.");
-          show({
-            title: "Payment failed",
-            message: "Please try again.",
-            type: "error",
-          });
+          setStatusMessage("❌ Payment failed. Please try again.");
+          setStatusType("error");
           setIsProcessing(false);
         },
         {
-          onOpen: () =>
-            show({
-              title: "Payment",
-              message: "Opening secure checkout...",
-              type: "info",
-            }),
-          onDismiss: () =>
-            show({
-              title: "Checkout closed",
-              message: "You can try again anytime.",
-              type: "warning",
-            }),
+          onOpen: () => {
+            setStatusMessage("Opening secure checkout...");
+            setStatusType("info");
+          },
+          onDismiss: () => {
+            setStatusMessage("Checkout closed. You can try again.");
+            setStatusType("warning");
+          },
         }
       );
     } catch (error) {
       setPaymentError(error.message);
-      show({ title: "Payment error", message: error.message, type: "error" });
+      setStatusMessage("❌ Payment error: " + error.message);
+      setStatusType("error");
       setIsProcessing(false);
     }
+  };
+
+  const renderStatus = () => {
+    if (!statusMessage) return null;
+    let icon;
+    let styles = "bg-blue-50 border-blue-200 text-blue-700"; // default info
+
+    if (statusType === "success") {
+      icon = <HiOutlineCheckCircle className="w-5 h-5 text-green-600" />;
+      styles = "bg-green-50 border-green-200 text-green-700";
+    } else if (statusType === "error") {
+      icon = <HiOutlineXCircle className="w-5 h-5 text-red-600" />;
+      styles = "bg-red-50 border-red-200 text-red-700";
+    } else if (statusType === "warning") {
+      icon = <HiOutlineExclamationCircle className="w-5 h-5 text-yellow-600" />;
+      styles = "bg-yellow-50 border-yellow-200 text-yellow-700";
+    } else {
+      icon = <HiOutlineRefresh className="w-5 h-5 animate-spin text-blue-600" />;
+    }
+
+    return (
+      <div
+        className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border text-xs sm:text-sm flex items-center gap-2 ${styles}`}
+      >
+        {icon}
+        <span>{statusMessage}</span>
+      </div>
+    );
   };
 
   return (
@@ -126,10 +144,14 @@ export default function PlanCard({
           Best Value
         </div>
       ) : null}
+
+      {/* Badge */}
       <div className="inline-flex items-center gap-2 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 rounded-full bg-gray-100 text-gray-800 mb-4 sm:mb-6">
         <HiOutlineLightningBolt className="w-4 h-4" />
         <span className="font-semibold">{badge}</span>
       </div>
+
+      {/* Title & Price */}
       <h3 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">
         {title}
       </h3>
@@ -142,6 +164,8 @@ export default function PlanCard({
       <div className="text-yellow-700 text-sm sm:text-base mb-6 sm:mb-8 font-semibold">
         {priceSub}
       </div>
+
+      {/* Bullets */}
       <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-gray-700 text-sm sm:text-base">
         {bullets.map((b, i) => (
           <li key={i} className="flex items-start gap-2 sm:gap-3">
@@ -151,12 +175,10 @@ export default function PlanCard({
         ))}
       </ul>
 
-      {paymentError && (
-        <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-xs sm:text-sm">
-          {paymentError}
-        </div>
-      )}
+      {/* Status messages */}
+      {renderStatus()}
 
+      {/* Payment button */}
       {user ? (
         <button
           onClick={handlePayment}
@@ -214,3 +236,4 @@ export default function PlanCard({
     </div>
   );
 }
+

@@ -401,11 +401,11 @@ function DashboardPricingPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4">
           <a
-            href="/contact"
+            href="#faq"
             className="inline-flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-gray-300 px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-xs sm:text-sm lg:text-base"
           >
             <HiOutlineQuestionMarkCircle className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-            Contact Us
+            View FAQ
           </a>
         </div>
       </div>
