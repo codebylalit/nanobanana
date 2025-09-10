@@ -14,6 +14,7 @@ import {
 import { HiOutlineChevronRight } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { FiLayout } from "react-icons/fi";
+import { BiHistory } from "react-icons/bi";
 
 export default function DashboardLayout({ children }) {
   const { user } = useAuth();
@@ -81,6 +82,12 @@ export default function DashboardLayout({ children }) {
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
           <SidebarLink
+            to="/image-editor"
+            label="AI Image Editor"
+            icon={HiOutlinePhotograph}
+            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+          />
+          <SidebarLink
             to="/headshot-generator"
             label="Headshot Generator"
             icon={HiOutlineUser}
@@ -88,14 +95,14 @@ export default function DashboardLayout({ children }) {
           />
           <SidebarLink
             to="/background-removal"
-            label="Background Change / Removal"
+            label="Background Removal"
             icon={HiOutlineScissors}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
           <SidebarLink
             to="/previous-images"
             label="Previous Images"
-            icon={HiOutlinePhotograph}
+            icon={BiHistory}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
           {/* <SidebarLink
@@ -121,7 +128,7 @@ export default function DashboardLayout({ children }) {
             >
               <FiLayout className="w-5 h-5" />
             </button>
-            <span className="h-6 w-px bg-gray-300" aria-hidden="true" />
+            <span className="h-6 w-[1.5px] bg-gray-300" aria-hidden="true" />
             <PageTitle />
           </div>
           <CreditsBadge />

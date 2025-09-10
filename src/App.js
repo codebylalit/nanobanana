@@ -12,7 +12,7 @@ import TextToImagePage from "./pages/TextToImagePage";
 import ImageToImagePage from "./pages/ImageToImagePage";
 import HeadshotPage from "./pages/HeadshotPage";
 import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
-// import ImageEditorPage from "./pages/ImageEditorPage";
+import ImageEditorPage from "./pages/ImageEditorPage";
 import PreviousImagesPage from "./pages/PreviousImagesPage";
 import AuthPage from "./pages/AuthPage";
 import CreditHistoryPage from "./pages/CreditHistoryPage";
@@ -75,18 +75,16 @@ function App() {
             </RequireAuth>
           }
         />
-        {false && (
           <Route
             path="/image-editor"
             element={
               <RequireAuth>
                 <DashboardLayout>
-                  <div />
+                  <ImageEditorPage/>
                 </DashboardLayout>
               </RequireAuth>
             }
           />
-        )}
         <Route
           path="/previous-images"
           element={

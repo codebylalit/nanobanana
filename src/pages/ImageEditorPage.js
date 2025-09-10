@@ -7,7 +7,16 @@ import {
   HiOutlineDownload,
   HiOutlineCheck,
   HiOutlineAdjustments,
+  HiOutlineSparkles,
+  HiOutlinePencil,
+  HiOutlineFilter,
+  HiOutlineDocumentText,
+  HiOutlineColorSwatch,
 } from "react-icons/hi";
+import {
+  HiOutlineArrowUturnLeft,
+  HiOutlineArrowUturnRight,
+} from "react-icons/hi2";
 
 export default function ImageEditorPage() {
   const { credits, consumeCredits } = useCredits();
@@ -18,25 +27,197 @@ export default function ImageEditorPage() {
     saturation: 0,
   });
   const [img, setImg] = React.useState(null);
+  const [previewUrl, setPreviewUrl] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [selectedTab, setSelectedTab] = React.useState("Filter");
+  const [filterType, setFilterType] = React.useState("");
+  const [filterIntensity, setFilterIntensity] = React.useState(50);
+  const [textContent, setTextContent] = React.useState("");
+  const [textPosition, setTextPosition] = React.useState("Center");
+  const [fontStyle, setFontStyle] = React.useState("Bold");
+  const [backgroundType, setBackgroundType] = React.useState("");
+  const [areaToEdit, setAreaToEdit] = React.useState("");
+  const [editDescription, setEditDescription] = React.useState("");
+  const [selectedFormat, setSelectedFormat] = React.useState("Original");
 
   function change(k, v) {
     setOpts((o) => ({ ...o, [k]: v }));
   }
 
+  // Handle file upload and create preview
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+
+    if (selectedFile) {
+      // Create preview URL for immediate display
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+      setImg(null); // Clear any previous edited result
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  // Clean up preview URL when component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  // Download function
+  const downloadImage = () => {
+    if (!img) return;
+
+    const link = document.createElement("a");
+    link.href = img;
+    link.download = `edited-image-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Get format dimensions
+  const getFormatDimensions = (format) => {
+    switch (format) {
+      case "1:1 Square":
+        return { width: 1024, height: 1024 };
+      case "4:3 Standard":
+        return { width: 1024, height: 768 };
+      case "3:2 Classic":
+        return { width: 1024, height: 683 };
+      case "16:9 Landscape":
+        return { width: 1024, height: 576 };
+      case "21:9 Ultra Wide":
+        return { width: 1024, height: 439 };
+      case "9:16 Portrait":
+        return { width: 576, height: 1024 };
+      case "4:5 Instagram":
+        return { width: 819, height: 1024 };
+      case "3:4 Portrait":
+        return { width: 768, height: 1024 };
+      case "2:3 Photo":
+        return { width: 683, height: 1024 };
+      case "1:2 Tall":
+        return { width: 512, height: 1024 };
+      case "Facebook Cover":
+        return { width: 1200, height: 630 };
+      case "Twitter Header":
+        return { width: 1500, height: 500 };
+      case "LinkedIn Banner":
+        return { width: 1128, height: 191 };
+      case "YouTube Thumbnail":
+        return { width: 1280, height: 720 };
+      case "Pinterest Pin":
+        return { width: 735, height: 1102 };
+      case "Story Format":
+        return { width: 1080, height: 1920 };
+      case "A4 Print":
+        return { width: 1240, height: 1754 };
+      case "A5 Print":
+        return { width: 874, height: 1240 };
+      case "Business Card":
+        return { width: 1050, height: 600 };
+      case "Banner Ad":
+        return { width: 728, height: 90 };
+      case "Square Ad":
+        return { width: 1080, height: 1080 };
+      case "Wide Ad":
+        return { width: 1200, height: 628 };
+      default:
+        return null; // Original - no resizing
+    }
+  };
+
+  // Generate AI prompt based on selected tool and options
+  const generateAIPrompt = () => {
+    switch (selectedTab) {
+      case "Filter":
+        return `Apply ${filterType} filter with ${filterIntensity}% intensity to this image. Make it look professional and visually appealing.`;
+
+      case "Text":
+        return `Add text "${textContent}" to this image. Position: ${textPosition}, Style: ${fontStyle}. Make the text clearly visible and well-integrated with the image.`;
+
+      case "Background":
+        return `Change the background to ${backgroundType}. Make it look natural and professional. Ensure the subject remains clearly visible and well-lit.`;
+
+      case "Select":
+        return `Edit the ${areaToEdit} in this image. ${editDescription}. Make the changes look natural and professional.`;
+
+      default:
+        return "Edit this image to make it look better and more professional.";
+    }
+  };
+
   async function onApply() {
-    if (credits < 1 || !file) return;
+    const creditCost = selectedTab === "Filter" ? 2 : 3;
+
+    // Validation for different tabs
+    if (selectedTab === "Filter" && !filterType.trim()) {
+      alert("Please select a filter type.");
+      return;
+    }
+    if (selectedTab === "Text" && !textContent.trim()) {
+      alert("Please enter text content to add to the image.");
+      return;
+    }
+    if (
+      selectedTab === "Select" &&
+      (!areaToEdit.trim() || !editDescription.trim())
+    ) {
+      alert(
+        "Please specify the area to edit and describe what changes you want."
+      );
+      return;
+    }
+    if (selectedTab === "Background" && !backgroundType.trim()) {
+      alert("Please specify what background you want.");
+      return;
+    }
+
+    if (credits < creditCost || !file) return;
     setLoading(true);
     try {
-      const result = await editImageAdjustments(file, opts);
+      const aiPrompt = generateAIPrompt();
+      const formatDimensions = getFormatDimensions(selectedFormat);
+
+      const result = await editImageAdjustments(file, {
+        tool: selectedTab,
+        prompt: aiPrompt,
+        filterType,
+        filterIntensity,
+        textContent,
+        textPosition,
+        fontStyle,
+        backgroundType,
+        areaToEdit,
+        editDescription,
+        format: selectedFormat,
+        dimensions: formatDimensions,
+      });
       setImg(result.url);
       if (result.generated) {
-        const ok = await consumeCredits(1);
+        const ok = await consumeCredits(creditCost);
         if (!ok) throw new Error("Credit deduction failed");
         addHistoryItem({
           type: "edit",
           url: result.url,
-          options: opts,
+          options: {
+            tool: selectedTab,
+            prompt: aiPrompt,
+            filterType,
+            filterIntensity,
+            textContent,
+            textPosition,
+            fontStyle,
+            backgroundType,
+            areaToEdit,
+            editDescription,
+            format: selectedFormat,
+          },
           ts: Date.now(),
         });
       }
@@ -46,177 +227,391 @@ export default function ImageEditorPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8">
-        <p className="text-xl text-white/80 leading-relaxed">
-          Fine-tune your images with professional-grade adjustments
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-0">
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          AI Image Editor
+        </h1>
+        <p className="text-gray-600 text-base sm:text-lg">
+          Professional image editing powered by AI. Select portions to edit,
+          apply filters, add overlays, change backgrounds
         </p>
       </div>
+      {/* Main Split Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* RIGHT: Editing Tools */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Editing Tools
+            </h2>
+            <HiOutlinePencil className="w-5 h-5 text-gray-600" />
+          </div>
 
-      {/* Main Content - Responsive Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Left Column - Input Form */}
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 lg:p-8 min-h-[500px] flex flex-col">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2 text-white">
-                Edit Your Image
-              </h2>
-              <p className="text-white/70 text-lg">Each edit uses 1 credit</p>
-            </div>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span className="text-sm text-gray-600">
+              Working on: Original image
+            </span>
+          </div>
 
-            <div className="flex-1 flex flex-col space-y-6">
-              <div className="flex-1">
-                <label className="block text-white/90 text-lg font-medium mb-3">
-                  Upload your image
+          {/* Tabs (Select, Filter, Text, Background) */}
+          <div className="flex space-x-3 mb-6">
+            {[
+              { name: "Select", icon: HiOutlinePencil },
+              { name: "Filter", icon: HiOutlineFilter },
+              { name: "Text", icon: HiOutlineDocumentText },
+              { name: "Background", icon: HiOutlineColorSwatch },
+            ].map(({ name, icon: Icon }) => (
+              <button
+                key={name}
+                onClick={() => setSelectedTab(name)}
+                className={`px-4 py-2 rounded-lg border text-sm font-medium transition flex items-center gap-2 ${
+                  selectedTab === name
+                    ? "border-gray-800 bg-gray-100 text-gray-900"
+                    : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {name}
+              </button>
+            ))}
+          </div>
+
+          {/* Tool-specific content */}
+          {selectedTab === "Select" && (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What area to edit?
                 </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-6 py-4 text-white file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-300 file:cursor-pointer cursor-pointer"
-                  />
-                </div>
-                {file && (
-                  <div className="mt-3 p-3 rounded-xl bg-green-400/10 border border-green-400/20 text-green-200">
-                    <HiOutlineCheck className="w-4 h-4 inline mr-1" />
-                    {file.name} selected
-                  </div>
-                )}
+                <input
+                  type="text"
+                  value={areaToEdit}
+                  onChange={(e) => setAreaToEdit(e.target.value)}
+                  placeholder="e.g., the person's face, the background, the car, the sky"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                />
               </div>
 
-              <div>
-                <label className="block text-white/90 text-lg font-medium mb-4">
-                  Adjustments
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What changes do you want?
                 </label>
-                <div className="grid sm:grid-cols-3 gap-6">
-                  {["brightness", "contrast", "saturation"].map((k) => (
-                    <div key={k} className="space-y-2">
-                      <label className="block text-white/80 text-sm font-medium capitalize">
-                        {k}
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="range"
-                          min="-100"
-                          max="100"
-                          value={opts[k]}
-                          onChange={(e) =>
-                            change(k, parseInt(e.target.value, 10))
-                          }
-                          className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
-                        />
-                        <div className="text-center text-white/70 text-sm mt-1">
-                          {opts[k]}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <textarea
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="e.g., make it look more professional, improve lighting, remove blemishes, enhance colors"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                />
               </div>
+            </>
+          )}
 
-              <div className="mt-auto">
-                <button
-                  onClick={onApply}
-                  className="w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-yellow-400 text-black font-bold px-8 py-4 text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-yellow-400/25 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
-                  disabled={loading || credits < 1 || !file}
+          {selectedTab === "Filter" && (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Filter Type
+                </label>
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
                 >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
-                      Applying...
-                    </>
-                  ) : (
-                    <>
-                      <HiOutlineAdjustments className="w-5 h-5" />
-                      Apply Edits (1 credit)
-                    </>
-                  )}
-                </button>
+                  <option value="">Select filter type...</option>
+                  <option value="Vintage">Vintage</option>
+                  <option value="Black & White">Black & White</option>
+                  <option value="Sepia">Sepia</option>
+                  <option value="Dramatic">Dramatic</option>
+                  <option value="Soft">Soft</option>
+                  <option value="Warm">Warm</option>
+                  <option value="Cool">Cool</option>
+                  <option value="High Contrast">High Contrast</option>
+                  <option value="Low Contrast">Low Contrast</option>
+                  <option value="Bright">Bright</option>
+                  <option value="Dark">Dark</option>
+                  <option value="Saturated">Saturated</option>
+                  <option value="Desaturated">Desaturated</option>
+                  <option value="HDR">HDR</option>
+                  <option value="Film">Film</option>
+                  <option value="Polaroid">Polaroid</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Professional">Professional</option>
+                  <option value="Artistic">Artistic</option>
+                  <option value="Grunge">Grunge</option>
+                  <option value="Clean">Clean</option>
+                  <option value="Retro">Retro</option>
+                  <option value="Modern">Modern</option>
+                  <option value="Faded">Faded</option>
+                  <option value="Vibrant">Vibrant</option>
+                </select>
               </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Intensity: {filterIntensity}%
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={filterIntensity}
+                  onChange={(e) =>
+                    setFilterIntensity(parseInt(e.target.value, 10))
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+            </>
+          )}
+
+          {selectedTab === "Text" && (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Text Content
+                </label>
+                <input
+                  type="text"
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  placeholder="Enter text to add to image"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Position
+                  </label>
+                  <select
+                    value={textPosition}
+                    onChange={(e) => setTextPosition(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  >
+                    <option value="Center">Center</option>
+                    <option value="Top">Top</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="Left">Left</option>
+                    <option value="Right">Right</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Font Style
+                  </label>
+                  <select
+                    value={fontStyle}
+                    onChange={(e) => setFontStyle(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  >
+                    <option value="Bold">Bold</option>
+                    <option value="Regular">Regular</option>
+                    <option value="Italic">Italic</option>
+                    <option value="Light">Light</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {selectedTab === "Background" && (
+            <>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What background do you want?
+                </label>
+                <input
+                  type="text"
+                  value={backgroundType}
+                  onChange={(e) => setBackgroundType(e.target.value)}
+                  placeholder="e.g., beach sunset, office environment, nature landscape, studio background"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Apply Button */}
+          <button
+            onClick={onApply}
+            className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl font-semibold px-6 py-3 text-base transition ${
+              loading || credits < (selectedTab === "Filter" ? 1 : 2) || !file
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-yellow-400 text-black hover:bg-yellow-300 cursor-pointer"
+            }`}
+            disabled={
+              loading || credits < (selectedTab === "Filter" ? 1 : 2) || !file
+            }
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                Applying...
+              </>
+            ) : (
+              <>
+                {selectedTab === "Filter" ? (
+                  <HiOutlineFilter className="w-5 h-5" />
+                ) : selectedTab === "Text" ? (
+                  <HiOutlineDocumentText className="w-5 h-5" />
+                ) : selectedTab === "Background" ? (
+                  <HiOutlineColorSwatch className="w-5 h-5" />
+                ) : (
+                  <HiOutlineAdjustments className="w-5 h-5" />
+                )}
+                {selectedTab === "Filter"
+                  ? "Apply Filter (1 credits)"
+                  : selectedTab === "Text"
+                  ? "Add Text (1 credits)"
+                  : selectedTab === "Background"
+                  ? "Change Background (1 credits)"
+                  : "Apply Edit (1 credits)"}
+              </>
+            )}
+          </button>
+
+          {/* Enhance Quality Button (disabled placeholder) */}
+          <button
+            disabled
+            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white text-gray-500 font-medium px-6 py-3 text-base cursor-not-allowed border border-gray-300"
+          >
+            <HiOutlineSparkles className="w-5 h-5" /> Enhance Quality (2
+            credits)
+          </button>
+
+          {/* Credit Warning */}
+          {credits < (selectedTab === "Filter" ? 1 : 2) && (
+            <div className="mt-4 rounded-xl border border-orange-300 bg-orange-50 p-4 text-orange-800 text-sm">
+              <div className="flex items-center gap-2">
+                <HiOutlineExclamation className="w-5 h-5 text-orange-500" />
+                <div>
+                  <div className="font-semibold">Insufficient credits</div>
+                  <div>enhance quality require 2 credits.</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* LEFT: Image Preview & Export */}
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Image Preview
+            </h2>
+            <div className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs">
+                State 1/1
+              </span>
+              <button
+                className="p-2 rounded-md hover:bg-gray-100"
+                aria-label="Undo"
+              >
+                <HiOutlineArrowUturnLeft className="w-5 h-5 text-gray-700" />
+              </button>
+              <button
+                className="p-2 rounded-md hover:bg-gray-100"
+                aria-label="Redo"
+              >
+                <HiOutlineArrowUturnRight className="w-5 h-5 text-gray-700" />
+              </button>
             </div>
           </div>
 
-          {/* Status Messages */}
-          <div className="space-y-4">
-            {credits < 1 && (
-              <div className="rounded-2xl border border-yellow-400/30 bg-gradient-to-r from-yellow-400/10 to-orange-400/5 p-4 text-yellow-200">
-                <div className="flex items-center gap-3">
-                  <HiOutlineExclamation className="w-6 h-6 text-yellow-400" />
-                  <div>
-                    <h3 className="font-bold text-lg">Insufficient Credits</h3>
-                    <p className="text-sm">
-                      You need at least 1 credit to edit images.{" "}
-                      <a
-                        href="/dashboard-pricing"
-                        className="underline hover:text-yellow-100"
-                      >
-                        Buy credits
-                      </a>{" "}
-                      to continue.
-                    </p>
-                  </div>
+          <div className="flex-1 relative flex items-center justify-center border border-gray-200 rounded-xl overflow-hidden mb-4 bg-gray-50">
+            {img ? (
+              <img
+                src={img}
+                alt="Edited result"
+                className="max-h-[500px] mx-auto"
+              />
+            ) : previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Uploaded image preview"
+                className="max-h-[500px] mx-auto"
+              />
+            ) : (
+              <p className="text-gray-400 text-sm">
+                Upload and edit image to preview here
+              </p>
+            )}
+            {(img || previewUrl) && (
+              <div className="absolute left-3 right-3 bottom-3">
+                <div className="rounded-lg bg-black/70 text-white px-4 py-2 text-xs flex items-center justify-between">
+                  <span>{img ? "Edited image" : "Original image"}</span>
+                  <span>{new Date().toLocaleTimeString()}</span>
                 </div>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Right Column - Generated Image */}
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 lg:p-8 min-h-[500px] flex flex-col">
-            <h3 className="text-2xl font-bold mb-6 text-white">Edited Image</h3>
+          {/* Upload Box */}
+          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-yellow-400 transition cursor-pointer mb-4">
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleFileChange}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+            <p className="text-gray-500 text-sm">
+              Drop image here or{" "}
+              <span className="font-medium text-yellow-600">
+                click to upload
+              </span>
+            </p>
+          </div>
 
-            <div className="flex-1 flex flex-col">
-              <div className="flex-1 flex items-center justify-center mb-4">
-                {loading ? (
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-                    <p className="text-white/70 text-lg">Applying edits...</p>
-                    <p className="text-white/50 text-sm mt-2">
-                      This may take a few moments
-                    </p>
-                  </div>
-                ) : img ? (
-                  <div className="w-full">
-                    <img
-                      src={img}
-                      alt="Edited result"
-                      className="w-full max-w-md mx-auto rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center text-white/50">
-                    <HiOutlineAdjustments className="w-16 h-16 mx-auto mb-4 text-white/30" />
-                    <p className="text-lg">
-                      Your edited image will appear here
-                    </p>
-                    <p className="text-sm mt-2">
-                      Upload an image and adjust the settings
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {img && (
-                <div className="mt-auto">
-                  <button
-                    onClick={() => {
-                      const link = document.createElement("a");
-                      link.href = img;
-                      link.download = "edited-image.png";
-                      link.click();
-                    }}
-                    className="w-full bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-all duration-200 flex items-center justify-center gap-2"
-                  >
-                    <HiOutlineDownload className="w-5 h-5" />
-                    Download Image
-                  </button>
-                </div>
-              )}
+          {/* {file && (
+            <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
+              <HiOutlineCheck className="w-4 h-4 inline mr-1" />
+              {file.name} selected
             </div>
+          )} */}
+
+          {/* Export Options */}
+          <div className="space-y-4 mt-auto">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">
+                Export Format
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  "Original",
+                  "1:1 Square",
+                  "9:16 Portrait",
+                  "16:9 Landscape",
+                ].map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setSelectedFormat(opt)}
+                    className={`border rounded-lg py-2 text-sm font-medium transition ${
+                      selectedFormat === opt
+                        ? "border-yellow-400 bg-yellow-50 text-yellow-700"
+                        : "border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-yellow-600"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Download Button */}
+            {img && (
+              <button
+                onClick={downloadImage}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-semibold px-4 py-2 text-sm hover:bg-yellow-600 transition"
+              >
+                <HiOutlineDownload className="w-4 h-4" />
+                Download Edited Image
+              </button>
+            )}
           </div>
         </div>
       </div>
