@@ -142,14 +142,15 @@ export default function ImageToImagePage() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     onClick={onImprove}
-                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50"
-                    disabled={improving}
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 disabled:hover:bg-white disabled:cursor-not-allowed"
+                    disabled={improving || credits < 1}
                   >
                     {improving ? "Improving…" : "Improve prompt"}
                   </button>
                   <button
                     onClick={onSuggest}
-                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50"
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 disabled:hover:bg-white disabled:cursor-not-allowed"
+                    disabled={credits < 1}
                   >
                     Suggest ideas
                   </button>
@@ -286,7 +287,8 @@ export default function ImageToImagePage() {
               </h3>
               <button
                 onClick={onSuggest}
-                className="text-sm font-semibold underline hover:text-gray-800"
+                disabled={credits < 1}
+                className="text-sm font-semibold underline hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Refresh
               </button>
