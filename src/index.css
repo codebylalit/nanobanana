@@ -58,7 +58,7 @@ h1, h2, h3, h4, .display-heading {
   100% { transform: translateX(-50%); }
 }
 .auto-marquee {
-  animation: marquee-left 20s linear infinite;
+  animation: marquee-left 15s linear infinite;
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
