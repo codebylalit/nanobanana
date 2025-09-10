@@ -389,3 +389,45 @@ export async function editImageAdjustments(file, options) {
     };
   }
 }
+
+// --- Prompt helper utilities ---
+export async function improvePrompt(userPrompt) {
+  try {
+    const system =
+      "Rewrite this short image prompt into a detailed, vivid, single sentence that would guide an image model. Include subject, scene, mood, lighting, lens, style, color palette. 45-80 words. Return only the prompt, no quotes or extra text.";
+    const res = await callGeminiAPI(`${system}\nPrompt: ${userPrompt}`);
+    const text = res?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    return text.trim() || userPrompt;
+  } catch (e) {
+    console.warn("improvePrompt fallback:", e);
+    return `${userPrompt} — ultra-detailed, cinematic lighting, 35mm lens, volumetric light, high contrast, rich color palette, hyperreal details, artstation quality`;
+  }
+}
+
+export async function suggestPromptIdeas(topic) {
+  const seed = topic?.trim() || "creative image ideas";
+  try {
+    const instruction =
+      "Give 8 diverse, short image ideas as a bulleted list. Each idea must be <= 12 words, no numbering, no extra commentary.";
+    const res = await callGeminiAPI(`${instruction}\nTopic: ${seed}`);
+    const raw = res?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const lines = raw
+      .split(/\n+/)
+      .map((l) => l.replace(/^[-*\d\.\s]+/, "").trim())
+      .filter(Boolean)
+      .slice(0, 8);
+    if (lines.length) return lines;
+  } catch (e) {
+    console.warn("suggestPromptIdeas fallback:", e);
+  }
+  return [
+    "Cyberpunk alley at night, neon rain, reflective puddles",
+    "Cozy cabin by a lake, golden hour, misty mountains",
+    "Low-poly isometric city block, pastel palette, tiny cars",
+    "Macro shot of dew on leaf, soft bokeh, morning light",
+    "Ancient library with floating candles, warm amber glow",
+    "Futuristic desert rover under twin suns, sandstorm",
+    "Studio portrait of astronaut, dramatic rim lighting",
+    "Surreal staircase to clouds, minimal, clean white",
+  ];
+}

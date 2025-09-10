@@ -58,10 +58,10 @@ export default function DashboardLayout({ children }) {
       <aside
         className={`sidebar ${
           sidebarOpen ? "w-72" : "w-0"
-        } shrink-0 border-r border-gray-200 bg-white backdrop-blur flex flex-col transition-all duration-300 overflow-hidden fixed left-0 top-0 h-full z-30 lg:relative lg:z-10`}
+        } shrink-0 border-r border-gray-200 bg-white backdrop-blur flex flex-col transition-all duration-300 overflow-hidden fixed left-0 top-0 h-full z-30 lg:relative lg:z-10 lg:sticky lg:top-0 lg:h-screen`}
       >
         <div className="h-16 flex items-center px-4 border-b border-gray-200 text-lg font-bold">
-          <img src="/banana.png" alt="Banana" className="w-6 h-6 mr-2" />
+          <img src="/nano0.png" alt="Banana" className="w-8 h-8 mr-1" />
           <span className="whitespace-nowrap">NANO BANANA</span>
         </div>
         <nav className="p-2 space-y-1 flex-1 overflow-y-auto">
@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }) {
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
         </nav>
-        <div className="mt-auto p-4 text-sm text-white/70 space-y-3">
+        <div className="mt-auto p-4 text-sm text-gray-900 space-y-3">
           <BuyCreditsButton />
           <SidebarAccount />
         </div>

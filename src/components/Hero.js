@@ -26,7 +26,7 @@ export default function Hero() {
           <p className="font-semibold text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 lg:mb-6 tracking-wide flex items-center justify-center gap-2">
             <span className="text-base sm:text-lg lg:text-xl">🚀</span>
             <span className="xs:inline flex items-center gap-1">
-              <span>Powered by</span>{" "}
+              <span className="text-gray-500">Image generation by</span>{" "}
               <span className="inline-flex font-bold">
                 <span className="text-blue-500">G</span>
                 <span className="text-red-500">o</span>
@@ -35,7 +35,7 @@ export default function Hero() {
                 <span className="text-green-500">l</span>
                 <span className="text-red-500">e</span>
               </span>{" "}
-              <span className="text-yellow-600">· Nano Banana</span>
+              <span className="text-yellow-600 font-bold">· Nano Banana</span>
             </span>
           </p>
 

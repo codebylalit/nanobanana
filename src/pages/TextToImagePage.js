@@ -1,7 +1,11 @@
 import React from "react";
 import { useCredits } from "../creditsContext";
 import { addHistoryItem } from "../historyStore";
-import { textToImage } from "../services/gemini";
+import {
+  textToImage,
+  improvePrompt,
+  suggestPromptIdeas,
+} from "../services/gemini";
 import {
   HiOutlineExclamation,
   HiOutlineDownload,
@@ -14,6 +18,8 @@ export default function TextToImagePage() {
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
+  const [ideas, setIdeas] = React.useState([]);
+  const [improving, setImproving] = React.useState(false);
 
   async function onGenerate() {
     if (credits < 1) return;
@@ -40,6 +46,29 @@ export default function TextToImagePage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onImprove() {
+    if (!prompt.trim()) return;
+    setImproving(true);
+    try {
+      const better = await improvePrompt(prompt);
+      setPrompt(better);
+    } catch (e) {
+      // silent fallback
+    } finally {
+      setImproving(false);
+    }
+  }
+
+  async function onSuggest() {
+    setIdeas(["Loading ideas..."]);
+    try {
+      const list = await suggestPromptIdeas(prompt);
+      setIdeas(list);
+    } catch (e) {
+      setIdeas(["Try again later"]);
     }
   }
 
@@ -89,6 +118,21 @@ export default function TextToImagePage() {
                   placeholder="e.g., A futuristic city at sunset with flying cars, cyberpunk style, neon lights, detailed architecture"
                   className="w-full h-28 sm:h-32 rounded-2xl bg-white border border-gray-300 px-4 sm:px-6 py-3 sm:py-4 text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none text-base sm:text-lg"
                 />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={onImprove}
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50"
+                    disabled={improving}
+                  >
+                    {improving ? "Improving…" : "Improve prompt"}
+                  </button>
+                  <button
+                    onClick={onSuggest}
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50"
+                  >
+                    Suggest ideas
+                  </button>
+                </div>
               </div>
 
               <div className="mt-auto">
@@ -154,7 +198,7 @@ export default function TextToImagePage() {
           </div>
         </div>
 
-        {/* Right Column - Generated Image */}
+        {/* Right Column - Generated Image + Ideas */}
         <div className="space-y-4 sm:space-y-6">
           <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] flex flex-col">
             <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">
@@ -211,6 +255,41 @@ export default function TextToImagePage() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Prompt ideas */}
+          <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Prompt ideas
+              </h3>
+              <button
+                onClick={onSuggest}
+                className="text-sm font-semibold underline hover:text-gray-800"
+              >
+                Refresh
+              </button>
+            </div>
+            {ideas.length === 0 ? (
+              <p className="text-gray-600 text-sm">
+                Click Refresh to get ideas based on your current prompt.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {ideas.map((idea, i) => (
+                  <button
+                    key={i}
+                    onClick={() =>
+                      setPrompt((p) => (p ? `${p} — ${idea}` : idea))
+                    }
+                    className="rounded-full border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                    title="Use this idea"
+                  >
+                    {idea}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

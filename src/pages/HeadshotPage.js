@@ -1,7 +1,11 @@
 import React from "react";
 import { useCredits } from "../creditsContext";
 import { addHistoryItem } from "../historyStore";
-import { generateHeadshot } from "../services/gemini";
+import {
+  generateHeadshot,
+  improvePrompt,
+  suggestPromptIdeas,
+} from "../services/gemini";
 import {
   HiOutlineExclamation,
   HiOutlineDownload,
@@ -15,17 +19,42 @@ export default function HeadshotPage() {
   const [prompt, setPrompt] = React.useState("");
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [ideas, setIdeas] = React.useState([]);
+  const [improving, setImproving] = React.useState(false);
 
   async function onGenerate() {
     if (credits < 1 || !file) return;
-    if (!consumeCredits(1)) return;
     setLoading(true);
     try {
-      const url = await generateHeadshot(file, prompt);
+      const result = await generateHeadshot(file, prompt);
+      const url = result?.url || result;
       setImg(url);
       addHistoryItem({ type: "headshot", prompt, url, ts: Date.now() });
+      const ok = await consumeCredits(1);
+      if (!ok) console.warn("Credit deduction failed after headshot");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onImprove() {
+    if (!prompt.trim()) return;
+    setImproving(true);
+    try {
+      const better = await improvePrompt(prompt);
+      setPrompt(better);
+    } finally {
+      setImproving(false);
+    }
+  }
+
+  async function onSuggest() {
+    setIdeas(["Loading ideas..."]);
+    try {
+      const list = await suggestPromptIdeas("professional headshot styles");
+      setIdeas(list);
+    } catch (e) {
+      setIdeas(["Try again later"]);
     }
   }
 
@@ -86,6 +115,21 @@ export default function HeadshotPage() {
                   placeholder="e.g., Corporate portrait, soft studio lighting, professional attire, clean background"
                   className="w-full h-20 sm:h-24 rounded-2xl bg-white border border-gray-300 px-4 sm:px-6 py-3 sm:py-4 text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none text-sm sm:text-base"
                 />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={onImprove}
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50"
+                    disabled={improving}
+                  >
+                    {improving ? "Improving…" : "Improve prompt"}
+                  </button>
+                  <button
+                    onClick={onSuggest}
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50"
+                  >
+                    Suggest ideas
+                  </button>
+                </div>
               </div>
 
               <div className="mt-auto">
@@ -137,7 +181,7 @@ export default function HeadshotPage() {
           </div>
         </div>
 
-        {/* Right Column - Generated Image */}
+        {/* Right Column - Generated Image + Ideas */}
         <div className="space-y-4 sm:space-y-6">
           <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8 min-h-[350px] sm:min-h-[500px] flex flex-col">
             <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">
@@ -194,6 +238,40 @@ export default function HeadshotPage() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Prompt ideas */}
+          <div className="rounded-3xl border border-gray-200 bg-white p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Prompt ideas
+              </h3>
+              <button
+                onClick={onSuggest}
+                className="text-sm font-semibold underline hover:text-gray-800"
+              >
+                Refresh
+              </button>
+            </div>
+            {ideas.length === 0 ? (
+              <p className="text-gray-600 text-sm">
+                Click Refresh to get headshot style ideas.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {ideas.map((idea, i) => (
+                  <button
+                    key={i}
+                    onClick={() =>
+                      setPrompt((p) => (p ? `${p} — ${idea}` : idea))
+                    }
+                    className="rounded-full border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                  >
+                    {idea}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

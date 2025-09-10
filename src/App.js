@@ -26,6 +26,7 @@ import Gallery from "./components/Gallery";
 import HowCreditsWork from "./components/HowCreditsWork";
 import FAQSection from "./components/FAQSection";
 import Footer from "./components/Footer";
+import PromptHelper from "./components/PromptHelper";
 import PlanCard from "./components/PlanCard";
 import DashboardLayout from "./layouts/DashboardLayout";
 // Payments removedl nvcz
@@ -135,6 +136,7 @@ function PublicLanding() {
       <Navbar />
       <main>
         <Hero />
+        <PromptHelper />
         <Gallery />
         <HowCreditsWork />
         <Pricing />
@@ -266,11 +268,11 @@ function PricingPage() {
                 Try It Out
               </a>
               <a
-                href="#faq"
+                href="/contact"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-300 px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
               >
                 <HiOutlineQuestionMarkCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                View FAQ
+                Contact support
               </a>
             </div>
           </div>
