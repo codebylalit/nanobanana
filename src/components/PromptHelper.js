@@ -103,22 +103,22 @@ export default function PromptHelperAutoDemo() {
     switch (status) {
       case "writing":
         return (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-1 text-sm text-gray-600">
             <HiOutlinePencilAlt className="w-4 h-4 text-yellow-500 animate-pulse" />
             Writing prompt…
           </div>
         );
       case "improving":
         return (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <HiOutlineSparkles className="w-4 h-4 text-purple-500 animate-spin" />
+          <div className="flex items-center gap-1 text-sm text-gray-600">
+            <HiOutlineSparkles className="w-4 h-4 text-yellow-500 animate-scale " />
             Improving prompt…
           </div>
         );
       case "done":
         return (
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <HiCheckCircle className="w-4 h-4" />
+          <div className="flex items-center gap-1 text-sm text-gray-600 ">
+            <HiCheckCircle className="w-4 h-4 text-yellow-500 " />
             Improved
           </div>
         );
@@ -135,19 +135,34 @@ export default function PromptHelperAutoDemo() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Section */}
+          {/* Left Section */}
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-semibold mb-4">
-              <span>Prompt Helper (Demo)</span>
+              <span>Prompt Helper</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-900">
-              Stuck on what to write? Watch how prompts improve automatically.
+              Stuck on what to write? We help you craft the prompt.
             </h2>
             <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6">
-              Demo mode: the helper types a sample prompt, improves it, then
-              repeats.
+              Our built‑in Prompt Helper can rewrite your idea into a detailed,
+              high‑quality prompt and suggest fresh ideas you can add with a
+              tap.
             </p>
+            <ul className="space-y-2 text-gray-800">
+              <li className="flex items-start gap-3">
+                <span className="mt-1 inline-block w-2 h-2 rounded-full bg-yellow-400" />
+                Improve prompt into vivid, production‑ready wording
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 inline-block w-2 h-2 rounded-full bg-yellow-400" />
+                Get 8 short ideas tailored to your topic
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 inline-block w-2 h-2 rounded-full bg-yellow-400" />
+                One‑click chips to insert ideas into your prompt
+              </li>
+            </ul>
           </div>
-
           {/* Right Section */}
           <div className="rounded-3xl border border-gray-200 bg-white p-6 flex flex-col gap-4">
             <div className="text-left">
@@ -159,7 +174,7 @@ export default function PromptHelperAutoDemo() {
                 value={improvedPrompt || userPrompt}
                 readOnly
                 placeholder="e.g., Cozy cabin by a lake at golden hour"
-                className="w-full rounded-2xl border border-gray-300 bg-white p-4 text-gray-700 min-h-[120px] resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all whitespace-pre-wrap"
+                className="w-full rounded-2xl border bg-white p-4 text-gray-700 min-h-[120px] resize-none outline-none border-yellow-500 transition-all whitespace-pre-wrap"
               />
             </div>
 
@@ -189,7 +204,7 @@ export default function PromptHelperAutoDemo() {
                 disabled
                 className="inline-flex items-center rounded-xl border border-gray-300 px-4 py-2 font-semibold text-sm opacity-50 cursor-not-allowed"
               >
-                Clear
+                Suggest ideas
               </button>
             </div>
 
