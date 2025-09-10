@@ -19,7 +19,7 @@ export const CREDIT_PACKAGES = {
   "0d1fe4fa-e8c5-4d0c-8db1-e24c65165615": {
     name: "Starter Pack",
     credits: 15,
-    price: 400, // $4.00
+    price: 100, // $4.00
     currency: "USD",
     description: "15 credits = 15 images",
   },

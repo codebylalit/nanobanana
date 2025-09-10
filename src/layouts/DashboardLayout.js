@@ -13,6 +13,7 @@ import {
 } from "react-icons/hi";
 import { HiOutlineChevronRight } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
+import { FiLayout } from "react-icons/fi";
 
 export default function DashboardLayout({ children }) {
   const { user } = useAuth();
@@ -105,8 +106,12 @@ export default function DashboardLayout({ children }) {
           /> */}
         </nav>
         <div className="mt-auto p-4 text-sm text-gray-900 space-y-3">
-          <BuyCreditsButton />
+          <SidebarAvailableCredits />
           <SidebarAccount />
+          <BuyCreditsButton
+            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+            label="Buy Credits"
+          />
         </div>
       </aside>
 
@@ -118,35 +123,30 @@ export default function DashboardLayout({ children }) {
               className="p-2 rounded-md hover:bg-gray-100 transition"
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              <FiLayout className="w-5 h-5" />
             </button>
+            <span className="h-6 w-px bg-gray-300" aria-hidden="true" />
             <PageTitle />
           </div>
           <CreditsBadge />
         </header>
         <main className="flex-1 p-4 sm:p-6">
           {initialized && credits === 2 && user && (
-            <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
-              <div className="flex items-center gap-3">
-                <HiOutlineSparkles className="w-6 h-6 text-green-600 flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-lg">Welcome to Nano Banana!</h3>
-                  <p className="text-sm sm:text-base">
-                    You've received 2 trial credits to get started. Try creating
-                    your first AI image!
-                  </p>
+            <div className="mb-4">
+              <div className="max-w-7xl mx-auto px-3 sm:px-4">
+                <div className="rounded-xl sm:rounded-2xl border border-yellow-200 bg-yellow-50 p-3 sm:p-4 text-yellow-800">
+                  <div className="flex items-center gap-3">
+                    <HiOutlineSparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-bold text-sm sm:text-base lg:text-lg text-gray-900">
+                        Welcome to Nano Banana!
+                      </h3>
+                      <p className="text-xs sm:text-sm lg:text-base text-gray-800">
+                        You have 2 trial credits to get started. Generate your
+                        first AI image!
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -188,15 +188,66 @@ function CreditsBadge() {
   );
 }
 
-function BuyCreditsButton() {
+function BuyCreditsButton({ label }) {
   const navigate = useNavigate();
   return (
     <button
       onClick={() => navigate("/dashboard-pricing")}
       className="w-full inline-flex items-center justify-center rounded-md bg-yellow-400 text-black font-semibold px-4 py-2 hover:bg-yellow-300 transition"
     >
-      Buy credits
+      {label || "Buy credits"}
     </button>
+  );
+}
+
+function SidebarAvailableCredits() {
+  const { credits, initialized } = useCredits();
+  const current = initialized ? Number(credits) || 0 : 0;
+  const max = 120; // reference max (Premium pack)
+  const pct = Math.max(0, Math.min(100, Math.round((current / max) * 100)));
+  const widthPct = Math.max(pct, current > 0 ? 8 : 0);
+  const barColor =
+    current <= 20
+      ? "bg-yellow-400"
+      : current <= 60
+      ? "bg-yellow-400"
+      : "bg-yellow-500";
+
+  return (
+    <div className="rounded-md border border-gray-200 bg-white px-3 py-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-600">Available credits</span>
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-gray-900">
+          <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
+          {initialized ? current : "..."}
+          <button
+            onClick={() => (window.location.href = "/dashboard-pricing")}
+            className="ml-2 inline-flex items-center rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-medium text-gray-700 hover:bg-gray-50"
+            aria-label="Top up credits"
+          >
+            Top up
+          </button>
+        </div>
+      </div>
+      <div
+        className="mt-2 h-1.5 w-full rounded-full bg-gray-200/70"
+        aria-hidden="true"
+      >
+        <div
+          className={`h-1.5 rounded-full transition-all duration-300 ${barColor}`}
+          style={{ width: `${widthPct}%` }}
+          aria-label={`Approximately ${pct}% of reference capacity`}
+        />
+      </div>
+      <div className="mt-2 text-[11px] text-gray-700">
+        <button
+          onClick={() => (window.location.href = "/credit-history")}
+          className="underline underline-offset-2 hover:text-gray-900"
+        >
+          View history
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -221,6 +272,8 @@ function PageTitle() {
         return "Credit History";
       case "/profile":
         return "Profile";
+      case "/dashboard-pricing":
+        return "Buy Credits";
       case "/pricing":
         return "Pricing";
       default:

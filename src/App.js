@@ -5,7 +5,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./authContext";
 import {
   HiOutlineQuestionMarkCircle,
-  HiOutlinePaperAirplane,
   HiOutlineBadgeCheck,
 } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
@@ -218,8 +217,8 @@ function PricingPage() {
                 "15 premium credits",
                 "High-quality images",
                 "All generation types",
+                "Prompt Helper access",
                 "Credits never expire",
-                "Perfect for testing",
               ]}
               productId="0d1fe4fa-e8c5-4d0c-8db1-e24c65165615"
             />
@@ -235,8 +234,8 @@ function PricingPage() {
                 "45 premium credits",
                 "High-quality images",
                 "All generation types",
+                "Prompt Helper access",
                 "Credits never expire",
-                "Most popular choice",
               ]}
               productId="3022ce85-ceb2-4fae-9729-a82cf949bcb7"
             />
@@ -253,8 +252,8 @@ function PricingPage() {
                 "120 premium credits",
                 "High-quality images",
                 "All generation types",
+                "Prompt Helper access",
                 "Credits never expire",
-                "Best value for creators",
               ]}
               productId="4917da3b-46a3-41d2-b231-41e17ab1dd7d"
             />
