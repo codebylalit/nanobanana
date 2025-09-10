@@ -108,10 +108,6 @@ export default function DashboardLayout({ children }) {
         <div className="mt-auto p-4 text-sm text-gray-900 space-y-3">
           <SidebarAvailableCredits />
           <SidebarAccount />
-          <BuyCreditsButton
-            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
-            label="Buy Credits"
-          />
         </div>
       </aside>
 
@@ -239,14 +235,14 @@ function SidebarAvailableCredits() {
           aria-label={`Approximately ${pct}% of reference capacity`}
         />
       </div>
-      <div className="mt-2 text-[11px] text-gray-700">
+      {/* <div className="mt-2 text-[11px] text-gray-700 flex justify-end">
         <button
           onClick={() => (window.location.href = "/credit-history")}
           className="underline underline-offset-2 hover:text-gray-900"
         >
           View history
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -337,6 +333,9 @@ function SidebarAccount() {
       >
         Manage Account
       </button>
+      <div className="mt-2.5">
+        <BuyCreditsButton label="Buy Credits" />
+      </div>
     </div>
   ) : (
     <button
