@@ -1,0 +1,146 @@
+[
+  {
+    "id": "action-figure",
+    "title": "Action Figure",
+    "image": "/presets/action-figure.png",
+    "prompt": "Product photography of a 1/7‑scale action figure on a transparent acrylic round base. Studio tabletop scene with softbox key and faint rim light, glossy reflections on acrylic, realistic subsurface on skin, micro‑detail on outfit seams. Stabilize pose with a clear acrylic support or pegged foot. Place a BANDAI‑style packaging box behind it showing full‑color 2D art of the character. On a monitor in the background, display the gray clay ZBrush sculpt (only the digital model). Clean computer desk, neutral backdrop, soft realistic lighting, minimal noise, no hands, no text overlays."
+  },
+  {
+    "id": "sonic",
+    "title": "Sonic Style",
+    "image": "/presets/sonic.png",
+    "prompt": "Ultra‑realistic 9:16 vertical fisheye selfie with the subject plus two stylized game mascots (Sonic and Mario). High camera angle, 8–10mm fisheye distortion, small bright white living room, soft bounced daylight, subtle bloom. Keep the human fully photoreal; render the characters with stylized realism: clean bold outlines, saturated primary palette, correct perspective and occlusion, matching light direction, crisp contact shadows on the floor. Fun exaggerated expressions, no logos or watermarks."
+  },
+  {
+    "id": "giant-over-wall",
+    "title": "Giant Over Wall",
+    "image": "/presets/Giant over wall.jpg",
+    "prompt": "Create a surreal composite where a gigantic version of the subject leans over a garden wall. Overcast lighting, muted tones, shallow depth of field, realistic contact shadows and perspective match."
+  },
+  {
+    "id": "cartoonified-city",
+    "title": "Cartoonified City Scene",
+    "image": "/presets/Cartoonified city.jpg",
+    "prompt": "Convert the street into a vibrant cartoon city. Keep the person photoreal, but surround them with bold vector elements: thick black outlines, saturated flat colors, sticker‑style doodles, floating butterflies and shapes. Midday clear light; ensure correct perspective alignment, contact shadows on pavement, slight paper‑like texture on vector art. Clean composition, no text."
+  },
+  {
+    "id": "cartoon-duo-scooter",
+    "title": "Cartoon Duo on Scooter",
+    "image": "/presets/Cartoon duo on scooter.jpg",
+    "prompt": "Add two 2D cartoon characters riding a small scooter beside the real scooter in the same lane. Photoreal background with midday sun; toons have clean outlines and flat shading. Apply motion blur to both scooters’ wheels, road streaks, and cast crisp contact shadows on asphalt. Match perspective and scale precisely; no extra artifacts."
+  },
+  {
+    "id": "tiger-chase-action",
+    "title": "Tiger Chase Action",
+    "image": "/presets/Tiger chase action.jpg",
+    "prompt": "Cinematic chase: subject on a vintage scooter, three hyper‑real Bengal tigers leaping in pursuit. Golden hour backlight, long lens compression, dust trails and debris, directional shadows. Strong depth with motion‑blurred background, tack‑sharp subject and tiger faces, dynamic composition, no gore."
+  },
+  {
+    "id": "giant-shoe-mini-model",
+    "title": "Giant Shoe + Mini Model",
+    "image": "/presets/Giant shoe.jpg",
+    "prompt": "Studio composite: a colossal lifestyle shoe (pony‑hair / velvet texture) dominates the frame, with a miniature human leaning against the side. Seamless scale cues, soft gradient cyclorama, large softbox reflections, clean product lighting, shallow DOF, no text."
+  },
+  {
+    "id": "mini-person-cap",
+    "title": "Mini Person on Cap",
+    "image": "/presets/sitting on cap.jpg",
+    "prompt": "Make the baseball cap gigantic; place a miniature person sitting casually on the brim. Natural window light, shallow depth of field, accurate fabric weave scale, crisp contact shadow on the cap, background bokeh, no artifacts."
+  },
+  {
+    "id": "cartoon-giant-skyline",
+    "title": "Cartoon Giant over Skyline",
+    "image": "/presets/Cartoon giant over skyline.jpg",
+    "prompt": "Integrate a large playful 2D cartoon character into the skyline, interacting with buildings. Flat colors, thick outlines, subtle drop shadow onto rooftops, correct perspective vanishing lines, maintain the photo’s exposure and color balance."
+  },
+  {
+    "id": "telekinesis-kitchen",
+    "title": "Telekinesis Kitchen",
+    "image": "/presets/Telekinesis kitchen.jpg",
+    "prompt": "Telekinesis kitchen scene: freeze a metal kettle and splashing droplets mid‑air while a person poses dynamically. Hard window key with soft fill, high shutter‑speed look, crisp droplets, specular highlights, realistic reflections, no motion ghosting."
+  },
+  {
+    "id": "giant-smartphone",
+    "title": "Person on Giant Smartphone",
+    "image": "/presets/Person standing smartphone.jpg",
+    "prompt": "Giant smartphone scaled to room size; subject stands on the screen’s UI. Soft studio lighting, believable glossy reflections on glass, faint screen glow on shoes, clean shadows, minimalist beige background, product‑ad polish."
+  },
+  {
+    "id": "vegetable-chair",
+    "title": "Vegetable Chair",
+    "image": "/presets/Vegetable chair.jpg",
+    "prompt": "Oversized glossy green pepper modeled as a sculptural chair; person seated on it. Studio cyclorama, balanced three‑point lighting, visible micro‑texture and water droplets on pepper skin, soft speculars, color‑true rendering."
+  },
+  {
+    "id": "boba-ad",
+    "title": "Boba Drink Ad",
+    "image": "/presets/Boba drink ad.jpg",
+    "prompt": "Commercial hero shot: giant boba cup thrust toward camera in the subject’s hand. Caramel and milk tea drips, crisp ice, shallow DOF, warm orange grade, rim highlights, clean background. No extra text overlays."
+  },
+  {
+    "id": "desk-mini-campfire",
+    "title": "Desk‑Top Mini Campfire",
+    "image": "/presets/Desk‑top miniature .jpg",
+    "prompt": "Miniature diorama on a wooden base: subject at 1:12 scale seated beside a tiny campfire. Warm desk‑lamp key, shallow DOF macro look, ember glow with faint smoke, detailed gravel and grass tufts, cozy ambience."
+  },
+  {
+    "id": "mini-photographer",
+    "title": "Mini Photographer",
+    "image": "/presets/Mini photographer.jpg",
+    "prompt": "Miniature tabletop photo studio: 1:12 scale subject holding a camera, small softbox, phone used as backdrop. Product lighting with clean edge highlights, tiled floor texture, tiny moss details, shallow DOF."
+  },
+  {
+    "id": "coffee-bottle-splash",
+    "title": "Coffee Bottle Splash",
+    "image": "/presets/Coffee bottle splash .jpg",
+    "prompt": "Dynamic splash composite: a branded coffee bottle with swirling liquid splash forms around a person bursting through. High‑speed splash shaping, glossy highlights, clean office desk set, crisp label, no motion ghosts."
+  },
+  {
+    "id": "sneaker-half-cartoon",
+    "title": "Half‑Cartoon Sneaker",
+    "image": "/presets/sneaker paint.jpg",
+    "prompt": "Hybrid sneaker: left half rendered as dripping cartoon paint with bold outlines and CMYK brights; right half remains photoreal leather. Studio surface, rim light, glossy ink sheen, precise midpoint transition, no background clutter."
+  },
+  {
+    "id": "tiny-planet-selfie",
+    "title": "Tiny Planet Selfie",
+    "image": "/presets/Tiny planet selfie.jpg",
+    "prompt": "Tiny‑planet effect from a 360 projection: subject centered with arm extended, circular horizon of grass and trees, blue sky with cumulus clouds. Wide FOV, clean stitching, gentle vignette, high clarity."
+  },
+  {
+    "id": "elderly-tourist-soda",
+    "title": "Elderly Tourist with Soda",
+    "image": "/presets/Elderly tourist .jpg",
+    "prompt": "Sunlit poolside portrait of an elderly tourist in a Hawaiian shirt sipping from a red soda can with a paper straw. Midday hard sun with soft fill, shallow DOF background, saturated colors, subtle film grain, natural skin detail."
+  },
+  {
+    "id": "giant-hands",
+    "title": "Giant Hands Gag",
+    "image": "/presets/Giant hands.jpg",
+    "prompt": "Forced‑perspective gag: subject’s hands appear gigantic toward the camera. Bright outdoor light, crisp ground shadows, wide‑angle distortion, playful expression, clean sky, no stretching artifacts."
+  },
+  {
+    "id": "cartoon-buddy",
+    "title": "Cartoon Buddy on Couch",
+    "image": "/presets/Cartoon buddy.jpg",
+    "prompt": "Blend a relaxed 2D cartoon friend into a real sofa scene beside the subject. Thick outlines, flat shading, slight paper texture; ensure shared cushion deformation and contact shadow, matched light direction, no pixel halos."
+  },
+  {
+    "id": "tornado-swirl-pov",
+    "title": "Tornado Swirl POV",
+    "image": "/presets/Tornado swirl POV.jpg",
+    "prompt": "POV twister: spiraling vortex background around the moving subject, radial blur of debris, hair and dress flowing, cool desaturated grade, strong eye contact, sharp face, no warping of limbs."
+  },
+  {
+    "id": "floating-everyday",
+    "title": "Floating Everyday Items",
+    "image": "/presets/Floating everyday .jpg",
+    "prompt": "Arrange dozens of everyday items floating around the subject in mid‑air. Consistent lighting and perspective, small occlusion shadows beneath, urban backdrop, playful layout with depth layering, no duplicates."
+  },
+  {
+    "id": "cartoon-selfie-group",
+    "title": "Cartoon/Anime Group Selfie",
+    "image": "/presets/cartoon selfie.jpg",
+    "prompt": "Group selfie with multiple beloved anime/cartoon‑inspired characters surrounding the subject. Unify lighting and perspective, crisp outlines, vibrant palette with gentle bloom, accurate occlusion and contact shadows, keep human photoreal."
+  }
+]
