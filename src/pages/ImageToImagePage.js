@@ -21,6 +21,7 @@ export default function ImageToImagePage() {
   const [prompt, setPrompt] = React.useState("");
   const [autoActionFigure, setAutoActionFigure] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState(null);
+  const [savedManualPrompt, setSavedManualPrompt] = React.useState("");
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -176,10 +177,21 @@ export default function ImageToImagePage() {
                 <label className="block text-gray-900 text-base sm:text-lg font-medium mb-2 sm:mb-3">
                   Describe the transformation
                 </label>
-                <div className="mb-3">
+                <div className="mb-3 flex items-center gap-2 flex-wrap">
                   <button
                     type="button"
-                    onClick={() => setAutoActionFigure((v) => !v)}
+                    onClick={() => {
+                      setAutoActionFigure((prev) => {
+                        const next = !prev;
+                        if (next) {
+                          setSavedManualPrompt((p) => (prompt ? prompt : p));
+                          setPrompt(ACTION_FIGURE_PROMPT);
+                        } else {
+                          setPrompt(savedManualPrompt || "");
+                        }
+                        return next;
+                      });
+                    }}
                     className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition ${
                       autoActionFigure
                         ? "bg-yellow-100 border-yellow-300 text-yellow-800"
@@ -198,6 +210,19 @@ export default function ImageToImagePage() {
                       ? "Preset enabled: Action Figure"
                       : "Use preset: Action Figure product showcase"}
                   </button>
+                  {autoActionFigure && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAutoActionFigure(false);
+                        setPrompt(savedManualPrompt || "");
+                      }}
+                      className="inline-flex items-center px-3 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+                      title="Switch back to manual prompt editing"
+                    >
+                      Switch to manual
+                    </button>
+                  )}
                   {/* <p className="mt-2 text-xs text-gray-500">
                     When enabled, we auto-fill a detailed prompt designed for
                     official product-style action figure shots. You can still
