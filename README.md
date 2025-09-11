@@ -1,26 +1,77 @@
-# Nano Banana
+# Nano Banana – AI Image Generator
 
-## Payments
+Create epic AI images in seconds. Turn text into visuals, transform photos, remove backgrounds, edit with text, and generate professional headshots — all powered by Google AI/Gemini. Credits never expire.
 
-Payments have been removed from this app. The codebase no longer integrates with Stripe or Razorpay.
+Demo/Prod: `https://nenobanana.site/`
 
-```txt
-No payment setup is required.
+## Features
+
+- Text → Image generator
+- Image → Image transformation
+- AI headshot generator
+- Background removal
+- In‑browser image editor
+- Prompt Helper: suggest ideas, improve prompts, beat writer's block
+- Credit system: pay‑per‑generation, credits never expire
+- Auth, profile, credit history
+
+## Tech Stack
+
+- React (Create React App), React Router, TailwindCSS
+- Supabase (Edge Functions, Postgres, RLS)
+- Firebase Auth (client auth + ID tokens)
+- Razorpay (payments) via Supabase Edge Functions
+- Google AI/Gemini (generation UX; swap in official API when ready)
+
+## Quick Start
+
+1. Clone and install
+
+```bash
+git clone <repo>
+cd nanobanana
+npm install
 ```
 
-## Supabase Migration Notes
+1. Create `.env` in project root
 
-Environment variables:
+```env
+REACT_APP_SUPABASE_URL=https://<your-project>.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=<your-anon-key>
+REACT_APP_GEMINI_API_KEY=<your-google-ai-key>
 
+# Firebase Auth (Email/Password or providers)
+REACT_APP_FIREBASE_API_KEY=<firebase-api-key>
+REACT_APP_FIREBASE_AUTH_DOMAIN=<project>.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=<project-id>
+REACT_APP_FIREBASE_APP_ID=<app-id>
+
+# Payments (Razorpay)
+REACT_APP_RAZORPAY_KEY_ID=<your-razorpay-key>
 ```
-REACT_APP_SUPABASE_URL=
-REACT_APP_SUPABASE_ANON_KEY=
-REACT_APP_SUPABASE_FUNCTIONS_BASE=https://<project>.supabase.co/functions/v1
-```
 
-Database (SQL):
+1. Run
 
-```
+```bash
+npm start
+```sql
+
+Open `http://localhost:3000`.
+
+## Environment & Configuration
+
+The app expects the env vars above at build/runtime. Some defaults exist in code for local dev; always override with your own values in production.
+
+Supabase Edge Functions (example names):
+
+- `functions/v1/create-order` – create Razorpay order
+- `functions/v1/verify` – verify payment, add credits
+
+Update the Supabase URL in `src/services/paymentService.js` or, preferably, refactor to read from `REACT_APP_SUPABASE_URL`.
+
+## Database (Supabase SQL)
+
+```sql
 create table if not exists public.users (
   id text primary key,
   credits integer not null default 0
@@ -45,80 +96,55 @@ begin
   return ok;
 end;
 $$;
+```bash
+
+Recommended RLS (pseudocode):
+
+- Enable RLS on `public.users`
+- Policy: users can `select`/`update` their own row where `id = auth.uid()`
+- Credit mutations should be done via `security definer` functions only
+
+## Prompt Helper
+
+- Suggests prompt ideas based on your current text
+- One‑click “Improve Prompt” to enhance clarity and style
+- Integrated throughout the `TextToImagePage` for quick iteration
+
+## Payments Flow (Razorpay + Supabase)
+
+1. User chooses a credit pack in Pricing
+2. Client requests `create-order` Edge Function (auth via Firebase ID token)
+3. Open Razorpay checkout with returned order id
+4. On success, call `verify` Edge Function to validate and add credits via `add_credits`
+
+Credit packs (default): 15, 45, 120. Adjust in `src/services/paymentService.js`.
+
+## Scripts
+
+```bash
+npm start      # dev server
+npm test       # tests
+npm run build  # production build
 ```
 
-Edge Functions endpoints:
+## Deployment
 
-- POST create-checkout-session → returns { url }
-- POST stripe-webhook → verifies and increments credits
+- Any static host (Netlify, Vercel, Cloudflare Pages)
+- Set env vars in hosting dashboard
+- Ensure public URLs (SEO/OpenGraph) point to your domain in `public/index.html`
 
-# Getting Started with Create React App
+## Security Notes
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- Do not commit API keys; use env vars
+- Keep Supabase `anon` key public but restricted by RLS
+- Use Edge Functions for any credit mutation or payment verification
 
-## Available Scripts
+## Roadmap
 
-In the project directory, you can run:
+- Swap placeholder Gemini client with official Google AI Images API
+- Replace hardcoded URLs with env‑driven config
+- More editing tools and styles
 
-### `npm start`
+## License
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT
