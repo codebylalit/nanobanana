@@ -5,7 +5,6 @@ import { editImageAdjustments } from "../services/gemini";
 import {
   HiOutlineExclamation,
   HiOutlineDownload,
-  HiOutlineCheck,
   HiOutlineAdjustments,
   HiOutlineSparkles,
   HiOutlinePencil,
@@ -21,11 +20,7 @@ import {
 export default function ImageEditorPage() {
   const { credits, consumeCredits } = useCredits();
   const [file, setFile] = React.useState(null);
-  const [opts, setOpts] = React.useState({
-    brightness: 0,
-    contrast: 0,
-    saturation: 0,
-  });
+  // const [opts, setOpts] = React.useState({ brightness: 0, contrast: 0, saturation: 0 });
   const [img, setImg] = React.useState(null);
   const [previewUrl, setPreviewUrl] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
@@ -40,9 +35,9 @@ export default function ImageEditorPage() {
   const [editDescription, setEditDescription] = React.useState("");
   const [selectedFormat, setSelectedFormat] = React.useState("Original");
 
-  function change(k, v) {
-    setOpts((o) => ({ ...o, [k]: v }));
-  }
+  // function change(k, v) {
+  //   setOpts((o) => ({ ...o, [k]: v }));
+  // }
 
   // Handle file upload and create preview
   const handleFileChange = (e) => {
@@ -527,13 +522,13 @@ export default function ImageEditorPage() {
             {img ? (
               <img
                 src={img}
-                alt="Edited result"
+                alt="Edited"
                 className="max-h-[420px] sm:max-h-[500px] mx-auto"
               />
             ) : previewUrl ? (
               <img
                 src={previewUrl}
-                alt="Uploaded image preview"
+                alt="Preview"
                 className="max-h-[420px] sm:max-h-[500px] mx-auto"
               />
             ) : (
