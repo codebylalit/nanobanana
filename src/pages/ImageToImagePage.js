@@ -19,12 +19,22 @@ export default function ImageToImagePage() {
   const { credits, consumeCredits, initialized } = useCredits();
   const [file, setFile] = React.useState(null);
   const [prompt, setPrompt] = React.useState("");
+  const [autoActionFigure, setAutoActionFigure] = React.useState(false);
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [ideas, setIdeas] = React.useState([]);
   const [improving, setImproving] = React.useState(false);
   const { show } = useToast();
+
+  const ACTION_FIGURE_PROMPT =
+    "Create a photorealistic 1/7 scale character figure in a commercial product photography style. Show the finished figure displayed on a transparent circular acrylic base, with the pose stabilized naturally — for example, by a clear acrylic rod attached to the base or by the figure’s foot pegged securely into the base. Behind the figure, place a BANDAI-style packaging box printed with the full-color original 2D artwork of the character. On the computer monitor, display the character’s gray clay sculpt in ZBrush, focusing only on the digital model itself as it appears during the sculpting stage. Set everything on a clean computer desk indoors, illuminated with soft, realistic lighting that highlights the textures of the figure, adds subtle reflections to the acrylic base, and gives the packaging a glossy finish. The overall composition should feel like an authentic official product showcase.";
+
+  React.useEffect(() => {
+    if (autoActionFigure) {
+      setPrompt(ACTION_FIGURE_PROMPT);
+    }
+  }, [autoActionFigure]);
 
   async function onGenerate() {
     if (credits < 1 || !file) return;
@@ -143,6 +153,22 @@ export default function ImageToImagePage() {
                 <label className="block text-gray-900 text-base sm:text-lg font-medium mb-2 sm:mb-3">
                   Describe the transformation
                 </label>
+                <div className="flex items-center gap-3 mb-2">
+                  <input
+                    id="auto-action-figure"
+                    type="checkbox"
+                    checked={autoActionFigure}
+                    onChange={(e) => setAutoActionFigure(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400"
+                  />
+                  <label
+                    htmlFor="auto-action-figure"
+                    className="text-sm text-gray-800"
+                  >
+                    Use preset: Action Figure product showcase (auto-fills
+                    prompt)
+                  </label>
+                </div>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
