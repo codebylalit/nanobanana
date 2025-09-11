@@ -228,21 +228,21 @@ export default function ImageEditorPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-0">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+      <div className="mb-6 sm:mb-8 text-center">
+        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           AI Image Editor
         </h1>
-        <p className="text-gray-600 text-base sm:text-lg">
+        <p className="text-gray-600 text-sm sm:text-lg">
           Professional image editing powered by AI. Select portions to edit,
           apply filters, add overlays, change backgrounds
         </p>
       </div>
       {/* Main Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-10">
         {/* RIGHT: Editing Tools */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm flex flex-col">
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800">
               Editing Tools
             </h2>
             <HiOutlinePencil className="w-5 h-5 text-gray-600" />
@@ -256,7 +256,7 @@ export default function ImageEditorPage() {
           </div>
 
           {/* Tabs (Select, Filter, Text, Background) */}
-          <div className="flex space-x-3 mb-6">
+          <div className="flex space-x-2 sm:space-x-3 mb-4 sm:mb-6 overflow-x-auto no-scrollbar">
             {[
               { name: "Select", icon: HiOutlinePencil },
               { name: "Filter", icon: HiOutlineFilter },
@@ -266,7 +266,7 @@ export default function ImageEditorPage() {
               <button
                 key={name}
                 onClick={() => setSelectedTab(name)}
-                className={`px-4 py-2 rounded-lg border text-sm font-medium transition flex items-center gap-2 ${
+                className={`px-3 sm:px-4 py-2 rounded-lg border text-sm font-medium transition flex items-center gap-2 flex-shrink-0 ${
                   selectedTab === name
                     ? "border-gray-800 bg-gray-100 text-gray-900"
                     : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -499,9 +499,9 @@ export default function ImageEditorPage() {
         </div>
         {/* LEFT: Image Preview & Export */}
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col">
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800">
               Image Preview
             </h2>
             <div className="inline-flex items-center gap-2">
@@ -528,13 +528,13 @@ export default function ImageEditorPage() {
               <img
                 src={img}
                 alt="Edited result"
-                className="max-h-[500px] mx-auto"
+                className="max-h-[420px] sm:max-h-[500px] mx-auto"
               />
             ) : previewUrl ? (
               <img
                 src={previewUrl}
                 alt="Uploaded image preview"
-                className="max-h-[500px] mx-auto"
+                className="max-h-[420px] sm:max-h-[500px] mx-auto"
               />
             ) : (
               <p className="text-gray-400 text-sm">
