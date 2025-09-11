@@ -20,6 +20,7 @@ export default function ImageToImagePage() {
   const [file, setFile] = React.useState(null);
   const [prompt, setPrompt] = React.useState("");
   const [autoActionFigure, setAutoActionFigure] = React.useState(false);
+  const [previewUrl, setPreviewUrl] = React.useState(null);
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -35,6 +36,19 @@ export default function ImageToImagePage() {
       setPrompt(ACTION_FIGURE_PROMPT);
     }
   }, [autoActionFigure]);
+
+  React.useEffect(() => {
+    if (!file) {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [file, previewUrl]);
 
   async function onGenerate() {
     if (credits < 1 || !file) return;
@@ -140,11 +154,20 @@ export default function ImageToImagePage() {
                   />
                 </div>
                 {file && (
-                  <div className="mt-2 sm:mt-3 p-2 sm:p-3 rounded-xl bg-green-50 border border-green-200 text-green-700">
-                    <HiOutlineCheck className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                    <span className="text-xs sm:text-sm">
-                      {file.name} selected
-                    </span>
+                  <div className="mt-2 sm:mt-3 flex items-center gap-3">
+                    {previewUrl && (
+                      <img
+                        src={previewUrl}
+                        alt="Selected preview"
+                        className="h-14 w-14 sm:h-16 sm:w-16 object-cover rounded-xl border border-gray-200"
+                      />
+                    )}
+                    <div className="flex-1 p-2 sm:p-3 rounded-xl bg-green-50 border border-green-200 text-green-700">
+                      <HiOutlineCheck className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+                      <span className="text-xs sm:text-sm truncate inline-block max-w-full align-middle">
+                        {file.name} selected
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -153,40 +176,61 @@ export default function ImageToImagePage() {
                 <label className="block text-gray-900 text-base sm:text-lg font-medium mb-2 sm:mb-3">
                   Describe the transformation
                 </label>
-                <div className="flex items-center gap-3 mb-2">
-                  <input
-                    id="auto-action-figure"
-                    type="checkbox"
-                    checked={autoActionFigure}
-                    onChange={(e) => setAutoActionFigure(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400"
-                  />
-                  <label
-                    htmlFor="auto-action-figure"
-                    className="text-sm text-gray-800"
+                <div className="mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setAutoActionFigure((v) => !v)}
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition ${
+                      autoActionFigure
+                        ? "bg-yellow-100 border-yellow-300 text-yellow-800"
+                        : "bg-white border-gray-300 text-gray-800 hover:bg-gray-50"
+                    }`}
+                    title="Use preset action figure product showcase"
                   >
-                    Use preset: Action Figure product showcase (auto-fills
-                    prompt)
-                  </label>
+                    <span
+                      className={`inline-block h-4 w-4 rounded-full border ${
+                        autoActionFigure
+                          ? "bg-yellow-400 border-yellow-400"
+                          : "bg-white border-gray-300"
+                      }`}
+                    ></span>
+                    {autoActionFigure
+                      ? "Preset enabled: Action Figure"
+                      : "Use preset: Action Figure product showcase"}
+                  </button>
+                  {/* <p className="mt-2 text-xs text-gray-500">
+                    When enabled, we auto-fill a detailed prompt designed for
+                    official product-style action figure shots. You can still
+                    tweak after generating.
+                  </p> */}
                 </div>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g., Transform into a watercolor painting, make it look like a vintage photograph, convert to anime style"
-                  className="w-full h-20 sm:h-24 rounded-2xl bg-white border border-gray-300 px-4 sm:px-6 py-3 sm:py-4 text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none text-sm sm:text-base"
+                  placeholder={
+                    autoActionFigure
+                      ? "Preset applied — prompt locked for this mode"
+                      : "e.g., Transform into a watercolor painting, make it look like a vintage photograph, convert to anime style"
+                  }
+                  disabled={autoActionFigure}
+                  className={`w-full h-24 sm:h-28 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none ${
+                    autoActionFigure
+                      ? "bg-gray-50 border border-gray-200 text-gray-600"
+                      : "bg-white border border-gray-300 text-gray-900 placeholder-gray-400"
+                  }`}
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     onClick={onImprove}
                     className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 disabled:hover:bg-white disabled:cursor-not-allowed"
-                    disabled={improving || credits < 1}
+                    disabled={improving || credits < 1 || autoActionFigure}
                   >
                     {improving ? "Improving…" : "Improve prompt"}
                   </button>
                   <button
                     onClick={onSuggest}
                     className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 disabled:hover:bg-white disabled:cursor-not-allowed"
-                    disabled={credits < 1}
+                    disabled={credits < 1 || autoActionFigure}
                   >
                     Suggest ideas
                   </button>
