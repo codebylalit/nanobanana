@@ -12,14 +12,18 @@ export default function Gallery() {
       "/img1.jpg",
       "/img3.jpg",
       "/img21.jpg",
+      "/img11.jpg",
       "/img14.jpg",
       "/img23.jpg",
+      "/sonic.png",
       "/img30.jpg",
       "/img7.jpg",
       "/img15.jpg",
       "/img25.jpg",
       "/img8.jpg",
       "/img6.jpg",
+      "/img24.jpg",
+      "/img20.jpg",
       "/img4.jpg",
     ],
     []
@@ -37,7 +41,7 @@ export default function Gallery() {
       ).slice(0, 12);
       if (urls.length > 0) {
         if (urls.length < 8) {
-          const needed = Math.max(0, 12 - urls.length);
+          const needed = Math.max(0, 18 - urls.length);
           const localFill = LOCAL_GALLERY_IMAGES.slice(0, needed);
           setImages([...urls, ...localFill]);
           return;
