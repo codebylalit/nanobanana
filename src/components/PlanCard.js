@@ -8,6 +8,7 @@ import {
   createRazorpayOrder,
   initializeRazorpayPayment,
   loadRazorpayScript,
+  getPackagePriceInfo,
 } from "../services/paymentService";
 
 export default function PlanCard({
@@ -27,6 +28,24 @@ export default function PlanCard({
   // kept for potential logging; UI feedback via toasts
   const [, setPaymentError] = React.useState(null);
   const { show } = useToast();
+  const [currency, setCurrency] = React.useState("USD"); // USD | INR
+  const [priceInfo, setPriceInfo] = React.useState({
+    display: price,
+    perImage: "",
+  });
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const info = await getPackagePriceInfo(productId, currency);
+        if (!cancelled) setPriceInfo(info);
+      } catch (_) {}
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [productId, currency]);
 
   const handlePayment = async () => {
     if (!user) {
@@ -43,7 +62,10 @@ export default function PlanCard({
         throw new Error("Failed to load Razorpay script");
       }
 
-      const order = await createRazorpayOrder(productId, user);
+      const order = await createRazorpayOrder(productId, user, {
+        currency,
+        currencyPreference: currency,
+      });
 
       initializeRazorpayPayment(
         order,
@@ -132,15 +154,16 @@ export default function PlanCard({
       <h3 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">
         {title}
       </h3>
-      <div className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-yellow-500 mb-3 sm:mb-4">
-        {price}
+      <div className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-yellow-500 mb-1 sm:mb-2">
+        {priceInfo.display}
       </div>
-      <div className="text-gray-800 text-base sm:text-lg mb-2 font-medium">
+      <div className="text-yellow-700 text-xs sm:text-sm mb-2 sm:mb-3 font-semibold">
+        {priceInfo.perImage}
+      </div>
+      <div className="text-gray-800 text-base sm:text-lg mb-6 sm:mb-8 font-medium">
         {summary}
       </div>
-      <div className="text-yellow-700 text-sm sm:text-base mb-6 sm:mb-8 font-semibold">
-        {priceSub}
-      </div>
+      {/* priceSub removed in favor of dynamic per-image */}
 
       {/* Bullets */}
       <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-gray-700 text-sm sm:text-base">
@@ -153,6 +176,37 @@ export default function PlanCard({
       </ul>
 
       {/* Status messages replaced by toasts */}
+
+      {/* Payment method selector */}
+      <div className="mb-4 sm:mb-6">
+        <div className="text-sm font-semibold text-gray-800 mb-2">
+          Payment method
+        </div>
+        <div className="inline-flex rounded-xl border border-gray-300 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setCurrency("USD")}
+            className={`${
+              currency === "USD"
+                ? "bg-yellow-400 text-black"
+                : "bg-white text-gray-800"
+            } px-4 py-2 text-sm font-bold transition-colors`}
+          >
+            International
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrency("INR")}
+            className={`${
+              currency === "INR"
+                ? "bg-yellow-400 text-black"
+                : "bg-white text-gray-800"
+            } px-4 py-2 text-sm font-bold border-l border-gray-300 transition-colors`}
+          >
+            UPI
+          </button>
+        </div>
+      </div>
 
       {/* Payment button */}
       {user ? (

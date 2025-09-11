@@ -8,30 +8,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Credit packages configuration
+// Credit packages configuration with USD base pricing
+// Amounts are in the smallest unit (USD cents). INR is computed from FX at runtime.
 const CREDIT_PACKAGES = {
   "0d1fe4fa-e8c5-4d0c-8db1-e24c65165615": {
     name: "Starter Pack",
     credits: 15,
-    price: 400, // Price in cents ($4.00)
-    currency: "USD",
+    prices: { USD: 400 },
     description: "15 credits = 15 images",
   },
   "3022ce85-ceb2-4fae-9729-a82cf949bcb7": {
     name: "Basic Pack",
     credits: 45,
-    price: 900, // Price in cents ($9.00)
-    currency: "USD",
+    prices: { USD: 900 },
     description: "45 credits = 45 images",
   },
   "4917da3b-46a3-41d2-b231-41e17ab1dd7d": {
     name: "Premium Pack",
     credits: 120,
-    price: 1700, // Price in cents ($17.00)
-    currency: "USD",
+    prices: { USD: 1700 },
     description: "120 credits = 120 images",
   },
-};
+} as const;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -61,7 +59,7 @@ serve(async (req) => {
       );
     }
 
-    const { productId, userId } = requestBody;
+    const { productId, userId, currency, currencyPreference } = requestBody;
 
     // Debug logging
     console.log("Request body:", requestBody);
@@ -88,32 +86,105 @@ serve(async (req) => {
       });
     }
 
-    // Create Razorpay order using their API
-    const razorpayResponse = await fetch("https://api.razorpay.com/v1/orders", {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(
-          `${Deno.env.get("RAZORPAY_KEY_ID")}:${Deno.env.get(
-            "RAZORPAY_KEY_SECRET"
-          )}`
-        )}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        amount: packageInfo.price,
-        currency: packageInfo.currency,
-        receipt: `rcpt_${userId.slice(-8)}_${Date.now().toString().slice(-8)}`,
-        notes: {
-          user_id: userId,
-          product_id: productId,
-          credits: packageInfo.credits,
-        },
-      }),
-    });
+    // Determine currency preference
+    // priority: explicit currency -> currencyPreference -> AUTO
+    const availableCurrencies = ["USD", "INR"] as Array<"USD" | "INR">;
+    const preferredCurrency = ((): "USD" | "INR" => {
+      const upper = (currency as string | undefined)?.toUpperCase();
+      if (upper && (availableCurrencies as readonly string[]).includes(upper)) {
+        return upper as "USD" | "INR";
+      }
+      const prefUpper = (
+        currencyPreference as string | undefined
+      )?.toUpperCase();
+      if (prefUpper === "USD" || prefUpper === "INR") return prefUpper;
+      return availableCurrencies.includes("USD") ? "USD" : "INR";
+    })();
 
-    if (!razorpayResponse.ok) {
-      const errorData = await razorpayResponse.json();
-      console.error("Razorpay order creation failed:", errorData);
+    // Fetch USD->INR FX rate when needed
+    async function getUsdToInrRate(): Promise<number> {
+      try {
+        const apiKey = Deno.env.get("FX_API_KEY");
+        const url = apiKey
+          ? `https://api.exchangerate.host/live?access_key=${apiKey}`
+          : "https://api.exchangerate.host/live";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`FX http ${res.status}`);
+        const data = await res.json();
+        const rate = data?.quotes?.USDINR;
+        if (typeof rate === "number" && rate > 0) return rate;
+      } catch (_) {}
+      // Fallback default if API fails
+      return 83.0;
+    }
+
+    async function tryCreateOrder(chosenCurrency: "USD" | "INR") {
+      let amount: number;
+      if (chosenCurrency === "USD") {
+        amount = packageInfo.prices.USD;
+      } else {
+        const usdCents = packageInfo.prices.USD;
+        const rate = await getUsdToInrRate();
+        // Convert USD cents to INR paise
+        amount = Math.round(usdCents * rate);
+      }
+      const response = await fetch("https://api.razorpay.com/v1/orders", {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${btoa(
+            `${Deno.env.get("RAZORPAY_KEY_ID")}:${Deno.env.get(
+              "RAZORPAY_KEY_SECRET"
+            )}`
+          )}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount,
+          currency: chosenCurrency,
+          receipt: `rcpt_${userId.slice(-8)}_${Date.now()
+            .toString()
+            .slice(-8)}`,
+          notes: {
+            user_id: userId,
+            product_id: productId,
+            credits: packageInfo.credits,
+          },
+        }),
+      });
+      return { ok: response.ok, response } as const;
+    }
+
+    // Try preferred currency, then fallback to INR if allowed
+    let selectedCurrency: "USD" | "INR" = preferredCurrency;
+    let orderData: any = null;
+    let attempt = await tryCreateOrder(selectedCurrency);
+    if (!attempt.ok) {
+      const errorText = await attempt.response.text();
+      console.error(
+        "Razorpay order creation failed (",
+        selectedCurrency,
+        "):",
+        errorText
+      );
+      const canFallback =
+        !currency &&
+        (!currencyPreference || currencyPreference.toUpperCase() === "AUTO");
+      const fallbackCurrency = selectedCurrency === "USD" ? "INR" : "USD";
+      if (
+        canFallback &&
+        availableCurrencies.includes(fallbackCurrency as any)
+      ) {
+        console.log(
+          "Retrying order creation with fallback currency:",
+          fallbackCurrency
+        );
+        selectedCurrency = fallbackCurrency as any;
+        attempt = await tryCreateOrder(selectedCurrency);
+      }
+    }
+
+    if (!attempt.ok) {
+      // Final failure
       return new Response(
         JSON.stringify({ error: "Failed to create payment order" }),
         {
@@ -123,15 +194,15 @@ serve(async (req) => {
       );
     }
 
-    const orderData = await razorpayResponse.json();
+    orderData = await attempt.response.json();
 
     // Store order in database for tracking
     const { error: dbError } = await supabaseClient.from("orders").insert({
       id: orderData.id,
       user_id: userId,
       product_id: productId,
-      amount: packageInfo.price,
-      currency: packageInfo.currency,
+      amount: orderData.amount,
+      currency: orderData.currency,
       credits: packageInfo.credits,
       status: "created",
       razorpay_order_id: orderData.id,

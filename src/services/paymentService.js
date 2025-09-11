@@ -39,8 +39,75 @@ export const CREDIT_PACKAGES = {
   },
 };
 
+// FX helpers (simple in-memory cache)
+let __fxCacheUsdInr = { rate: null, fetchedAt: 0 };
+const FX_TTL_MS = 1000 * 60 * 30; // 30 minutes
+
+async function getUsdToInrRate() {
+  const now = Date.now();
+  if (
+    __fxCacheUsdInr.rate &&
+    typeof __fxCacheUsdInr.rate === "number" &&
+    now - __fxCacheUsdInr.fetchedAt < FX_TTL_MS
+  ) {
+    return __fxCacheUsdInr.rate;
+  }
+  try {
+    const apiKey = process.env.REACT_APP_FX_API_KEY;
+    const url = apiKey
+      ? `https://api.exchangerate.host/live?access_key=${apiKey}`
+      : "https://api.exchangerate.host/live";
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      const rate = data?.quotes?.USDINR;
+      if (typeof rate === "number" && rate > 0) {
+        __fxCacheUsdInr = { rate, fetchedAt: now };
+        return rate;
+      }
+    }
+  } catch (_) {}
+  // Fallback
+  const fallback = 83.0;
+  __fxCacheUsdInr = { rate: fallback, fetchedAt: now };
+  return fallback;
+}
+
+function formatUsdFromCents(cents) {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function formatInrFromPaise(paise) {
+  // Convert to rupees with 2 decimals; simple formatting
+  return `₹${(paise / 100).toFixed(2)}`;
+}
+
+export async function getPackagePriceInfo(productId, currency = "AUTO") {
+  const pkg = CREDIT_PACKAGES[productId];
+  if (!pkg) {
+    return { display: "-", perImage: "" };
+  }
+  const usdCents = pkg.price;
+  const credits = pkg.credits;
+  if (currency === "INR") {
+    const rate = await getUsdToInrRate();
+    const inrPaise = Math.round(usdCents * rate);
+    const perImagePaise = Math.round((inrPaise / credits) * 100) / 100; // keep precision before format
+    return {
+      display: `${formatInrFromPaise(inrPaise)}`,
+      perImage: `${formatInrFromPaise(perImagePaise)} / image`,
+    };
+  }
+  // Default USD (also for AUTO)
+  const perImageUsdCents = Math.round(usdCents / credits);
+  return {
+    display: `${formatUsdFromCents(usdCents)}`,
+    perImage: `${formatUsdFromCents(perImageUsdCents)} / image`,
+  };
+}
+
 // Create Razorpay order using backend API
-export const createRazorpayOrder = async (productId, user) => {
+export const createRazorpayOrder = async (productId, user, options = {}) => {
   const packageInfo = CREDIT_PACKAGES[productId];
   if (!packageInfo) {
     throw new Error("Invalid product ID");
@@ -65,6 +132,10 @@ export const createRazorpayOrder = async (productId, user) => {
       body: JSON.stringify({
         productId,
         userId: user.uid,
+        // Optional currency controls: pass through if provided.
+        // If not provided, backend will try preferred (USD) and fallback to INR automatically.
+        currency: options.currency,
+        currencyPreference: options.currencyPreference || "AUTO",
       }),
     });
 
