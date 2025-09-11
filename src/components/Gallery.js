@@ -8,6 +8,7 @@ export default function Gallery() {
   const [images, setImages] = React.useState([]);
   const LOCAL_GALLERY_IMAGES = React.useMemo(
     () => [
+      "/flash.png",
       "/img1.jpg",
       "/img3.jpg",
       "/img21.jpg",
