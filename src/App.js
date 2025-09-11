@@ -219,6 +219,7 @@ function PricingPage() {
                 "Credits never expire",
               ]}
               productId="0d1fe4fa-e8c5-4d0c-8db1-e24c65165615"
+              ctaLabel="Start Creating"
             />
           </div>
           <div className="w-full">
@@ -236,6 +237,7 @@ function PricingPage() {
                 "Credits never expire",
               ]}
               productId="3022ce85-ceb2-4fae-9729-a82cf949bcb7"
+              ctaLabel="Go Pro"
             />
           </div>
           <div className="w-full md:col-span-2 lg:col-span-1">
@@ -254,7 +256,7 @@ function PricingPage() {
                 "Credits never expire",
               ]}
               productId="4917da3b-46a3-41d2-b231-41e17ab1dd7d"
-            />
+              ctaLabel="Unlock Best Value"            />
           </div>
         </div>
 

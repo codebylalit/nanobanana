@@ -20,6 +20,7 @@ export default function PlanCard({
   priceSub,
   bullets,
   productId,
+  ctaLabel
 }) {
   const { user } = useAuth();
   const { fetchCredits } = useCredits();
@@ -213,11 +214,12 @@ export default function PlanCard({
         <button
           onClick={handlePayment}
           disabled={isProcessing}
-          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base lg:text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-            highlight
-              ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-              : "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-          }`}
+          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-4 sm:px-6 py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+      ${
+        highlight
+          ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
+          : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+      }`}
         >
           {isProcessing ? (
             <>
@@ -244,7 +246,7 @@ export default function PlanCard({
               Processing...
             </>
           ) : (
-            "Buy Now"
+            ctaLabel // 👈 dynamic text here
           )}
         </button>
       ) : (
@@ -254,13 +256,14 @@ export default function PlanCard({
             e.preventDefault();
             navigate("/auth");
           }}
-          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base lg:text-lg transition-all duration-200 ${
-            highlight
-              ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-              : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-          }`}
+          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-4 sm:px-6 py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-lg transition-all duration-200
+      ${
+        highlight
+          ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
+          : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+      }`}
         >
-          Start creating
+          {ctaLabel} {/* 👈 same dynamic text */}
         </a>
       )}
     </div>

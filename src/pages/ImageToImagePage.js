@@ -162,14 +162,14 @@ export default function ImageToImagePage() {
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
                     className="w-full rounded-2xl bg-white border border-gray-300 px-3 sm:px-6 py-2 sm:py-4 pr-16 sm:pr-24 text-gray-900 file:mr-2 sm:file:mr-4 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-xl file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-300 file:cursor-pointer cursor-pointer text-sm sm:text-base"
                   />
-                  {previewUrl && (
-                    <img
-                      src={previewUrl}
-                      alt="Selected preview"
+                    {previewUrl && (
+                      <img
+                        src={previewUrl}
+                        alt="Selected preview"
                       className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 h-9 w-9 sm:h-12 sm:w-12 object-cover rounded-xl border border-gray-200 shadow-sm pointer-events-none"
-                    />
-                  )}
-                </div>
+                      />
+                    )}
+                    </div>
                 {/* Inline preview shown inside input; removed below-the-input preview */}
               </div>
 
