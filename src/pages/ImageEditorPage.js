@@ -6,7 +6,6 @@ import {
   HiOutlineExclamation,
   HiOutlineDownload,
   HiOutlineAdjustments,
-  HiOutlineSparkles,
   HiOutlinePencil,
   HiOutlineFilter,
   HiOutlineDocumentText,
@@ -63,16 +62,66 @@ export default function ImageEditorPage() {
     };
   }, [previewUrl]);
 
-  // Download function
-  const downloadImage = () => {
+  // Download function (respects selected export format via canvas)
+  const downloadImage = async () => {
     if (!img) return;
 
-    const link = document.createElement("a");
-    link.href = img;
-    link.download = `edited-image-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const dims = getFormatDimensions(selectedFormat);
+    // If Original or no dims, download as-is
+    if (!dims) {
+      const link = document.createElement("a");
+      link.href = img;
+      link.download = `edited-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
+    try {
+      const response = await fetch(img, { mode: "cors" });
+      const blob = await response.blob();
+      const bitmap = await createImageBitmap(blob);
+
+      const targetWidth = dims.width;
+      const targetHeight = dims.height;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext("2d");
+
+      // Cover-fit crop to fill target aspect
+      const scale = Math.max(
+        targetWidth / bitmap.width,
+        targetHeight / bitmap.height
+      );
+      const drawWidth = bitmap.width * scale;
+      const drawHeight = bitmap.height * scale;
+      const dx = (targetWidth - drawWidth) / 2;
+      const dy = (targetHeight - drawHeight) / 2;
+
+      ctx.drawImage(bitmap, dx, dy, drawWidth, drawHeight);
+
+      canvas.toBlob((outBlob) => {
+        if (!outBlob) return;
+        const url = URL.createObjectURL(outBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `edited-image-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, "image/png");
+    } catch (_) {
+      const link = document.createElement("a");
+      link.href = img;
+      link.download = `edited-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   // Get format dimensions
@@ -86,6 +135,8 @@ export default function ImageEditorPage() {
         return { width: 1024, height: 683 };
       case "16:9 Landscape":
         return { width: 1024, height: 576 };
+      case "5:3 Widescreen":
+        return { width: 1500, height: 900 };
       case "21:9 Ultra Wide":
         return { width: 1024, height: 439 };
       case "9:16 Portrait":
@@ -228,7 +279,7 @@ export default function ImageEditorPage() {
         <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           AI Image Editor
         </h1>
-        <p className="text-gray-600 text-xs sm:text-sm sm:text-base">
+        <p className="text-gray-600 text-xs sm:text-sm">
           Professional image editing powered by AI. Select areas, apply filters,
           change backgrounds.
         </p>
@@ -567,6 +618,7 @@ export default function ImageEditorPage() {
                   "1:1 Square",
                   "9:16 Portrait",
                   "16:9 Landscape",
+                  "4:3 Widescreen",
                 ].map((opt) => (
                   <button
                     key={opt}
