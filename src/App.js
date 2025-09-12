@@ -75,16 +75,16 @@ function App() {
             </RequireAuth>
           }
         />
-          <Route
-            path="/image-editor"
-            element={
-              <RequireAuth>
-                <DashboardLayout>
-                  <ImageEditorPage/>
-                </DashboardLayout>
-              </RequireAuth>
-            }
-          />
+        <Route
+          path="/image-editor"
+          element={
+            <RequireAuth>
+              <DashboardLayout>
+                <ImageEditorPage />
+              </DashboardLayout>
+            </RequireAuth>
+          }
+        />
         <Route
           path="/previous-images"
           element={
@@ -256,7 +256,8 @@ function PricingPage() {
                 "Credits never expire",
               ]}
               productId="4917da3b-46a3-41d2-b231-41e17ab1dd7d"
-              ctaLabel="Unlock Best Value"            />
+              ctaLabel="Unlock Best Value"
+            />
           </div>
         </div>
 
@@ -362,6 +363,7 @@ function DashboardPricingPage() {
               "Perfect for testing",
             ]}
             productId="0d1fe4fa-e8c5-4d0c-8db1-e24c65165615"
+            ctaLabel="Start Creating"
           />
         </div>
         <div className="w-full">
@@ -379,6 +381,7 @@ function DashboardPricingPage() {
               "Most popular choice",
             ]}
             productId="3022ce85-ceb2-4fae-9729-a82cf949bcb7"
+            ctaLabel="Go Pro"
           />
         </div>
         <div className="w-full">
@@ -397,6 +400,7 @@ function DashboardPricingPage() {
               "Best value for creators",
             ]}
             productId="4917da3b-46a3-41d2-b231-41e17ab1dd7d"
+            ctaLabel="Unlock Best Value"
           />
         </div>
       </div>
