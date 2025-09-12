@@ -15,13 +15,13 @@
     "id": "giant-over-wall",
     "title": "Giant Over Wall",
     "image": "/presets/Giant over wall.jpg",
-    "prompt": "Create a surreal composite where a gigantic version of the subject leans over a garden wall. Overcast lighting, muted tones, shallow depth of field, realistic contact shadows and perspective match."
+    "prompt": "Transform this photo into a surreal photomanipulation. Duplicate the same person in the image: keep one version at normal scale standing in the yard, and create another much larger version of the same person as a giant leaning over the wall, looking down at the smaller self. Maintain the original background, natural lighting, muted tones, and realistic shadows to make the scene look dreamlike yet believable"
   },
   {
     "id": "cartoonified-city",
     "title": "Cartoonified City Scene",
     "image": "/presets/Cartoonified city.jpg",
-    "prompt": "Convert the street into a vibrant cartoon city. Keep the person photoreal, but surround them with bold vector elements: thick black outlines, saturated flat colors, sticker‑style doodles, floating butterflies and shapes. Midday clear light; ensure correct perspective alignment, contact shadows on pavement, slight paper‑like texture on vector art. Clean composition, no text."
+    "prompt": "A person wearing a vibrant purple varsity jacket with embroidered flowers, accessories including a black hat and gold chain necklace, smiling, with detailed facial features and hair, standing and facing the viewer, posing in front of a stylized city scene with tall buildings, a large volcano, and purple trees, on a pink basketball court, cartoonish Minions in the background, bright and vivid colors, cartoon style, anime-inspired, whimsical atmosphere, photorealistic details, detailed background, vibrant lighting, detailed skin, bright color palette (purple, pink, yellow, white, black), flat design elements, stylized background."
   },
   {
     "id": "cartoon-duo-scooter",
@@ -45,7 +45,7 @@
     "id": "mini-person-cap",
     "title": "Mini Person on Cap",
     "image": "/presets/sitting on cap.jpg",
-    "prompt": "Make the baseball cap gigantic; place a miniature person sitting casually on the brim. Natural window light, shallow depth of field, accurate fabric weave scale, crisp contact shadow on the cap, background bokeh, no artifacts."
+    "prompt": "Small figure of a person (ethnicity:1.1), (age:1.1), seated on a baseball cap (detailed clothing:1.2), (accessories:1.1), wearing a white and brown checkered shirt, tan pants, and a white cap, (detailed expression:1.2), relaxed pose (body type:1.1), (pose:1.2), positioned on the baseball cap, resting on upper center of the image, facing the viewer. The cap is being held by a man’s hand in the foreground, with visible fingers and natural grip, detailed hand texture and accessories (rings). Outdoor setting, with a patio area and green plants, light beige colored wall, and a window with dark green trim, (detailed background:1.2). Beige and gray tiled ground. Photorealistic style, high detail, detailed facial features (facial features:1.3), natural lighting, warm color palette, detailed cap design, (detailed texture:1.2), slight perspective distortion, medium shot, close-up on cap and hand."
   },
   {
     "id": "cartoon-giant-skyline",
@@ -54,16 +54,23 @@
     "prompt": "Integrate a large playful 2D cartoon character into the skyline, interacting with buildings. Flat colors, thick outlines, subtle drop shadow onto rooftops, correct perspective vanishing lines, maintain the photo’s exposure and color balance."
   },
   {
-    "id": "telekinesis-kitchen",
-    "title": "Telekinesis Kitchen",
-    "image": "/presets/Telekinesis kitchen.jpg",
-    "prompt": "Telekinesis kitchen scene: freeze a metal kettle and splashing droplets mid‑air while a person poses dynamically. Hard window key with soft fill, high shutter‑speed look, crisp droplets, specular highlights, realistic reflections, no motion ghosting."
+    "id": "skate-game",
+    "title": "Skate Game",
+    "image": "/presets/skateman.png",
+    "prompt": "surreal Y2K-style action shot of me mid-air in a dramatic leap, overhead fisheye view. He wears a vintage graphic tee, baggy jeans l with a chian, and chunky sneakers stylized city blur below with retro cars and pedestrians. bright daylight, high contrast, grainy like a 2001 skate geme frame"
   },
+ 
   {
     "id": "giant-smartphone",
     "title": "Person on Giant Smartphone",
     "image": "/presets/Person standing smartphone.jpg",
-    "prompt": "Giant smartphone scaled to room size; subject stands on the screen’s UI. Soft studio lighting, believable glossy reflections on glass, faint screen glow on shoes, clean shadows, minimalist beige background, product‑ad polish."
+    "prompt": "Use the uploaded image as reference. Transform the subject into a stylish model with messy comma hair, standing confidently on top of a giant iPhone 16 screen that displays a Spotify playlist (song title “Tamil Sun is Coming”). The model wears 2025 AirPods Max, an oversized white shirt, black shorts, and white Air Jordans. Shot from a top-down angle to emphasize the large scale of the phone. The scene has a sleek, modern, and minimal vibe, with clean composition, high clarity, and fashion editorial aesthetics."
+  },
+  {
+    "id": "saree-retro",
+    "title": "Saree Retro",
+    "image": "/presets/saree.png",
+    "prompt": "Create a retro vintage grainy but bright image of the reference picture but draped in a perfect plain chiffon saree yellow color Pinteresty aesthetic retro saree. It must feel like a 90s movie dark brown wavy curly hair with a small flower tucked visibly into her curls and romanticising windy environment. The girl is standing against a solid wall deep shadows and contrast drama, creating a mysterious and artistic atmosphere where the lighting is warm with a golden tones of evoking a sunset or golden hour glow. The background is minimalist and slightly textured the expression on her face is moody, calm yet happy and introspective."
   },
   {
     "id": "vegetable-chair",
@@ -141,7 +148,7 @@
     "id": "cartoon-buddy",
     "title": "Cartoon Buddy on Couch",
     "image": "/presets/Cartoon buddy.jpg",
-    "prompt": "Blend a relaxed 2D cartoon friend into a real sofa scene beside the subject. Thick outlines, flat shading, slight paper texture; ensure shared cushion deformation and contact shadow, matched light direction, no pixel halos."
+    "prompt": "Transform this photo into a fun cartoon-reality crossover. Place a well-known cartoon character sitting naturally on the sofa next to the person, as if they are hanging out together. The cartoon should be colorful, expressive, and holding a drink, while the person keeps their original pose and drink. Blend the cartoon seamlessly into the scene with proper lighting, shadows, and perspective so it looks like they are genuinely sharing the moment in real life. Keep the style playful and vibrant while maintaining the photorealism of the original background"
   },
   {
     "id": "tornado-swirl-pov",
