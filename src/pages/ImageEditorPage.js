@@ -222,36 +222,32 @@ export default function ImageEditorPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-0">
-      <div className="mb-6 sm:mb-8 text-center">
-        <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-16 sm:pb-0">
+      {/* Header */}
+      <div className="mb-4 sm:mb-8 text-center">
+        <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
           AI Image Editor
         </h1>
-        <p className="text-gray-600 text-sm sm:text-lg">
-          Professional image editing powered by AI. Select portions to edit,
-          apply filters, add overlays, change backgrounds
+        <p className="text-gray-600 text-xs sm:text-sm sm:text-base">
+          Professional image editing powered by AI. Select areas, apply filters,
+          change backgrounds.
         </p>
       </div>
+
       {/* Main Split Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-10">
         {/* RIGHT: Editing Tools */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-5 shadow-sm flex flex-col">
+          {/* Tools Header */}
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-lg font-semibold text-gray-800">
               Editing Tools
             </h2>
-            <HiOutlinePencil className="w-5 h-5 text-gray-600" />
+            <HiOutlinePencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </div>
 
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span className="text-sm text-gray-600">
-              Working on: Original image
-            </span>
-          </div>
-
-          {/* Tabs (Select, Filter, Text, Background) */}
-          <div className="flex space-x-2 sm:space-x-3 mb-4 sm:mb-6 overflow-x-auto no-scrollbar">
+          {/* Tool Tabs */}
+          <div className="flex space-x-2 sm:space-x-3 mb-3 sm:mb-5 overflow-x-auto no-scrollbar">
             {[
               { name: "Select", icon: HiOutlinePencil },
               { name: "Filter", icon: HiOutlineFilter },
@@ -261,191 +257,192 @@ export default function ImageEditorPage() {
               <button
                 key={name}
                 onClick={() => setSelectedTab(name)}
-                className={`px-3 sm:px-4 py-2 rounded-lg border text-sm font-medium transition flex items-center gap-2 flex-shrink-0 ${
+                className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl border text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2 flex-shrink-0 transition ${
                   selectedTab === name
                     ? "border-gray-800 bg-gray-100 text-gray-900"
                     : "border-gray-300 text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {name}
               </button>
             ))}
           </div>
 
           {/* Tool-specific content */}
-          {selectedTab === "Select" && (
-            <>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What area to edit?
-                </label>
-                <input
-                  type="text"
-                  value={areaToEdit}
-                  onChange={(e) => setAreaToEdit(e.target.value)}
-                  placeholder="e.g., the person's face, the background, the car, the sky"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What changes do you want?
-                </label>
-                <textarea
-                  rows={3}
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="e.g., make it look more professional, improve lighting, remove blemishes, enhance colors"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                />
-              </div>
-            </>
-          )}
-
-          {selectedTab === "Filter" && (
-            <>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Filter Type
-                </label>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                >
-                  <option value="">Select filter type...</option>
-                  <option value="Vintage">Vintage</option>
-                  <option value="Black & White">Black & White</option>
-                  <option value="Sepia">Sepia</option>
-                  <option value="Dramatic">Dramatic</option>
-                  <option value="Soft">Soft</option>
-                  <option value="Warm">Warm</option>
-                  <option value="Cool">Cool</option>
-                  <option value="High Contrast">High Contrast</option>
-                  <option value="Low Contrast">Low Contrast</option>
-                  <option value="Bright">Bright</option>
-                  <option value="Dark">Dark</option>
-                  <option value="Saturated">Saturated</option>
-                  <option value="Desaturated">Desaturated</option>
-                  <option value="HDR">HDR</option>
-                  <option value="Film">Film</option>
-                  <option value="Polaroid">Polaroid</option>
-                  <option value="Instagram">Instagram</option>
-                  <option value="Professional">Professional</option>
-                  <option value="Artistic">Artistic</option>
-                  <option value="Grunge">Grunge</option>
-                  <option value="Clean">Clean</option>
-                  <option value="Retro">Retro</option>
-                  <option value="Modern">Modern</option>
-                  <option value="Faded">Faded</option>
-                  <option value="Vibrant">Vibrant</option>
-                </select>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Intensity: {filterIntensity}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={filterIntensity}
-                  onChange={(e) =>
-                    setFilterIntensity(parseInt(e.target.value, 10))
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-            </>
-          )}
-
-          {selectedTab === "Text" && (
-            <>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Text Content
-                </label>
-                <input
-                  type="text"
-                  value={textContent}
-                  onChange={(e) => setTextContent(e.target.value)}
-                  placeholder="Enter text to add to image"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="flex-1 flex flex-col space-y-2 sm:space-y-4">
+            {/* Select Tab */}
+            {selectedTab === "Select" && (
+              <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Position
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Area to edit
+                  </label>
+                  <input
+                    type="text"
+                    value={areaToEdit}
+                    onChange={(e) => setAreaToEdit(e.target.value)}
+                    placeholder="e.g., person's face, background, car, sky"
+                    className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Changes
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="e.g., improve lighting, remove blemishes, enhance colors"
+                    className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Filter Tab */}
+            {selectedTab === "Filter" && (
+              <>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Filter Type
                   </label>
                   <select
-                    value={textPosition}
-                    onChange={(e) => setTextPosition(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
                   >
-                    <option value="Center">Center</option>
-                    <option value="Top">Top</option>
-                    <option value="Bottom">Bottom</option>
-                    <option value="Left">Left</option>
-                    <option value="Right">Right</option>
+                    <option value="">Select filter...</option>
+                    <option value="">Select filter type...</option>{" "}
+                    <option value="Vintage">Vintage</option>{" "}
+                    <option value="Black & White">Black & White</option>{" "}
+                    <option value="Sepia">Sepia</option>{" "}
+                    <option value="Dramatic">Dramatic</option>{" "}
+                    <option value="Soft">Soft</option>{" "}
+                    <option value="Warm">Warm</option>{" "}
+                    <option value="Cool">Cool</option>{" "}
+                    <option value="High Contrast">High Contrast</option>{" "}
+                    <option value="Low Contrast">Low Contrast</option>{" "}
+                    <option value="Bright">Bright</option>{" "}
+                    <option value="Dark">Dark</option>{" "}
+                    <option value="Saturated">Saturated</option>{" "}
+                    <option value="Desaturated">Desaturated</option>{" "}
+                    <option value="HDR">HDR</option>{" "}
+                    <option value="Film">Film</option>{" "}
+                    <option value="Polaroid">Polaroid</option>{" "}
+                    <option value="Instagram">Instagram</option>{" "}
+                    <option value="Professional">Professional</option>{" "}
+                    <option value="Artistic">Artistic</option>{" "}
+                    <option value="Grunge">Grunge</option>{" "}
+                    <option value="Clean">Clean</option>{" "}
+                    <option value="Retro">Retro</option>{" "}
+                    <option value="Modern">Modern</option>{" "}
+                    <option value="Faded">Faded</option>{" "}
+                    <option value="Vibrant">Vibrant</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Font Style
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Intensity: {filterIntensity}%
                   </label>
-                  <select
-                    value={fontStyle}
-                    onChange={(e) => setFontStyle(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  >
-                    <option value="Bold">Bold</option>
-                    <option value="Regular">Regular</option>
-                    <option value="Italic">Italic</option>
-                    <option value="Light">Light</option>
-                  </select>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={filterIntensity}
+                    onChange={(e) =>
+                      setFilterIntensity(parseInt(e.target.value, 10))
+                    }
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          {selectedTab === "Background" && (
-            <>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What background do you want?
+            {/* Text Tab */}
+            {selectedTab === "Text" && (
+              <>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Text
+                  </label>
+                  <input
+                    type="text"
+                    value={textContent}
+                    onChange={(e) => setTextContent(e.target.value)}
+                    placeholder="Enter text to add"
+                    className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      Position
+                    </label>
+                    <select
+                      value={textPosition}
+                      onChange={(e) => setTextPosition(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                    >
+                      <option>Center</option>
+                      <option>Top</option>
+                      <option>Bottom</option>
+                      <option>Left</option>
+                      <option>Right</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      Font
+                    </label>
+                    <select
+                      value={fontStyle}
+                      onChange={(e) => setFontStyle(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                    >
+                      <option>Bold</option>
+                      <option>Regular</option>
+                      <option>Italic</option>
+                      <option>Light</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Background Tab */}
+            {selectedTab === "Background" && (
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Background
                 </label>
                 <input
                   type="text"
                   value={backgroundType}
                   onChange={(e) => setBackgroundType(e.target.value)}
-                  placeholder="e.g., beach sunset, office environment, nature landscape, studio background"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  placeholder="e.g., beach sunset, office, nature"
+                  className="w-full rounded-lg border border-gray-300 px-2 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
                 />
               </div>
-            </>
-          )}
+            )}
+          </div>
 
           {/* Apply Button */}
           <button
             onClick={onApply}
-            className={`mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl font-semibold px-6 py-3 text-base transition ${
+            disabled={
+              loading || credits < (selectedTab === "Filter" ? 1 : 2) || !file
+            }
+            className={`mt-4 w-full inline-flex items-center justify-center gap-2 sm:gap-3 rounded-xl font-semibold px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition ${
               loading || credits < (selectedTab === "Filter" ? 1 : 2) || !file
                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                 : "bg-yellow-400 text-black hover:bg-yellow-300 cursor-pointer"
             }`}
-            disabled={
-              loading || credits < (selectedTab === "Filter" ? 1 : 2) || !file
-            }
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
                 Applying...
               </>
             ) : (
@@ -470,14 +467,14 @@ export default function ImageEditorPage() {
             )}
           </button>
 
-          {/* Enhance Quality Button (disabled placeholder) */}
+          {/* Enhance Quality Button (disabled placeholder)
           <button
             disabled
-            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white text-gray-500 font-medium px-6 py-3 text-base cursor-not-allowed border border-gray-300"
+            className="mt-4 w-full inline-flex items-center justify-center gap-2 sm:gap-3 rounded-xl  sm:px-6  sm:py-3  sm:text-base transition  bg-white text-gray-500 font-medium px-6 py-3  cursor-not-allowed border border-gray-300"
           >
             <HiOutlineSparkles className="w-5 h-5" /> Enhance Quality (2
             credits)
-          </button>
+          </button> */}
 
           {/* Credit Warning */}
           {credits < (selectedTab === "Filter" ? 1 : 2) && (
@@ -493,52 +490,48 @@ export default function ImageEditorPage() {
           )}
         </div>
         {/* LEFT: Image Preview & Export */}
-
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-800">
+        <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-5 shadow-sm flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <h2 className="text-sm sm:text-lg font-semibold text-gray-800">
               Image Preview
             </h2>
-            <div className="inline-flex items-center gap-2">
+            <div className="inline-flex items-center gap-1 sm:gap-2">
               <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs">
                 State 1/1
               </span>
               <button
-                className="p-2 rounded-md hover:bg-gray-100"
+                className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
                 aria-label="Undo"
               >
-                <HiOutlineArrowUturnLeft className="w-5 h-5 text-gray-700" />
+                <HiOutlineArrowUturnLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
               </button>
               <button
-                className="p-2 rounded-md hover:bg-gray-100"
+                className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
                 aria-label="Redo"
               >
-                <HiOutlineArrowUturnRight className="w-5 h-5 text-gray-700" />
+                <HiOutlineArrowUturnRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 relative flex items-center justify-center border border-gray-200 rounded-xl overflow-hidden mb-4 bg-gray-50">
-            {img ? (
+          {/* Image Display */}
+          <div className="flex-1 relative flex items-center justify-center border border-gray-200 rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gray-50">
+            {img || previewUrl ? (
               <img
-                src={img}
-                alt="Edited"
-                className="max-h-[420px] sm:max-h-[500px] mx-auto"
-              />
-            ) : previewUrl ? (
-              <img
-                src={previewUrl}
+                src={img || previewUrl}
                 alt="Preview"
-                className="max-h-[420px] sm:max-h-[500px] mx-auto"
+                className="max-h-[280px] sm:max-h-[500px] object-contain mx-auto"
               />
             ) : (
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 text-xs sm:text-sm text-center">
                 Upload and edit image to preview here
               </p>
             )}
+
             {(img || previewUrl) && (
-              <div className="absolute left-3 right-3 bottom-3">
-                <div className="rounded-lg bg-black/70 text-white px-4 py-2 text-xs flex items-center justify-between">
+              <div className="absolute left-2 right-2 bottom-2 sm:left-3 sm:right-3 sm:bottom-3">
+                <div className="rounded-lg bg-black/70 text-white px-3 py-1 sm:px-4 sm:py-2 text-xs flex items-center justify-between">
                   <span>{img ? "Edited image" : "Original image"}</span>
                   <span>{new Date().toLocaleTimeString()}</span>
                 </div>
@@ -547,14 +540,14 @@ export default function ImageEditorPage() {
           </div>
 
           {/* Upload Box */}
-          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-yellow-400 transition cursor-pointer mb-4">
+          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-3 sm:p-4 text-center hover:border-yellow-400 transition cursor-pointer mb-3 sm:mb-4">
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onChange={handleFileChange}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-xs sm:text-sm">
               Drop image here or{" "}
               <span className="font-medium text-yellow-600">
                 click to upload
@@ -562,20 +555,13 @@ export default function ImageEditorPage() {
             </p>
           </div>
 
-          {/* {file && (
-            <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
-              <HiOutlineCheck className="w-4 h-4 inline mr-1" />
-              {file.name} selected
-            </div>
-          )} */}
-
           {/* Export Options */}
-          <div className="space-y-4 mt-auto">
+          <div className="space-y-2 sm:space-y-4 mt-auto">
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-3">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                 Export Format
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {[
                   "Original",
                   "1:1 Square",
@@ -585,7 +571,7 @@ export default function ImageEditorPage() {
                   <button
                     key={opt}
                     onClick={() => setSelectedFormat(opt)}
-                    className={`border rounded-lg py-2 text-sm font-medium transition ${
+                    className={`border rounded-lg py-1 sm:py-2 text-xs sm:text-sm font-medium transition ${
                       selectedFormat === opt
                         ? "border-yellow-400 bg-yellow-50 text-yellow-700"
                         : "border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-yellow-600"
@@ -601,7 +587,7 @@ export default function ImageEditorPage() {
             {img && (
               <button
                 onClick={downloadImage}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-semibold px-4 py-2 text-sm hover:bg-yellow-600 transition"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-semibold px-3 py-2 text-sm sm:text-base hover:bg-yellow-600 transition"
               >
                 <HiOutlineDownload className="w-4 h-4" />
                 Download Edited Image
