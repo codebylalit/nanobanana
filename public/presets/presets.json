@@ -78,6 +78,18 @@
     "prompt": "Commercial hero shot: giant boba cup thrust toward camera in the subject’s hand. Caramel and milk tea drips, crisp ice, shallow DOF, warm orange grade, rim highlights, clean background. No extra text overlays."
   },
   {
+    "id": "cinematic-temple",
+    "title": "Cinematic Temple",
+    "image": "/presets/cinematic-temple.png",
+    "prompt": "Cinematic 9:16 low-angle shot — young man leaning on mountain temple stairs railing, surrounded by wildflowers + cherry blossoms drifting in air. Morning warm light, sharp subject focus (overshirt, denim, Samba sneakers, headphones), shallow depth, rich earthy tones, textured 8K film-still realism."
+  },
+  {
+    "id": "car-cinematic",
+    "title": "Car Cinematic",
+    "image": "/presets/Car.png",
+    "prompt": "Cinematic bird’s-eye overhead shot (vertical): a young man sits relaxed on the roof of a matte-black Mercedes-Benz G-Class parked under a lush green tree, surrounded by a dense, gently swaying sugarcane field bathed in golden hour sun. He dangles his legs, leaning back on his hands, eyes closed, wearing a modern open-collar white Polo, distressed jeans, white Converse, brown leather watch, with a vintage canvas backpack and belongings beside him.Deep shadows, ultra-real textures (skin, fabric, metal), high color saturation, and macro details on leaves and car, with sharp focus on the subject and soft background."
+  },
+  {
     "id": "desk-mini-campfire",
     "title": "Desk‑Top Mini Campfire",
     "image": "/presets/Desk‑top miniature .jpg",
@@ -112,6 +124,12 @@
     "title": "Elderly Tourist with Soda",
     "image": "/presets/Elderly tourist .jpg",
     "prompt": "Sunlit poolside portrait of an elderly tourist in a Hawaiian shirt sipping from a red soda can with a paper straw. Midday hard sun with soft fill, shallow DOF background, saturated colors, subtle film grain, natural skin detail."
+  },
+  {
+    "id": "Anime Selfie",
+    "title": "Anime Fisheye Selfie",
+    "image": "/presets/cartoon.jpg",
+    "prompt": "Ultra-realistic 9:16 vertical format fisheye selfie of me with [shinchan, Doraemon, Naruto, Nobita,J. We're all making Silly, exaggerated faces. Set in a small, bright living room with white tones. High camera angle. Extreme fisheye distortion. Realistic, cinematic lighting, anime characters integrated with stylized realism."
   },
   {
     "id": "giant-hands",
