@@ -167,7 +167,8 @@ function CreditsBadge() {
 
   return (
     <div className="flex items-center gap-2 sm:gap-3 text-gray-800">
-      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-white">
+      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-white"
+    onClick={()=> navigate("/dashboard-pricing")}>
         <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
         <span className="hidden sm:inline">Credits: </span>
         <span>{initialized ? credits : "..."}</span>
