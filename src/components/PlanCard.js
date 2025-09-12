@@ -17,19 +17,17 @@ export default function PlanCard({
   title,
   price,
   summary,
-  priceSub,
   bullets,
   productId,
-  ctaLabel
+  ctaLabel,
 }) {
   const { user } = useAuth();
   const { fetchCredits } = useCredits();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = React.useState(false);
-  // kept for potential logging; UI feedback via toasts
   const [, setPaymentError] = React.useState(null);
   const { show } = useToast();
-  const [currency, setCurrency] = React.useState("USD"); // USD | INR
+  const [currency, setCurrency] = React.useState("USD");
   const [priceInfo, setPriceInfo] = React.useState({
     display: price,
     perImage: "",
@@ -59,9 +57,7 @@ export default function PlanCard({
 
     try {
       const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error("Failed to load Razorpay script");
-      }
+      if (!scriptLoaded) throw new Error("Failed to load Razorpay script");
 
       const order = await createRazorpayOrder(productId, user, {
         currency,
@@ -129,61 +125,58 @@ export default function PlanCard({
     }
   };
 
-  // Inline status removed
-
   return (
     <div
-      className={`relative rounded-3xl p-4 sm:p-6 lg:p-8 border transition-all duration-300 hover:scale-105 ${
+      className={`relative rounded-2xl p-3 sm:p-5 lg:p-6 border transition-all duration-300 hover:scale-105 ${
         highlight
           ? "border-yellow-300 bg-yellow-50 shadow-[0_0_0_4px_rgba(234,179,8,0.15)]"
           : "border-gray-200 bg-white hover:border-gray-300"
       }`}
     >
-      {highlight ? (
-        <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold shadow-lg">
+      {highlight && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold shadow-md">
           Best Value
         </div>
-      ) : null}
+      )}
 
       {/* Badge */}
-      <div className="inline-flex items-center gap-2 text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 rounded-full bg-gray-100 text-gray-800 mb-4 sm:mb-6">
-        <HiOutlineLightningBolt className="w-4 h-4" />
+      <div className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-gray-100 text-gray-800 mb-3 sm:mb-5">
+        <HiOutlineLightningBolt className="w-3 h-3 sm:w-4 sm:h-4" />
         <span className="font-semibold">{badge}</span>
       </div>
 
       {/* Title & Price */}
-      <h3 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">
+      <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-gray-900">
         {title}
       </h3>
-      <div className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-yellow-500 mb-1 sm:mb-2">
+      <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-yellow-500 mb-1 sm:mb-2">
         {priceInfo.display}
       </div>
-      <div className="text-yellow-700 text-xs sm:text-sm mb-2 sm:mb-3 font-semibold">
-        {priceInfo.perImage}
-      </div>
-      <div className="text-gray-800 text-base sm:text-lg mb-6 sm:mb-8 font-medium">
+      {priceInfo.perImage && (
+        <div className="text-yellow-700 text-xs sm:text-sm mb-2 sm:mb-3 font-semibold">
+          {priceInfo.perImage}
+        </div>
+      )}
+      <div className="text-gray-800 text-sm sm:text-base mb-4 sm:mb-6 font-medium">
         {summary}
       </div>
-      {/* priceSub removed in favor of dynamic per-image */}
 
       {/* Bullets */}
-      <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 text-gray-700 text-sm sm:text-base">
+      <ul className="space-y-1 sm:space-y-2 mb-4 sm:mb-6 text-gray-700 text-xs sm:text-sm">
         {bullets.map((b, i) => (
-          <li key={i} className="flex items-start gap-2 sm:gap-3">
-            <HiOutlineCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mt-0.5 flex-shrink-0" />
+          <li key={i} className="flex items-start gap-1 sm:gap-2">
+            <HiOutlineCheck className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" />
             <span>{b}</span>
           </li>
         ))}
       </ul>
 
-      {/* Status messages replaced by toasts */}
-
       {/* Payment method selector */}
-      <div className="mb-4 sm:mb-6">
-        <div className="text-sm font-semibold text-gray-800 mb-2">
+      <div className="mb-3 sm:mb-4">
+        <div className="text-xs sm:text-sm font-semibold text-gray-800 mb-1 sm:mb-2">
           Payment method
         </div>
-        <div className="inline-flex rounded-xl border border-gray-300 overflow-hidden">
+        <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden text-xs sm:text-sm">
           <button
             type="button"
             onClick={() => setCurrency("USD")}
@@ -191,7 +184,7 @@ export default function PlanCard({
               currency === "USD"
                 ? "bg-yellow-400 text-black"
                 : "bg-white text-gray-800"
-            } px-4 py-2 text-sm font-bold transition-colors`}
+            } px-2 sm:px-3 py-1 sm:py-2 font-semibold transition-colors`}
           >
             International
           </button>
@@ -202,7 +195,7 @@ export default function PlanCard({
               currency === "INR"
                 ? "bg-yellow-400 text-black"
                 : "bg-white text-gray-800"
-            } px-4 py-2 text-sm font-bold border-l border-gray-300 transition-colors`}
+            } px-2 sm:px-3 py-1 sm:py-2 font-semibold border-l border-gray-300 transition-colors`}
           >
             UPI
           </button>
@@ -214,40 +207,13 @@ export default function PlanCard({
         <button
           onClick={handlePayment}
           disabled={isProcessing}
-          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-4 sm:px-6 py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-      ${
-        highlight
-          ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-          : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-      }`}
+          className={`w-full inline-flex items-center justify-center rounded-xl sm:rounded-2xl font-bold px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm lg:text-base transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+            highlight
+              ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-md hover:shadow-yellow-400/25"
+              : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+          }`}
         >
-          {isProcessing ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Processing...
-            </>
-          ) : (
-            ctaLabel // 👈 dynamic text here
-          )}
+          {isProcessing ? "Processing..." : ctaLabel}
         </button>
       ) : (
         <a
@@ -256,14 +222,13 @@ export default function PlanCard({
             e.preventDefault();
             navigate("/auth");
           }}
-          className={`w-full inline-flex items-center justify-center rounded-2xl font-bold px-4 sm:px-6 py-3 sm:py-4 lg:py-5 text-sm sm:text-base lg:text-lg transition-all duration-200
-      ${
-        highlight
-          ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-xl hover:shadow-yellow-400/25"
-          : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-      }`}
+          className={`w-full inline-flex items-center justify-center rounded-xl sm:rounded-2xl font-bold px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm lg:text-base transition-all duration-200 ${
+            highlight
+              ? "bg-yellow-400 text-black hover:bg-yellow-300 hover:scale-105 shadow-md hover:shadow-yellow-400/25"
+              : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+          }`}
         >
-          {ctaLabel} {/* 👈 same dynamic text */}
+          {ctaLabel}
         </a>
       )}
     </div>
