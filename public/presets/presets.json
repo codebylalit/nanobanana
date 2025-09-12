@@ -118,7 +118,7 @@
     "id": "mini-photographer",
     "title": "Mini Photographer",
     "image": "/presets/Mini photographer.jpg",
-    "prompt": "Miniature tabletop photo studio: 1:12 scale subject holding a camera, small softbox, phone used as backdrop. Product lighting with clean edge highlights, tiled floor texture, tiny moss details, shallow DOF."
+    "prompt": "hyperrealistic, photorealistic, 3d model, man, photographer, light, studio,  light studio setup,  camera, DSLR, telephoto lens,  light gray t-shirt, light denim shorts,  white sneakers,  tripod,  black backdrop,  phone,  stone floor,  moss,  small plants,  warm yellow light,  focused on figure,  detailed,  photorealistic lighting,  well-lit,  detailed studio lighting,  3d render,  accurate camera representation,  high definition"
   },
   {
     "id": "coffee-bottle-splash",
@@ -166,7 +166,7 @@
     "id": "tornado-swirl-pov",
     "title": "Tornado Swirl POV",
     "image": "/presets/Tornado swirl POV.jpg",
-    "prompt": "POV twister: spiraling vortex background around the moving subject, radial blur of debris, hair and dress flowing, cool desaturated grade, strong eye contact, sharp face, no warping of limbs."
+    "prompt": "A figure viewed from a low-angle, almost directly below. The subject wears a light teal and white gingham dress, leaning slightly forward in a seated position, holding a small light-brown dog. The body appears slender and central in the composition. The scene unfolds inside a swirling vortex or whirlwind, with a muted beige and gray background filled with scattered brown particles resembling dust in motion. Bright red clogs dominate the foreground, shown large due to perspective. The overall style is hyperrealistic with impressionistic touches, desaturated muted tones, soft overhead light casting subtle shadows, and a whimsical dreamlike atmosphere. The unusual fisheye-like perspective and motion blur around the feet create a dramatic sense of energy and movement."
   },
   {
     "id": "floating-everyday",
