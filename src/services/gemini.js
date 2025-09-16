@@ -1,6 +1,22 @@
 // Gemini 2.5 Flash Image Preview API service
 
-const API_KEY = "AIzaSyBZyxJ3JolphkdvJpij0ic7XM8RvXeTpVI";
+// Support multiple API keys with automatic fallback/rotation.
+// You can also set REACT_APP_GEMINI_KEYS as a comma-separated list in your env.
+const GEMINI_KEYS = (
+  typeof process !== "undefined" &&
+  process.env &&
+  process.env.REACT_APP_GEMINI_KEYS
+    ? process.env.REACT_APP_GEMINI_KEYS.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : []
+)
+  .concat([
+    // Existing key(s) followed by any additional keys
+    "AIzaSyBZyxJ3JolphkdvJpij0ic7XM8RvXeTpVI",
+    "AIzaSyDLtC9Kx-RO7OqLlUSdYhWBPPQ6zByc3Hs",
+  ])
+  .filter(Boolean);
 const BASE_URL_TEXT =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 const BASE_URL_IMAGE =
@@ -10,9 +26,9 @@ async function callGeminiAPI(
   prompt,
   imageData = null,
   useImageModel = false,
-  retries = 2
+  perKeyRetries = 2
 ) {
-  if (!API_KEY) throw new Error("Missing Gemini API Key");
+  if (!GEMINI_KEYS.length) throw new Error("Missing Gemini API Key(s)");
 
   const contents = [{ parts: [{ text: prompt }] }];
   if (imageData) {
@@ -27,37 +43,71 @@ async function callGeminiAPI(
     requestBody.generationConfig = { responseModalities: ["TEXT", "IMAGE"] };
   }
 
-  try {
-    const res = await fetch(baseUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-goog-api-key": API_KEY,
-      },
-      body: JSON.stringify(requestBody),
-    });
+  let lastError = null;
+  for (let k = 0; k < GEMINI_KEYS.length; k++) {
+    const key = GEMINI_KEYS[k];
+    for (let attempt = 0; attempt <= perKeyRetries; attempt++) {
+      try {
+        const res = await fetch(baseUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-goog-api-key": key,
+          },
+          body: JSON.stringify(requestBody),
+        });
 
-    if (res.status === 429 && retries > 0) {
-      const err = await res.json().catch(() => null);
-      const retryDelay =
-        err?.error?.details?.find((d) => d["@type"]?.includes("RetryInfo"))
-          ?.retryDelay || "60s";
-      const delayMs = parseInt(retryDelay) * 1000;
-      console.warn(`Rate limit hit. Retrying after ${delayMs / 1000}s...`);
-      await new Promise((r) => setTimeout(r, delayMs));
-      return callGeminiAPI(prompt, imageData, useImageModel, retries - 1);
+        // Handle rate limit with backoff on the same key
+        if (res.status === 429 && attempt < perKeyRetries) {
+          const err = await res.json().catch(() => null);
+          const retryDelay =
+            err?.error?.details?.find((d) => d["@type"]?.includes("RetryInfo"))
+              ?.retryDelay || "10s";
+          const delayMs = parseInt(retryDelay) * 1000 || 10000;
+          console.warn(
+            `Key ${k + 1}/${GEMINI_KEYS.length} rate-limited. Retrying in ${
+              delayMs / 1000
+            }s (attempt ${attempt + 1}/${perKeyRetries}).`
+          );
+          await new Promise((r) => setTimeout(r, delayMs));
+          continue;
+        }
+
+        // If still not OK, decide whether to rotate to next key
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          const code = res.status;
+          lastError = new Error(`Gemini API error: ${code} ${text}`);
+          // On quota/unauthorized, rotate to next key
+          if (code === 401 || code === 403 || code === 429) {
+            console.warn(
+              `Key ${k + 1} failed with ${code}. Trying next key...`
+            );
+            break; // break inner retry loop; move to next key
+          }
+          // For other errors, try next key immediately
+          console.warn(`Request failed (${code}). Trying next key...`);
+          break;
+        }
+
+        return await res.json();
+      } catch (err) {
+        lastError = err;
+        console.warn(
+          `Request error on key ${k + 1} (attempt ${
+            attempt + 1
+          }/$${perKeyRetries}).`,
+          err?.message || err
+        );
+        // retry same key unless we've exhausted attempts
+        if (attempt < perKeyRetries) continue;
+      }
     }
-
-    if (!res.ok) {
-      const error = await res.text();
-      throw new Error(`Gemini API error: ${res.status} ${error}`);
-    }
-
-    return await res.json();
-  } catch (err) {
-    console.error("Gemini API failed:", err);
-    throw err;
+    // Move to next key
   }
+
+  console.error("All Gemini API keys failed.", lastError);
+  throw lastError || new Error("All Gemini API keys failed");
 }
 
 function fileToBase64(file) {

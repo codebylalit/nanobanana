@@ -618,9 +618,7 @@ export default function ImageEditorPage() {
                   "1:1 Square",
                   "9:16 Portrait",
                   "16:9 Landscape",
-                  {
-                    /* "4:3 Widescreen", */
-                  },
+                  "5:3 Widescreen",
                 ].map((opt) => (
                   <button
                     key={opt}
