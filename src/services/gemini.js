@@ -1,4 +1,5 @@
 // Gemini 2.5 Flash Image Preview API service
+
 const API_KEY = "AIzaSyBZyxJ3JolphkdvJpij0ic7XM8RvXeTpVI";
 const BASE_URL_TEXT =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";

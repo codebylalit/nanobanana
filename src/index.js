@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./authContext";
 import { CreditsProvider } from "./creditsContext";
 import { ToastProvider } from "./toastContext";
+import { Analytics } from "@vercel/analytics/react"
 import reportWebVitals from "./reportWebVitals";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

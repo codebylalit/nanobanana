@@ -287,112 +287,6 @@ export default function ImageEditorPage() {
 
       {/* Main Split Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-10">
-        {/* LEFT: Image Preview & Export */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-5 shadow-sm flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <h2 className="text-sm sm:text-lg font-semibold text-gray-800">
-              Image Preview
-            </h2>
-            <div className="inline-flex items-center gap-1 sm:gap-2">
-              <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs">
-                State 1/1
-              </span>
-              <button
-                className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
-                aria-label="Undo"
-              >
-                <HiOutlineArrowUturnLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-              </button>
-              <button
-                className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
-                aria-label="Redo"
-              >
-                <HiOutlineArrowUturnRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-              </button>
-            </div>
-          </div>
-
-          {/* Image Display */}
-          <div className="flex-1 relative flex items-center justify-center border border-gray-200 rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gray-50">
-            {img || previewUrl ? (
-              <img
-                src={img || previewUrl}
-                alt="Preview"
-                className="max-h-[280px] sm:max-h-[500px] object-contain mx-auto"
-              />
-            ) : (
-              <p className="text-gray-400 text-xs sm:text-sm text-center">
-                Upload and edit image to preview here
-              </p>
-            )}
-
-            {(img || previewUrl) && (
-              <div className="absolute left-2 right-2 bottom-2 sm:left-3 sm:right-3 sm:bottom-3">
-                <div className="rounded-lg bg-black/70 text-white px-3 py-1 sm:px-4 sm:py-2 text-xs flex items-center justify-between">
-                  <span>{img ? "Edited image" : "Original image"}</span>
-                  <span>{new Date().toLocaleTimeString()}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Upload Box */}
-          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-3 sm:p-4 text-center hover:border-yellow-400 transition cursor-pointer mb-3 sm:mb-4">
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={handleFileChange}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-            />
-            <p className="text-gray-500 text-xs sm:text-sm">
-              Drop image here or{" "}
-              <span className="font-medium text-yellow-600">
-                click to upload
-              </span>
-            </p>
-          </div>
-
-          {/* Export Options */}
-          <div className="space-y-2 sm:space-y-4 mt-auto">
-            <div>
-              <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
-                Export Format
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                {[
-                  "Original",
-                  "1:1 Square",
-                  "9:16 Portrait",
-                  "16:9 Landscape",
-                ].map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => setSelectedFormat(opt)}
-                    className={`border rounded-lg py-1 sm:py-2 text-xs sm:text-sm font-medium transition ${
-                      selectedFormat === opt
-                        ? "border-yellow-400 bg-yellow-50 text-yellow-700"
-                        : "border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-yellow-600"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Download Button */}
-            {img && (
-              <button
-                onClick={downloadImage}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-semibold px-3 py-2 text-sm sm:text-base hover:bg-yellow-600 transition"
-              >
-                <HiOutlineDownload className="w-4 h-4" />
-                Download Edited Image
-              </button>
-            )}
-          </div>
-        </div>
         {/* RIGHT: Editing Tools */}
         <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-5 shadow-sm flex flex-col">
           {/* Tools Header */}
@@ -645,6 +539,115 @@ export default function ImageEditorPage() {
               </div>
             </div>
           )}
+        </div>
+        {/* LEFT: Image Preview & Export */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-5 shadow-sm flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <h2 className="text-sm sm:text-lg font-semibold text-gray-800">
+              Image Preview
+            </h2>
+            <div className="inline-flex items-center gap-1 sm:gap-2">
+              <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs">
+                State 1/1
+              </span>
+              <button
+                className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
+                aria-label="Undo"
+              >
+                <HiOutlineArrowUturnLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+              </button>
+              <button
+                className="p-1 sm:p-2 rounded-md hover:bg-gray-100"
+                aria-label="Redo"
+              >
+                <HiOutlineArrowUturnRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+              </button>
+            </div>
+          </div>
+
+          {/* Image Display */}
+          <div className="flex-1 relative flex items-center justify-center border border-gray-200 rounded-xl overflow-hidden mb-3 sm:mb-4 bg-gray-50">
+            {img || previewUrl ? (
+              <img
+                src={img || previewUrl}
+                alt="Preview"
+                className="max-h-[280px] sm:max-h-[500px] object-contain mx-auto"
+              />
+            ) : (
+              <p className="text-gray-400 text-xs sm:text-sm text-center">
+                Upload and edit image to preview here
+              </p>
+            )}
+
+            {(img || previewUrl) && (
+              <div className="absolute left-2 right-2 bottom-2 sm:left-3 sm:right-3 sm:bottom-3">
+                <div className="rounded-lg bg-black/70 text-white px-3 py-1 sm:px-4 sm:py-2 text-xs flex items-center justify-between">
+                  <span>{img ? "Edited image" : "Original image"}</span>
+                  <span>{new Date().toLocaleTimeString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Upload Box */}
+          <div className="relative border-2 border-dashed border-gray-300 rounded-xl p-3 sm:p-4 text-center hover:border-yellow-400 transition cursor-pointer mb-3 sm:mb-4">
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleFileChange}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+            <p className="text-gray-500 text-xs sm:text-sm">
+              Drop image here or{" "}
+              <span className="font-medium text-yellow-600">
+                click to upload
+              </span>
+            </p>
+          </div>
+
+          {/* Export Options */}
+          <div className="space-y-2 sm:space-y-4 mt-auto">
+            <div>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">
+                Export Format
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                {[
+                  "Original",
+                  "1:1 Square",
+                  "9:16 Portrait",
+                  "16:9 Landscape",
+                  {
+                    /* "4:3 Widescreen", */
+                  },
+                ].map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setSelectedFormat(opt)}
+                    className={`border rounded-lg py-1 sm:py-2 text-xs sm:text-sm font-medium transition ${
+                      selectedFormat === opt
+                        ? "border-yellow-400 bg-yellow-50 text-yellow-700"
+                        : "border-gray-300 text-gray-600 hover:border-yellow-400 hover:text-yellow-600"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Download Button */}
+            {img && (
+              <button
+                onClick={downloadImage}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-semibold px-3 py-2 text-sm sm:text-base hover:bg-yellow-600 transition"
+              >
+                <HiOutlineDownload className="w-4 h-4" />
+                Download Edited Image
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
