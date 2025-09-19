@@ -29,6 +29,12 @@
     "image": "/presets/Cartoon duo on scooter.jpg",
     "prompt": "Add two 2D cartoon characters riding a small scooter beside the real scooter in the same lane. Photoreal background with midday sun; toons have clean outlines and flat shading. Apply motion blur to both scooters’ wheels, road streaks, and cast crisp contact shadows on asphalt. Match perspective and scale precisely; no extra artifacts."
   },
+{
+    "id": "women with lotus",
+    "title": "Women In Boat",
+    "image": "/presets/women with lotus.jpg",
+    "prompt": "Convert, 4k HD realistic, A stunning portrait of a young Indian woman with long, dark, with wavy hair. On a wooden boat Posing nicely She is wearing a Beautiful  white gorget  saree and white fitted blouse with matching accessories like earning and bangles. Her hair is messy open. She is looking happy, enjoying. with a soft, serene expression. trying to touch Pink Waterlily from pond. Few plucked Waterlily on boat, beside her."
+  },
   {
     "id": "tiger-chase-action",
     "title": "Tiger Chase Action",
