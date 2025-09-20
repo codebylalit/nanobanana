@@ -3,10 +3,11 @@ const RAPIDAPI_URL =
   "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
 
 const RAPIDAPI_KEYS = [
-  "f82066f4c3msh56c57d6e1267699p1b718ejsn97d173495495",
+  "35b7f88f82msh6d25d050022cf22p1a7c69jsn186f478ca907",
+  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96",
   "1edab2b6f9msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
   "3c7e94fa19msh34f0e004e88042ep145455jsn8582a03edfeb",
-  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96",
+  "f82066f4c3msh56c57d6e1267699p1b718ejsn97d173495495",
 ];
 
 // Detect mobile browsers
