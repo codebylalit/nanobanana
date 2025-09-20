@@ -1,7 +1,14 @@
 // Gemini 2.5 Flash Image API service using RapidAPI
 const RAPIDAPI_URL =
   "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
-const RAPIDAPI_KEY = "f82066f4c3msh56c57d6e1267699p1b718ejsn97d173495495";
+// Add all your keys here
+const RAPIDAPI_KEYS = [
+  "f82066f4c3msh56c57d6e1267699p1b718ejsn97d173495495",
+  "1edab2b6f9msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
+  "3c7e94fa19msh34f0e004e88042ep145455jsn8582a03edfeb",
+  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96"
+];
+
 
 // Configure your preferred image hosting service
 const IMAGE_HOSTING_CONFIG = {
@@ -20,56 +27,80 @@ const IMAGE_HOSTING_CONFIG = {
 };
 
 async function callGeminiAPI(prompt, imageUrls = []) {
-  const options = {
-    method: "POST",
-    headers: {
-      "x-rapidapi-key": RAPIDAPI_KEY,
-      "x-rapidapi-host": "gemini-2-5-flash-image-nano-banana1.p.rapidapi.com",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      prompt: prompt,
-      image: imageUrls,
-      stream: false,
-      return: "url_image",
-    }),
-  };
+  let lastError;
 
-  console.log("Calling Gemini API with:", { prompt, imageUrls });
-
-  const response = await fetch(RAPIDAPI_URL, options);
-  const responseText = await response.text().catch(() => "");
-
-  if (!response.ok) {
-    let errorDetails = responseText;
+  for (const key of RAPIDAPI_KEYS) {
     try {
-      const errorObj = JSON.parse(responseText);
-      if (errorObj.error || errorObj.details) {
-        errorDetails = `${errorObj.error || ""} ${
-          errorObj.details || ""
-        }`.trim();
+      const options = {
+        method: "POST",
+        headers: {
+          "x-rapidapi-key": key,
+          "x-rapidapi-host":
+            "gemini-2-5-flash-image-nano-banana1.p.rapidapi.com",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          image: imageUrls,
+          stream: false,
+          return: "url_image",
+        }),
+      };
+
+      console.log("Calling Gemini API with key:", key.slice(0, 6) + "…");
+
+      const response = await fetch(RAPIDAPI_URL, options);
+      const responseText = await response.text().catch(() => "");
+
+      if (!response.ok) {
+        // Extract error details
+        let errorDetails = responseText;
+        try {
+          const errorObj = JSON.parse(responseText);
+          if (errorObj.error || errorObj.details) {
+            errorDetails = `${errorObj.error || ""} ${errorObj.details || ""}`.trim();
+          }
+        } catch {
+          // Keep original error text
+        }
+
+        // If quota/rate limit → try next key
+        if (
+          response.status === 429 ||
+          /rate|quota|limit/i.test(errorDetails)
+        ) {
+          console.warn("Key hit quota, trying next key…");
+          lastError = errorDetails;
+          continue;
+        }
+
+        throw new Error(`RapidAPI error: ${response.status} - ${errorDetails}`);
       }
-    } catch {
-      // Keep original error text
+
+      // Check for API-level error in body
+      try {
+        const parsed = JSON.parse(responseText);
+        if (parsed.error) {
+          throw new Error(`API Error: ${parsed.error} - ${parsed.details || ""}`);
+        }
+      } catch (e) {
+        if (e.message.startsWith("API Error:")) throw e;
+        // Not JSON, proceed normally
+      }
+
+      // Success
+      return responseText;
+    } catch (err) {
+      console.warn("Key failed:", key.slice(0, 6) + "…", err.message);
+      lastError = err.message;
+      // Try next key automatically
     }
-    throw new Error(`RapidAPI error: ${response.status} - ${errorDetails}`);
   }
 
-  // Check if response contains error even with 200 status
-  try {
-    const parsed = JSON.parse(responseText);
-    if (parsed.error) {
-      throw new Error(`API Error: ${parsed.error} - ${parsed.details || ""}`);
-    }
-  } catch (e) {
-    if (e.message.startsWith("API Error:")) {
-      throw e;
-    }
-    // Not JSON, proceed normally
-  }
-
-  return responseText;
+  // If all keys fail
+  throw new Error(`All API keys failed: ${lastError || "Unknown error"}`);
 }
+
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
