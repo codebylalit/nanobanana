@@ -33,9 +33,18 @@ const isMobile = () => {
     );
   if (mobile) {
     console.log("📱 Mobile device detected - using optimized settings");
+    console.log("📱 User Agent:", navigator.userAgent);
+    console.log(
+      "📱 Connection:",
+      navigator.connection?.effectiveType || "unknown"
+    );
   }
   return mobile;
 };
+
+// Force mobile mode for testing
+const FORCE_MOBILE = true; // Set to true for testing - TEMPORARILY ENABLED
+const isMobileDevice = () => FORCE_MOBILE || isMobile();
 
 // Performance monitoring for mobile debugging
 const perfLogger = {
@@ -69,7 +78,7 @@ async function compressForMobile(file) {
 
   return new Promise((resolve, reject) => {
     // More conservative file size limits for mobile
-    const maxFileSize = isMobile() ? 20 * 1024 * 1024 : 50 * 1024 * 1024; // 20MB mobile, 50MB desktop
+    const maxFileSize = isMobileDevice() ? 20 * 1024 * 1024 : 50 * 1024 * 1024; // 20MB mobile, 50MB desktop
     if (file.size > maxFileSize) {
       reject(
         new Error(
@@ -97,7 +106,7 @@ async function compressForMobile(file) {
     img.onload = () => {
       try {
         // More conservative sizing for mobile stability
-        const maxSize = isMobile() ? 1024 : 1200; // Increased from 800 to 1024
+        const maxSize = isMobileDevice() ? 1024 : 1200; // Increased from 800 to 1024
         let { width, height } = img;
 
         if (width > maxSize || height > maxSize) {
@@ -118,13 +127,14 @@ async function compressForMobile(file) {
 
         // Better rendering settings for mobile
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = isMobile() ? "low" : "medium";
+        ctx.imageSmoothingQuality = isMobileDevice() ? "low" : "medium";
         ctx.drawImage(img, 0, 0, width, height);
 
         // More conservative quality settings
-        let quality = isMobile() ? 0.8 : 0.85; // Increased from 0.7 to 0.8
-        if (file.size > 5 * 1024 * 1024) quality = isMobile() ? 0.7 : 0.8;
-        if (file.size > 10 * 1024 * 1024) quality = isMobile() ? 0.6 : 0.7;
+        let quality = isMobileDevice() ? 0.8 : 0.85; // Increased from 0.7 to 0.8
+        if (file.size > 5 * 1024 * 1024) quality = isMobileDevice() ? 0.7 : 0.8;
+        if (file.size > 10 * 1024 * 1024)
+          quality = isMobileDevice() ? 0.6 : 0.7;
 
         canvas.toBlob(
           (blob) => {
@@ -174,7 +184,7 @@ async function compressForMobile(file) {
         cleanup();
         reject(new Error("Image loading timeout"));
       },
-      isMobile() ? 30000 : 15000
+      isMobileDevice() ? 30000 : 15000
     ); // 30s for mobile, 15s for desktop
 
     img.src = URL.createObjectURL(file);
@@ -184,7 +194,7 @@ async function compressForMobile(file) {
 // Optimized ImgBB upload with better mobile handling
 async function uploadToImgBB(file, retryCount = 0) {
   perfLogger.start("ImgBB Upload");
-  const maxRetries = isMobile() ? 3 : 2; // More retries for mobile
+  const maxRetries = isMobileDevice() ? 3 : 2; // More retries for mobile
 
   try {
     const apiKey = IMGBB_KEYS[retryCount % IMGBB_KEYS.length];
@@ -196,12 +206,12 @@ async function uploadToImgBB(file, retryCount = 0) {
     formData.append("image", file);
 
     // Longer expiration for mobile to avoid re-uploads
-    const expiration = isMobile() ? 3600 : 3600; // 1hr for both
+    const expiration = isMobileDevice() ? 3600 : 3600; // 1hr for both
     const uploadUrl = `https://api.imgbb.com/1/upload?expiration=${expiration}&key=${apiKey}`;
 
     const controller = new AbortController();
     // Much longer timeouts for mobile networks
-    const timeout = isMobile() ? 60000 : 30000; // 60s mobile, 30s desktop
+    const timeout = isMobileDevice() ? 60000 : 30000; // 60s mobile, 30s desktop
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     console.log(
@@ -230,7 +240,7 @@ async function uploadToImgBB(file, retryCount = 0) {
           response.status === 0) &&
         retryCount < maxRetries
       ) {
-        const delay = isMobile() ? (retryCount + 1) * 3000 : 2000; // Progressive delay for mobile
+        const delay = isMobileDevice() ? (retryCount + 1) * 3000 : 2000; // Progressive delay for mobile
         console.log(
           `⚠️ Upload failed (${response.status}), retrying in ${
             delay / 1000
@@ -268,10 +278,12 @@ async function uploadToImgBB(file, retryCount = 0) {
 // Optimized API call with better mobile handling
 async function callGeminiAPI(prompt, imageUrls = [], retryCount = 0) {
   perfLogger.start("Gemini API Call");
-  const maxRetries = isMobile() ? 3 : 3; // Same retries for both
+  const maxRetries = isMobileDevice() ? 3 : 3; // Same retries for both
 
   // Use fewer API keys on mobile to avoid confusion
-  const keysToUse = isMobile() ? RAPIDAPI_KEYS.slice(0, 5) : RAPIDAPI_KEYS;
+  const keysToUse = isMobileDevice()
+    ? RAPIDAPI_KEYS.slice(0, 5)
+    : RAPIDAPI_KEYS;
 
   for (
     let i = retryCount;
@@ -283,12 +295,12 @@ async function callGeminiAPI(prompt, imageUrls = [], retryCount = 0) {
     try {
       const controller = new AbortController();
       // Much longer timeouts for mobile networks
-      const timeout = isMobile() ? 90000 : 45000; // 90s mobile, 45s desktop
+      const timeout = isMobileDevice() ? 90000 : 45000; // 90s mobile, 45s desktop
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       // Better payload for mobile
       const payload = {
-        prompt: prompt.slice(0, isMobile() ? 400 : 500), // Increased from 300
+        prompt: prompt.slice(0, isMobileDevice() ? 400 : 500), // Increased from 300
         image: imageUrls.slice(0, 1),
         stream: false,
         return: "url_image",
@@ -360,7 +372,7 @@ function createPlaceholder(label, subtitle, type = "info") {
   };
 
   const [color1, color2] = colors[type] || colors.info;
-  const size = isMobile() ? 300 : 400; // Smaller placeholders for mobile
+  const size = isMobileDevice() ? 300 : 400; // Smaller placeholders for mobile
 
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>
     <defs>
@@ -432,7 +444,7 @@ export async function imageToImage(file, prompt) {
   perfLogger.start("Image to Image");
 
   // Show progress indicator on mobile
-  if (isMobile() && window.showMobileProgress) {
+  if (isMobileDevice() && window.showMobileProgress) {
     window.showMobileProgress(true);
   }
 
@@ -443,12 +455,12 @@ export async function imageToImage(file, prompt) {
       imageUrl = file;
     } else if (file instanceof File) {
       // Add mobile-specific file validation
-      if (isMobile() && file.size > 20 * 1024 * 1024) {
+      if (isMobileDevice() && file.size > 20 * 1024 * 1024) {
         throw new Error("File too large for mobile (max 20MB)");
       }
 
       try {
-        console.log(`📱 Mobile processing: ${isMobile() ? "Yes" : "No"}`);
+        console.log(`📱 Mobile processing: ${isMobileDevice() ? "Yes" : "No"}`);
         console.log(
           `📦 Compressing image (${(file.size / 1024 / 1024).toFixed(1)}MB)...`
         );
@@ -460,13 +472,13 @@ export async function imageToImage(file, prompt) {
         perfLogger.end("Image to Image");
 
         // Hide progress on error
-        if (isMobile() && window.showMobileProgress) {
+        if (isMobileDevice() && window.showMobileProgress) {
           window.showMobileProgress(false);
         }
 
         // Better error messages for mobile
         let errorMsg = getFriendlyErrorMessage(uploadError.message);
-        if (isMobile() && uploadError.message.includes("timeout")) {
+        if (isMobileDevice() && uploadError.message.includes("timeout")) {
           errorMsg = "Slow connection - try smaller image";
         }
 
@@ -494,7 +506,7 @@ export async function imageToImage(file, prompt) {
           perfLogger.end("Image to Image");
 
           // Hide progress on success
-          if (isMobile() && window.showMobileProgress) {
+          if (isMobileDevice() && window.showMobileProgress) {
             window.showMobileProgress(false);
           }
 
@@ -506,7 +518,7 @@ export async function imageToImage(file, prompt) {
           perfLogger.end("Image to Image");
 
           // Hide progress on success
-          if (isMobile() && window.showMobileProgress) {
+          if (isMobileDevice() && window.showMobileProgress) {
             window.showMobileProgress(false);
           }
 
@@ -519,7 +531,7 @@ export async function imageToImage(file, prompt) {
     perfLogger.end("Image to Image");
 
     // Hide progress on completion
-    if (isMobile() && window.showMobileProgress) {
+    if (isMobileDevice() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
 
@@ -535,13 +547,13 @@ export async function imageToImage(file, prompt) {
     perfLogger.end("Image to Image");
 
     // Hide progress on error
-    if (isMobile() && window.showMobileProgress) {
+    if (isMobileDevice() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
 
     // Enhanced error handling for mobile
     let errorMsg = getFriendlyErrorMessage(error?.message);
-    if (isMobile()) {
+    if (isMobileDevice()) {
       if (error.message.includes("timeout")) {
         errorMsg = "Request timeout - check connection";
       } else if (error.message.includes("memory")) {
@@ -626,7 +638,7 @@ export function getFriendlyErrorMessage(raw = "") {
 
 // Enhanced mobile debugging with progress indicators
 export function enableMobileDebugging() {
-  if (isMobile()) {
+  if (isMobileDevice()) {
     // Override console.log to show on screen for mobile debugging
     const originalLog = console.log;
     const debugDiv = document.createElement("div");
@@ -772,7 +784,7 @@ export function getPerformanceInfo() {
 }
 
 // Auto-enable debugging on mobile
-if (typeof window !== "undefined" && isMobile()) {
+if (typeof window !== "undefined" && isMobileDevice()) {
   enableMobileDebugging();
   getPerformanceInfo();
 }
