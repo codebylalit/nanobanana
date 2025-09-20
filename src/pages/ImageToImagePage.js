@@ -246,7 +246,7 @@ export default function ImageToImagePage() {
               </div>
 
               {/* Generate */}
-              <div className="mt-auto">
+              <div className="mt-auto hidden sm:block">
                 <button
                   onClick={onGenerate}
                   disabled={loading || credits < 1 || !file}

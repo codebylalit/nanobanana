@@ -174,7 +174,7 @@ export default function HeadshotPage() {
               </div>
 
               {/* Generate Button */}
-              <div className="mt-auto">
+              <div className="mt-auto hidden sm:block">
                 <button
                   onClick={onGenerate}
                   className="w-full flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-yellow-400 text-black font-bold px-4 sm:px-8 py-2.5 sm:py-4 text-sm sm:text-base hover:bg-yellow-300 transition shadow-md disabled:opacity-50"
@@ -221,7 +221,7 @@ export default function HeadshotPage() {
         </div>
 
         {/* Right Column: Generated Headshot */}
-        <div className="space-y-3 sm:space-y-6">
+        <div className="space-y-3 hidden sm:block sm:space-y-6">
           <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-6 lg:p-8 min-h-[300px] sm:min-h-[500px] flex flex-col">
             <h3 className="text-base sm:text-2xl font-bold mb-3 sm:mb-6 text-gray-900">
               Generated Headshot

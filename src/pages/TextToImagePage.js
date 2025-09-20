@@ -182,7 +182,7 @@ export default function TextToImagePage() {
          </div>
 
          {/* Generate Button */}
-         <div className="mt-4">
+         <div className="mt-4 hidden sm:block">
            <button
              onClick={onGenerate}
              disabled={loading || credits < 1 || !prompt.trim()}
