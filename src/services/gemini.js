@@ -711,28 +711,49 @@ export function enableMobileDebugging() {
 export async function suggestPromptIdeas(topic) {
   try {
     const result = await callGeminiAPI(
-      `List 8 creative prompts: ${topic || "art"}`,
+      `List 8 creative prompts for: ${
+        topic || "art"
+      }. Return only the prompts, one per line, without numbers or bullets.`,
       []
     );
 
     let raw = result;
     try {
       const parsed = JSON.parse(result);
-      raw = parsed.text || parsed.response || result;
-    } catch {}
+      // Handle different response formats
+      if (parsed.message) {
+        raw = parsed.message;
+      } else if (parsed.text) {
+        raw = parsed.text;
+      } else if (parsed.response) {
+        raw = parsed.response;
+      } else if (parsed.prompts) {
+        raw = parsed.prompts;
+      } else {
+        raw = result;
+      }
+    } catch {
+      // If not JSON, use raw result
+      raw = result;
+    }
 
+    // Clean up the text and extract prompts
     const lines = raw
       .split(/\n+/)
       .map((l) => l.replace(/^[-*\d\.\s]+/, "").trim())
       .filter(Boolean)
       .slice(0, 8);
 
-    if (lines.length) return lines;
+    if (lines.length >= 3) {
+      console.log(`✅ Generated ${lines.length} prompt ideas`);
+      return lines;
+    }
   } catch (e) {
     console.warn("Suggest prompts failed:", e);
   }
 
-  return [
+  // Fallback prompts
+  const fallbackPrompts = [
     "Cyberpunk street with neon lights",
     "Mountain cabin at sunset",
     "Geometric patterns in pastels",
@@ -742,6 +763,9 @@ export async function suggestPromptIdeas(topic) {
     "Abstract digital patterns",
     "Zen garden with leaves",
   ];
+
+  console.log("📝 Using fallback prompt ideas");
+  return fallbackPrompts;
 }
 // Performance monitoring
 export function getPerformanceInfo() {
