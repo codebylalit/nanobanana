@@ -431,7 +431,7 @@ export async function imageToImage(file, prompt) {
   }
 
   perfLogger.start("Image to Image");
-  
+
   // Show progress indicator on mobile
   if (isMobile() && window.showMobileProgress) {
     window.showMobileProgress(true);
@@ -449,32 +449,30 @@ export async function imageToImage(file, prompt) {
       }
 
       try {
-        console.log(`📱 Mobile processing: ${isMobile() ? 'Yes' : 'No'}`);
-        console.log(`📦 Compressing image (${(file.size / 1024 / 1024).toFixed(1)}MB)...`);
+        console.log(`📱 Mobile processing: ${isMobile() ? "Yes" : "No"}`);
+        console.log(
+          `📦 Compressing image (${(file.size / 1024 / 1024).toFixed(1)}MB)...`
+        );
         const compressedFile = await compressForMobile(file);
         console.log(`📤 Uploading to ImgBB...`);
         imageUrl = await uploadToImgBB(compressedFile);
       } catch (uploadError) {
         console.error("❌ Upload failed:", uploadError);
         perfLogger.end("Image to Image");
-        
+
         // Hide progress on error
         if (isMobile() && window.showMobileProgress) {
           window.showMobileProgress(false);
         }
-        
+
         // Better error messages for mobile
         let errorMsg = getFriendlyErrorMessage(uploadError.message);
         if (isMobile() && uploadError.message.includes("timeout")) {
           errorMsg = "Slow connection - try smaller image";
         }
-        
+
         return {
-          url: createPlaceholder(
-            "Upload Failed",
-            errorMsg,
-            "error"
-          ),
+          url: createPlaceholder("Upload Failed", errorMsg, "error"),
           generated: false,
         };
       }
@@ -495,24 +493,24 @@ export async function imageToImage(file, prompt) {
         if (resultUrl) {
           console.log(`✅ Image transformation successful`);
           perfLogger.end("Image to Image");
-          
+
           // Hide progress on success
           if (isMobile() && window.showMobileProgress) {
             window.showMobileProgress(false);
           }
-          
+
           return { url: resultUrl, generated: true };
         }
       } catch {
         if (result.startsWith("http")) {
           console.log(`✅ Image transformation successful (direct URL)`);
           perfLogger.end("Image to Image");
-          
+
           // Hide progress on success
           if (isMobile() && window.showMobileProgress) {
             window.showMobileProgress(false);
           }
-          
+
           return { url: result.trim(), generated: true };
         }
       }
@@ -520,12 +518,12 @@ export async function imageToImage(file, prompt) {
 
     console.log(`⚠️ No valid result from API, showing placeholder`);
     perfLogger.end("Image to Image");
-    
+
     // Hide progress on completion
     if (isMobile() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
-    
+
     return {
       url: createPlaceholder(
         "Transformed Image",
@@ -536,12 +534,12 @@ export async function imageToImage(file, prompt) {
   } catch (error) {
     console.error("❌ Image to Image failed:", error);
     perfLogger.end("Image to Image");
-    
+
     // Hide progress on error
     if (isMobile() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
-    
+
     // Enhanced error handling for mobile
     let errorMsg = getFriendlyErrorMessage(error?.message);
     if (isMobile()) {
@@ -551,13 +549,9 @@ export async function imageToImage(file, prompt) {
         errorMsg = "Not enough memory - try smaller image";
       }
     }
-    
+
     return {
-      url: createPlaceholder(
-        "Transform Failed",
-        errorMsg,
-        "error"
-      ),
+      url: createPlaceholder("Transform Failed", errorMsg, "error"),
       generated: false,
     };
   }
@@ -670,7 +664,7 @@ export function enableMobileDebugging() {
       display: none;
       animation: progress 2s ease-in-out infinite;
     `;
-    
+
     const style = document.createElement("style");
     style.textContent = `
       @keyframes progress {
