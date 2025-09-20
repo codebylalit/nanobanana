@@ -1,36 +1,39 @@
-// Gemini 2.5 Flash Image API service using RapidAPI
+// Mobile-optimized Gemini 2.5 Flash Image API service
 const RAPIDAPI_URL =
   "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
-// Add all your keys here
+
 const RAPIDAPI_KEYS = [
   "f82066f4c3msh56c57d6e1267699p1b718ejsn97d173495495",
   "1edab2b6f9msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
   "3c7e94fa19msh34f0e004e88042ep145455jsn8582a03edfeb",
-  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96"
+  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96",
 ];
-
 
 // Configure your preferred image hosting service
 const IMAGE_HOSTING_CONFIG = {
-  // Option 1: ImgBB (recommended - get free API key from imgbb.com)
   imgbb: {
-    apiKey: "YOUR_IMGBB_API_KEY_HERE", // Replace with your actual API key
+    apiKey: "976c43da17048b8595498ac1ba0fa639",
     url: "https://api.imgbb.com/1/upload",
   },
-
-  // Option 2: Cloudinary (free tier available)
   cloudinary: {
-    cloudName: "demo", // Replace with your cloud name
-    uploadPreset: "ml_default", // Replace with your preset
+    cloudName: "demo",
+    uploadPreset: "ml_default",
     url: "https://api.cloudinary.com/v1_1/demo/image/upload",
   },
 };
 
+// Mobile-optimized API call with timeout and better error handling
 async function callGeminiAPI(prompt, imageUrls = []) {
   let lastError;
 
   for (const key of RAPIDAPI_KEYS) {
     try {
+      // Mobile-specific timeout (shorter than desktop)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 45000); // 45 seconds for mobile
+
       const options = {
         method: "POST",
         headers: {
@@ -45,107 +48,177 @@ async function callGeminiAPI(prompt, imageUrls = []) {
           stream: false,
           return: "url_image",
         }),
+        signal: controller.signal,
       };
 
       console.log("Calling Gemini API with key:", key.slice(0, 6) + "…");
 
       const response = await fetch(RAPIDAPI_URL, options);
-      const responseText = await response.text().catch(() => "");
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        // Extract error details
-        let errorDetails = responseText;
+        let errorDetails = "Unknown error";
         try {
+          const responseText = await response.text();
           const errorObj = JSON.parse(responseText);
           if (errorObj.error || errorObj.details) {
-            errorDetails = `${errorObj.error || ""} ${errorObj.details || ""}`.trim();
+            errorDetails = `${errorObj.error || ""} ${
+              errorObj.details || ""
+            }`.trim();
           }
         } catch {
-          // Keep original error text
+          errorDetails = `HTTP ${response.status}`;
         }
 
         // If quota/rate limit → try next key
-        if (
-          response.status === 429 ||
-          /rate|quota|limit/i.test(errorDetails)
-        ) {
+        if (response.status === 429 || /rate|quota|limit/i.test(errorDetails)) {
           console.warn("Key hit quota, trying next key…");
           lastError = errorDetails;
           continue;
         }
 
-        throw new Error(`RapidAPI error: ${response.status} - ${errorDetails}`);
+        throw new Error(`API error: ${response.status} - ${errorDetails}`);
       }
+
+      // Get response text with timeout protection
+      const responseText = await Promise.race([
+        response.text(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Response read timeout")), 10000)
+        ),
+      ]);
 
       // Check for API-level error in body
       try {
         const parsed = JSON.parse(responseText);
         if (parsed.error) {
-          throw new Error(`API Error: ${parsed.error} - ${parsed.details || ""}`);
+          // If it's a "no image" error, try next key
+          if (
+            parsed.error.includes("não continha uma imagem") ||
+            parsed.error.includes("no image")
+          ) {
+            console.warn("API returned no image, trying next key…");
+            lastError = parsed.error;
+            continue;
+          }
+          throw new Error(`API Error: ${parsed.error}`);
         }
       } catch (e) {
         if (e.message.startsWith("API Error:")) throw e;
         // Not JSON, proceed normally
       }
 
-      // Success
       return responseText;
     } catch (err) {
-      console.warn("Key failed:", key.slice(0, 6) + "…", err.message);
-      lastError = err.message;
-      // Try next key automatically
+      if (err.name === "AbortError") {
+        console.warn("Request timeout, trying next key…");
+        lastError = "Request timeout";
+      } else {
+        console.warn("Key failed:", key.slice(0, 6) + "…", err.message);
+        lastError = err.message;
+      }
+      continue;
     }
   }
 
-  // If all keys fail
   throw new Error(`All API keys failed: ${lastError || "Unknown error"}`);
 }
 
+// Mobile-optimized file compression before upload
+function compressImageForMobile(file, maxWidth = 1200, quality = 0.8) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result.split(",")[1];
-      resolve({
-        base64,
-        mimeType: file.type,
-        dataUrl: reader.result,
-      });
+    img.onload = () => {
+      // Calculate new dimensions
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw and compress
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          resolve(new File([blob], file.name, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        quality
+      );
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+
+    img.src = URL.createObjectURL(file);
   });
 }
 
-// Multiple image hosting strategies
+// Mobile-optimized upload strategies (prioritize faster services)
 async function uploadImageToHost(file) {
-  const uploadStrategies = [
-    () => uploadToImgBB(file),
-    () => uploadToCloudinary(file),
-    () => uploadToFileIO(file),
-    () => uploadToTmpFiles(file),
-  ];
+  // Compress image on mobile for faster upload
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  let processedFile = file;
+
+  if (isMobile && file.size > 500000) {
+    // 500KB threshold
+    console.log("Compressing image for mobile upload...");
+    try {
+      processedFile = await compressImageForMobile(file);
+      console.log(`Compressed: ${file.size} → ${processedFile.size} bytes`);
+    } catch (e) {
+      console.warn("Compression failed, using original file");
+    }
+  }
+
+  // Prioritize faster upload services for mobile
+  const uploadStrategies = isMobile
+    ? [
+        () => uploadToFileIO(processedFile),
+        () => uploadToTmpFiles(processedFile),
+        () => uploadToCloudinary(processedFile),
+        () => uploadToImgBB(processedFile),
+      ]
+    : [
+        () => uploadToImgBB(processedFile),
+        () => uploadToCloudinary(processedFile),
+        () => uploadToFileIO(processedFile),
+        () => uploadToTmpFiles(processedFile),
+      ];
+
+  const errors = [];
 
   for (const strategy of uploadStrategies) {
     try {
-      const url = await strategy();
+      const url = await Promise.race([
+        strategy(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Upload timeout")), 20000)
+        ),
+      ]);
+
       if (url && url.startsWith("http")) {
         console.log("Successfully uploaded image:", url);
         return url;
       }
     } catch (error) {
       console.warn("Upload strategy failed:", error.message);
+      errors.push(error.message);
       continue;
     }
   }
 
-  throw new Error(
-    "All image hosting services failed. Please try uploading your image to a free service like imgbb.com or imgur.com and use the direct URL instead."
-  );
+  throw new Error(`All uploads failed: ${errors.join("; ")}`);
 }
 
-// ImgBB upload (best option if you have an API key)
+// ImgBB upload with mobile optimizations
 async function uploadToImgBB(file) {
   const apiKey = IMAGE_HOSTING_CONFIG.imgbb.apiKey;
   if (!apiKey || apiKey === "YOUR_IMGBB_API_KEY_HERE") {
@@ -155,11 +228,15 @@ async function uploadToImgBB(file) {
   const formData = new FormData();
   formData.append("image", file);
 
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), 15000); // 15s timeout
+
   const response = await fetch(
     `${IMAGE_HOSTING_CONFIG.imgbb.url}?key=${apiKey}`,
     {
       method: "POST",
       body: formData,
+      signal: controller.signal,
     }
   );
 
@@ -175,7 +252,7 @@ async function uploadToImgBB(file) {
   throw new Error("ImgBB did not return a valid URL");
 }
 
-// Cloudinary upload (free tier available)
+// Cloudinary upload with mobile optimizations
 async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
@@ -184,9 +261,13 @@ async function uploadToCloudinary(file) {
     IMAGE_HOSTING_CONFIG.cloudinary.uploadPreset
   );
 
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), 15000); // 15s timeout
+
   const response = await fetch(IMAGE_HOSTING_CONFIG.cloudinary.url, {
     method: "POST",
     body: formData,
+    signal: controller.signal,
   });
 
   if (!response.ok) {
@@ -201,14 +282,18 @@ async function uploadToCloudinary(file) {
   throw new Error("Cloudinary did not return a valid URL");
 }
 
-// File.io upload (simple temporary hosting)
+// File.io upload (fast for mobile)
 async function uploadToFileIO(file) {
   const formData = new FormData();
   formData.append("file", file);
 
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), 10000); // 10s timeout
+
   const response = await fetch("https://file.io", {
     method: "POST",
     body: formData,
+    signal: controller.signal,
   });
 
   if (!response.ok) {
@@ -223,14 +308,18 @@ async function uploadToFileIO(file) {
   throw new Error("File.io did not return a valid URL");
 }
 
-// tmpfiles.org upload (another free option)
+// TmpFiles upload with mobile optimization
 async function uploadToTmpFiles(file) {
   const formData = new FormData();
   formData.append("file", file);
 
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), 10000); // 10s timeout
+
   const response = await fetch("https://tmpfiles.org/api/v1/upload", {
     method: "POST",
     body: formData,
+    signal: controller.signal,
   });
 
   if (!response.ok) {
@@ -239,7 +328,6 @@ async function uploadToTmpFiles(file) {
 
   const result = await response.json();
   if (result.status === "success" && result.data && result.data.url) {
-    // TmpFiles returns a viewing URL, we need the direct URL
     const directUrl = result.data.url.replace(
       "tmpfiles.org/",
       "tmpfiles.org/dl/"
@@ -248,41 +336,6 @@ async function uploadToTmpFiles(file) {
   }
 
   throw new Error("TmpFiles did not return a valid URL");
-}
-
-// Alternative: Accept direct URLs from users
-export function createImageUrlInput() {
-  return `
-    <div class="image-input-options">
-      <div class="upload-option">
-        <label>Upload Image File:</label>
-        <input type="file" id="imageFile" accept="image/*" />
-      </div>
-      <div class="url-option">
-        <label>Or enter image URL:</label>
-        <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" />
-        <small>Use a direct link to an image hosted online</small>
-      </div>
-    </div>
-  `;
-}
-
-// Helper to get image source (file or URL)
-export async function getImageSource() {
-  const fileInput = document.getElementById("imageFile");
-  const urlInput = document.getElementById("imageUrl");
-
-  if (urlInput && urlInput.value.trim()) {
-    // User provided a direct URL
-    return urlInput.value.trim();
-  }
-
-  if (fileInput && fileInput.files && fileInput.files[0]) {
-    // User uploaded a file - need to host it
-    return await uploadImageToHost(fileInput.files[0]);
-  }
-
-  throw new Error("Please provide an image file or URL");
 }
 
 // Helper function to create enhanced placeholder images
@@ -322,7 +375,6 @@ export async function textToImage(prompt) {
 
     console.log("API Response:", result);
 
-    // Parse the response
     if (result && result.trim()) {
       try {
         const parsed = JSON.parse(result);
@@ -333,7 +385,6 @@ export async function textToImage(prompt) {
           };
         }
       } catch {
-        // If not JSON, treat as direct URL
         if (result.startsWith("http") || result.startsWith("data:")) {
           return {
             url: result.trim(),
@@ -366,7 +417,7 @@ export async function textToImage(prompt) {
 }
 
 export async function imageToImage(file, prompt) {
-  if (!file && !prompt) {
+  if (!file) {
     throw new Error("Image file or URL is required for transformation");
   }
 
@@ -377,6 +428,7 @@ export async function imageToImage(file, prompt) {
     if (typeof file === "string" && file.startsWith("http")) {
       imageUrl = file;
     } else if (file instanceof File) {
+      console.log("Uploading file for mobile...");
       imageUrl = await uploadImageToHost(file);
     } else {
       throw new Error("Invalid image input");
@@ -384,7 +436,15 @@ export async function imageToImage(file, prompt) {
 
     console.log("Using image URL:", imageUrl);
 
-    const safePrompt = `Apply creative transformation: ${prompt}. Focus on artistic style, lighting, colors, and visual effects.`;
+    // Use simpler prompts for mobile to reduce processing time
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    const safePrompt = isMobile
+      ? `Transform image: ${prompt}`
+      : `Apply creative transformation: ${prompt}. Focus on artistic style, lighting, colors, and visual effects.`;
+
     const result = await callGeminiAPI(safePrompt, [imageUrl]);
 
     if (result && result.trim()) {
@@ -419,6 +479,17 @@ export async function imageToImage(file, prompt) {
     console.error("Image to Image Error:", error);
 
     const errorMsg = error.message.toLowerCase();
+    if (errorMsg.includes("timeout")) {
+      return {
+        url: createPlaceholderImage(
+          "Request Timeout",
+          "Try again with a smaller image or simpler prompt",
+          ["#f59e0b", "#d97706"]
+        ),
+        generated: false,
+      };
+    }
+
     if (
       errorMsg.includes("person") ||
       errorMsg.includes("cannot fulfill") ||
@@ -456,6 +527,7 @@ export async function imageToImage(file, prompt) {
   }
 }
 
+// Additional mobile-optimized functions...
 export async function generateHeadshot(file, prompt) {
   if (!file) {
     throw new Error("Photo is required for headshot generation");
@@ -471,10 +543,9 @@ export async function generateHeadshot(file, prompt) {
       throw new Error("Invalid image input");
     }
 
-    const headshotPrompt = `Apply professional portrait enhancements: ${
-      prompt || "professional lighting and clean background"
-    }. Focus on lighting quality and professional appearance.`;
-
+    const headshotPrompt = `Professional portrait: ${
+      prompt || "clean background"
+    }`;
     const result = await callGeminiAPI(headshotPrompt, [imageUrl]);
 
     if (result && result.trim()) {
@@ -506,23 +577,6 @@ export async function generateHeadshot(file, prompt) {
     };
   } catch (error) {
     console.error("Headshot Generation Error:", error);
-
-    const errorMsg = error.message.toLowerCase();
-    if (
-      errorMsg.includes("person") ||
-      errorMsg.includes("cannot fulfill") ||
-      errorMsg.includes("não continha uma imagem")
-    ) {
-      return {
-        url: createPlaceholderImage(
-          "Headshot Generation Restricted",
-          "This service isn't available for this image type",
-          ["#f59e0b", "#d97706"]
-        ),
-        generated: false,
-      };
-    }
-
     return {
       url: createPlaceholderImage(
         "Headshot Generation Failed",
@@ -549,8 +603,9 @@ export async function removeBackground(file) {
       throw new Error("Invalid image input");
     }
 
-    const backgroundRemovalPrompt = `Remove background and isolate the main subject. Create clean cutout with transparent or solid background.`;
-    const result = await callGeminiAPI(backgroundRemovalPrompt, [imageUrl]);
+    const result = await callGeminiAPI("Remove background, isolate subject", [
+      imageUrl,
+    ]);
 
     if (result && result.trim()) {
       try {
@@ -612,8 +667,10 @@ export async function editImageAdjustments(file, options) {
       .map(([k, v]) => `${k}: ${v}`)
       .join(", ");
 
-    const editPrompt = `Enhance image with adjustments: ${adjustments}. Improve brightness, contrast, saturation while maintaining natural appearance.`;
-    const result = await callGeminiAPI(editPrompt, [imageUrl]);
+    const result = await callGeminiAPI(
+      `Enhance image: ${adjustments || "improve quality"}`,
+      [imageUrl]
+    );
 
     if (result && result.trim()) {
       try {
@@ -655,15 +712,10 @@ export async function editImageAdjustments(file, options) {
   }
 }
 
-// --- Prompt helper utilities ---
+// Prompt helper utilities
 export async function improvePrompt(userPrompt) {
   try {
-    const system =
-      "Enhance this image prompt with vivid details, lighting, style, and composition. Keep it concise but descriptive (45-80 words). Return only the enhanced prompt.";
-    const result = await callGeminiAPI(
-      `${system}\nOriginal: ${userPrompt}`,
-      []
-    );
+    const result = await callGeminiAPI(`Enhance prompt: ${userPrompt}`, []);
 
     try {
       const parsed = JSON.parse(result);
@@ -673,16 +725,17 @@ export async function improvePrompt(userPrompt) {
     }
   } catch (e) {
     console.warn("improvePrompt fallback:", e);
-    return `${userPrompt} — ultra-detailed, cinematic lighting, professional quality, vibrant colors, sharp focus, artistic composition`;
+    return `${userPrompt} — detailed, high quality, artistic`;
   }
 }
 
 export async function suggestPromptIdeas(topic) {
   const seed = topic?.trim() || "creative image concepts";
   try {
-    const instruction =
-      "Generate 8 creative image prompts as a simple list. Each should be 8-12 words, diverse and inspiring.";
-    const result = await callGeminiAPI(`${instruction}\nTopic: ${seed}`, []);
+    const result = await callGeminiAPI(
+      `Generate 8 image prompt ideas about: ${seed}`,
+      []
+    );
 
     let raw = result;
     try {
@@ -702,36 +755,23 @@ export async function suggestPromptIdeas(topic) {
     console.warn("suggestPromptIdeas fallback:", e);
   }
   return [
-    "Cyberpunk street scene with neon reflections in rain",
-    "Cozy mountain cabin during golden hour sunset",
-    "Minimalist geometric patterns in pastel colors",
-    "Macro photography of morning dew on flower petals",
-    "Futuristic city skyline with flying vehicles",
-    "Vintage library with floating books and warm lighting",
-    "Abstract digital art with flowing energy patterns",
-    "Serene zen garden with cherry blossoms falling",
+    "Cyberpunk street scene with neon reflections",
+    "Cozy mountain cabin during golden hour",
+    "Minimalist geometric patterns in pastels",
+    "Morning dew on flower petals macro",
+    "Futuristic city skyline with flying cars",
+    "Vintage library with floating books",
+    "Abstract digital art with energy patterns",
+    "Zen garden with cherry blossoms",
   ];
 }
 
-// --- Setup Instructions ---
-export function getSetupInstructions() {
-  return {
-    title: "Image Hosting Setup Required",
-    steps: [
-      "1. Get a free ImgBB API key from https://imgbb.com",
-      "2. Replace 'YOUR_IMGBB_API_KEY_HERE' in the code with your actual key",
-      "3. Or use direct image URLs instead of uploading files",
-      "4. Alternative: Set up Cloudinary account for more reliable hosting",
-    ],
-    quickStart:
-      "For immediate testing, use direct image URLs like: https://i.ibb.co/CLWKLpL/MIv8s-1.png",
-  };
-}
-
-// --- Friendly error helpers ---
 export function getFriendlyErrorMessage(raw = "") {
   const msg = String(raw || "").toLowerCase();
 
+  if (msg.includes("timeout")) {
+    return "Request took too long. Try a smaller image or simpler prompt.";
+  }
   if (msg.includes("hosting") || msg.includes("upload")) {
     return "Image upload failed. Try using a direct image URL instead.";
   }
@@ -740,26 +780,31 @@ export function getFriendlyErrorMessage(raw = "") {
     msg.includes("cannot fulfill") ||
     msg.includes("não continha uma imagem")
   ) {
-    return "This transformation isn't supported for images containing people.";
+    return "This transformation isn't supported for this image.";
   }
-  if (msg.includes("429") || msg.includes("rate") || msg.includes("quota"))
+  if (msg.includes("429") || msg.includes("rate") || msg.includes("quota")) {
     return "API limit reached. Please try again in a minute.";
-  if (
-    msg.includes("timeout") ||
-    msg.includes("network") ||
-    msg.includes("fetch")
-  )
+  }
+  if (msg.includes("network") || msg.includes("fetch")) {
     return "Network issue. Check your connection and try again.";
-  if (msg.includes("400") || msg.includes("invalid") || msg.includes("prompt"))
+  }
+  if (
+    msg.includes("400") ||
+    msg.includes("invalid") ||
+    msg.includes("prompt")
+  ) {
     return "The prompt may be too complex. Try simplifying it.";
+  }
   if (
     msg.includes("403") ||
     msg.includes("api key") ||
     msg.includes("unauthorized")
-  )
+  ) {
     return "Service is temporarily unavailable. Please try again later.";
-  if (msg.includes("500") || msg.includes("server"))
+  }
+  if (msg.includes("500") || msg.includes("server")) {
     return "Server error. Please try again.";
+  }
   return "Something went wrong. Please try again.";
 }
 
