@@ -658,8 +658,6 @@ export function getPerformanceInfo() {
   return info;
 }
 
-export { isImgBBConfigured, getImgBBStatus } from "./original-functions";
-
 // Auto-enable debugging on mobile
 if (typeof window !== "undefined" && isMobile()) {
   enableMobileDebugging();
