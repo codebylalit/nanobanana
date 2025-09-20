@@ -1,8 +1,7 @@
-// Mobile-Optimized Gemini API service with performance improvements
+// Mobile-Optimized Gemini API service via RapidAPI
 const RAPIDAPI_URL =
   "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
 
-// Reduced API keys for faster iteration
 const RAPIDAPI_KEYS = [
   "5def448890msh1dee7ee52790518p1cf21ejsnaf19597d61ec",
   "7fdc303ae4msh9781fc64209f968p1f6cc1jsnfebc43ac3654",
@@ -23,9 +22,10 @@ const RAPIDAPI_KEYS = [
   "3c7e94fa19msh34f0e004e88042ep145455jsn8582a03edfeb",
   "f82066f4c3msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
 ];
+
 const IMGBB_KEYS = ["976c43da17048b8595498ac1ba0fa639"];
 
-// Enhanced mobile detection with performance info
+// Enhanced mobile detection (fixed - no force mobile)
 const isMobile = () => {
   const mobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -42,11 +42,7 @@ const isMobile = () => {
   return mobile;
 };
 
-// Force mobile mode for testing
-const FORCE_MOBILE = true; // Set to true for testing - TEMPORARILY ENABLED
-const isMobileDevice = () => FORCE_MOBILE || isMobile();
-
-// Performance monitoring for mobile debugging
+// Performance monitoring
 const perfLogger = {
   start: (label) => {
     if (window.performance) {
@@ -72,13 +68,176 @@ const perfLogger = {
   },
 };
 
-// Optimized mobile compression with better memory management
+// Rate limiting tracking (like your Gemini code approach)
+const apiKeyUsage = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_MINUTE = 3; // Conservative for RapidAPI
+
+function canUseApiKey(keyIndex) {
+  const now = Date.now();
+  const key = `rapidapi_key_${keyIndex}`;
+
+  if (!apiKeyUsage.has(key)) {
+    apiKeyUsage.set(key, []);
+  }
+
+  const usage = apiKeyUsage.get(key);
+  const recent = usage.filter(
+    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
+  );
+  apiKeyUsage.set(key, recent);
+
+  return recent.length < MAX_REQUESTS_PER_MINUTE;
+}
+
+function recordApiKeyUsage(keyIndex) {
+  const key = `rapidapi_key_${keyIndex}`;
+  if (!apiKeyUsage.has(key)) {
+    apiKeyUsage.set(key, []);
+  }
+  apiKeyUsage.get(key).push(Date.now());
+}
+
+// RapidAPI call with proper key rotation (like your Gemini approach)
+async function callGeminiAPI(prompt, imageUrls = [], retryCount = 0) {
+  if (!RAPIDAPI_KEYS.length) {
+    throw new Error("Missing RapidAPI keys");
+  }
+
+  perfLogger.start("Gemini API Call");
+
+  // Find available API keys
+  const availableKeys = [];
+  for (let i = 0; i < RAPIDAPI_KEYS.length; i++) {
+    if (canUseApiKey(i)) {
+      availableKeys.push(i);
+    }
+  }
+
+  if (availableKeys.length === 0) {
+    console.error("❌ All RapidAPI keys are rate limited");
+    throw new Error(
+      "All API keys are temporarily rate limited. Please wait a minute and try again."
+    );
+  }
+
+  console.log(
+    `📊 Available API keys: ${availableKeys.length}/${RAPIDAPI_KEYS.length}`
+  );
+
+  // Try available keys with proper error handling
+  const maxRetries = Math.min(3, availableKeys.length);
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const keyIndex = availableKeys[attempt];
+    const key = RAPIDAPI_KEYS[keyIndex];
+
+    try {
+      // Record usage before making request
+      recordApiKeyUsage(keyIndex);
+
+      const controller = new AbortController();
+      const timeout = isMobile() ? 45000 : 30000; // Reasonable timeouts
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const payload = {
+        prompt: prompt.slice(0, isMobile() ? 350 : 400),
+        image: imageUrls.slice(0, 1),
+        stream: false,
+        return: "url_image",
+      };
+
+      console.log(
+        `🔑 Trying RapidAPI key ${keyIndex + 1} (attempt ${
+          attempt + 1
+        }/${maxRetries})...`
+      );
+
+      const response = await fetch(RAPIDAPI_URL, {
+        method: "POST",
+        headers: {
+          "x-rapidapi-key": key,
+          "x-rapidapi-host":
+            "gemini-2-5-flash-image-nano-banana1.p.rapidapi.com",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Handle rate limiting
+      if (response.status === 429) {
+        console.log(`⚠️ Rate limit hit on key ${keyIndex + 1}, trying next...`);
+        if (isMobile() && attempt < maxRetries - 1) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 3000);
+          console.log(`⏱️ Mobile backoff: ${delay}ms`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorText = await response
+          .text()
+          .catch(() => `HTTP ${response.status}`);
+        console.warn(`❌ API error ${response.status}: ${errorText}`);
+
+        // Don't retry on 4xx errors (except 429)
+        if (
+          response.status >= 400 &&
+          response.status < 500 &&
+          response.status !== 429
+        ) {
+          throw new Error(`API error ${response.status}: ${errorText}`);
+        }
+        continue;
+      }
+
+      const responseText = await response.text();
+
+      if (
+        !responseText ||
+        responseText.trim() === "" ||
+        responseText === "{}"
+      ) {
+        console.log(
+          `⚠️ Empty response from key ${keyIndex + 1}, trying next...`
+        );
+        continue;
+      }
+
+      console.log(`✅ Success with RapidAPI key ${keyIndex + 1}`);
+      perfLogger.end("Gemini API Call");
+      perfLogger.memory();
+      return responseText;
+    } catch (error) {
+      const errorMsg =
+        error.name === "AbortError" ? "Request timeout" : error.message;
+      console.warn(`❌ API key ${keyIndex + 1} failed: ${errorMsg}`);
+
+      // Add delay between retries on mobile
+      if (isMobile() && attempt < maxRetries - 1) {
+        const delay = Math.min(500 * (attempt + 1), 2000);
+        console.log(`⏱️ Mobile retry delay: ${delay}ms`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  perfLogger.end("Gemini API Call");
+  throw new Error(
+    "All available RapidAPI keys failed. Please try again in a few minutes."
+  );
+}
+
+// Image compression (keeping your working version)
 async function compressForMobile(file) {
   perfLogger.start("Image Compression");
 
   return new Promise((resolve, reject) => {
-    // More conservative file size limits for mobile
-    const maxFileSize = isMobileDevice() ? 20 * 1024 * 1024 : 50 * 1024 * 1024; // 20MB mobile, 50MB desktop
+    const maxFileSize = isMobile() ? 15 * 1024 * 1024 : 50 * 1024 * 1024; // 15MB mobile
     if (file.size > maxFileSize) {
       reject(
         new Error(
@@ -105,8 +264,7 @@ async function compressForMobile(file) {
 
     img.onload = () => {
       try {
-        // More conservative sizing for mobile stability
-        const maxSize = isMobileDevice() ? 1024 : 1200; // Increased from 800 to 1024
+        const maxSize = isMobile() ? 1024 : 1200;
         let { width, height } = img;
 
         if (width > maxSize || height > maxSize) {
@@ -115,7 +273,6 @@ async function compressForMobile(file) {
           height = Math.floor(height * scale);
         }
 
-        // More lenient minimum size check
         if (width < 50 || height < 50) {
           cleanup();
           reject(new Error("Image too small after compression"));
@@ -124,23 +281,18 @@ async function compressForMobile(file) {
 
         canvas.width = width;
         canvas.height = height;
-
-        // Better rendering settings for mobile
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = isMobileDevice() ? "low" : "medium";
+        ctx.imageSmoothingQuality = isMobile() ? "low" : "medium";
         ctx.drawImage(img, 0, 0, width, height);
 
-        // More conservative quality settings
-        let quality = isMobileDevice() ? 0.8 : 0.85; // Increased from 0.7 to 0.8
-        if (file.size > 5 * 1024 * 1024) quality = isMobileDevice() ? 0.7 : 0.8;
-        if (file.size > 10 * 1024 * 1024)
-          quality = isMobileDevice() ? 0.6 : 0.7;
+        let quality = isMobile() ? 0.75 : 0.85;
+        if (file.size > 5 * 1024 * 1024) quality = isMobile() ? 0.6 : 0.75;
 
         canvas.toBlob(
           (blob) => {
             if (!blob) {
               cleanup();
-              reject(new Error("Compression failed - no blob created"));
+              reject(new Error("Compression failed"));
               return;
             }
 
@@ -178,23 +330,22 @@ async function compressForMobile(file) {
       reject(new Error("Invalid image file"));
     };
 
-    // Longer timeout for mobile networks
     timeoutId = setTimeout(
       () => {
         cleanup();
         reject(new Error("Image loading timeout"));
       },
-      isMobileDevice() ? 30000 : 15000
-    ); // 30s for mobile, 15s for desktop
+      isMobile() ? 30000 : 15000
+    );
 
     img.src = URL.createObjectURL(file);
   });
 }
 
-// Optimized ImgBB upload with better mobile handling
+// ImgBB upload (keeping your working version)
 async function uploadToImgBB(file, retryCount = 0) {
   perfLogger.start("ImgBB Upload");
-  const maxRetries = isMobileDevice() ? 3 : 2; // More retries for mobile
+  const maxRetries = isMobile() ? 2 : 3;
 
   try {
     const apiKey = IMGBB_KEYS[retryCount % IMGBB_KEYS.length];
@@ -205,13 +356,11 @@ async function uploadToImgBB(file, retryCount = 0) {
     const formData = new FormData();
     formData.append("image", file);
 
-    // Longer expiration for mobile to avoid re-uploads
-    const expiration = isMobileDevice() ? 3600 : 3600; // 1hr for both
+    const expiration = 3600;
     const uploadUrl = `https://api.imgbb.com/1/upload?expiration=${expiration}&key=${apiKey}`;
 
     const controller = new AbortController();
-    // Much longer timeouts for mobile networks
-    const timeout = isMobileDevice() ? 60000 : 30000; // 60s mobile, 30s desktop
+    const timeout = isMobile() ? 45000 : 30000;
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     console.log(
@@ -233,18 +382,15 @@ async function uploadToImgBB(file, retryCount = 0) {
         .text()
         .catch(() => `HTTP ${response.status}`);
 
-      // More aggressive retry for mobile
       if (
-        (response.status >= 500 ||
-          response.status === 429 ||
-          response.status === 0) &&
+        (response.status >= 500 || response.status === 429) &&
         retryCount < maxRetries
       ) {
-        const delay = isMobileDevice() ? (retryCount + 1) * 3000 : 2000; // Progressive delay for mobile
+        const delay = isMobile() ? (retryCount + 1) * 2000 : 1500;
         console.log(
           `⚠️ Upload failed (${response.status}), retrying in ${
             delay / 1000
-          }s... (${retryCount + 1}/${maxRetries})`
+          }s...`
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         return uploadToImgBB(file, retryCount + 1);
@@ -268,102 +414,13 @@ async function uploadToImgBB(file, retryCount = 0) {
     if (error.name === "AbortError") {
       error.message = "Upload timeout - check your connection";
     }
-
     console.error(`❌ ImgBB upload failed:`, error.message);
     perfLogger.end("ImgBB Upload");
     throw error;
   }
 }
 
-// Optimized API call with better mobile handling
-async function callGeminiAPI(prompt, imageUrls = [], retryCount = 0) {
-  perfLogger.start("Gemini API Call");
-  const maxRetries = isMobileDevice() ? 3 : 3; // Same retries for both
-
-  // Use fewer API keys on mobile to avoid confusion
-  const keysToUse = isMobileDevice()
-    ? RAPIDAPI_KEYS.slice(0, 5)
-    : RAPIDAPI_KEYS;
-
-  for (
-    let i = retryCount;
-    i < keysToUse.length && i < retryCount + maxRetries;
-    i++
-  ) {
-    const key = keysToUse[i];
-
-    try {
-      const controller = new AbortController();
-      // Much longer timeouts for mobile networks
-      const timeout = isMobileDevice() ? 90000 : 45000; // 90s mobile, 45s desktop
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-      // Better payload for mobile
-      const payload = {
-        prompt: prompt.slice(0, isMobileDevice() ? 400 : 500), // Increased from 300
-        image: imageUrls.slice(0, 1),
-        stream: false,
-        return: "url_image",
-      };
-
-      console.log(
-        `🤖 Calling Gemini API (key ${i + 1}/${keysToUse.length})...`
-      );
-
-      const response = await fetch(RAPIDAPI_URL, {
-        method: "POST",
-        headers: {
-          "x-rapidapi-key": key,
-          "x-rapidapi-host":
-            "gemini-2-5-flash-image-nano-banana1.p.rapidapi.com",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.log(`⚠️ Rate limit hit, trying next key...`);
-          continue;
-        }
-        throw new Error(`API error ${response.status}`);
-      }
-
-      const responseText = await response.text();
-
-      if (
-        !responseText ||
-        responseText.trim() === "" ||
-        responseText === "{}"
-      ) {
-        console.log(`⚠️ Empty response, trying next key...`);
-        continue;
-      }
-
-      console.log(`✅ Gemini API success`);
-      perfLogger.end("Gemini API Call");
-      perfLogger.memory();
-      return responseText;
-    } catch (error) {
-      const errorMsg =
-        error.name === "AbortError" ? "Request timeout" : error.message;
-      console.warn(`❌ API key ${i + 1} failed: ${errorMsg}`);
-
-      if (i === keysToUse.length - 1) {
-        perfLogger.end("Gemini API Call");
-        throw new Error(`All API keys failed: ${errorMsg}`);
-      }
-    }
-  }
-
-  perfLogger.end("Gemini API Call");
-  throw new Error("No valid API response received");
-}
-
-// Lightweight placeholder with mobile optimization
+// Helper function to create placeholders (like your Gemini code)
 function createPlaceholder(label, subtitle, type = "info") {
   const colors = {
     info: ["#1a1a2e", "#16213e"],
@@ -372,7 +429,7 @@ function createPlaceholder(label, subtitle, type = "info") {
   };
 
   const [color1, color2] = colors[type] || colors.info;
-  const size = isMobileDevice() ? 300 : 400; // Smaller placeholders for mobile
+  const size = isMobile() ? 300 : 400;
 
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>
     <defs>
@@ -384,13 +441,13 @@ function createPlaceholder(label, subtitle, type = "info") {
     <rect width='100%' height='100%' fill='url(#g)'/>
     <text x='50%' y='40%' text-anchor='middle' fill='#FACC15' font-size='14' font-family='system-ui' font-weight='bold'>${label}</text>
     <text x='50%' y='50%' text-anchor='middle' fill='#ddd' font-size='10' font-family='system-ui'>${subtitle}</text>
-    <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='system-ui'>Gemini AI</text>
+    <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='system-ui'>Gemini AI via RapidAPI</text>
   </svg>`;
 
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
-// Main functions with mobile-first approach
+// Main functions (based on your working Gemini patterns)
 export async function textToImage(prompt) {
   if (!prompt?.trim()) {
     throw new Error("Prompt is required");
@@ -444,7 +501,7 @@ export async function imageToImage(file, prompt) {
   perfLogger.start("Image to Image");
 
   // Show progress indicator on mobile
-  if (isMobileDevice() && window.showMobileProgress) {
+  if (isMobile() && window.showMobileProgress) {
     window.showMobileProgress(true);
   }
 
@@ -454,13 +511,12 @@ export async function imageToImage(file, prompt) {
     if (typeof file === "string" && file.startsWith("http")) {
       imageUrl = file;
     } else if (file instanceof File) {
-      // Add mobile-specific file validation
-      if (isMobileDevice() && file.size > 20 * 1024 * 1024) {
-        throw new Error("File too large for mobile (max 20MB)");
+      if (isMobile() && file.size > 15 * 1024 * 1024) {
+        throw new Error("File too large for mobile (max 15MB)");
       }
 
       try {
-        console.log(`📱 Mobile processing: ${isMobileDevice() ? "Yes" : "No"}`);
+        console.log(`📱 Mobile processing: ${isMobile() ? "Yes" : "No"}`);
         console.log(
           `📦 Compressing image (${(file.size / 1024 / 1024).toFixed(1)}MB)...`
         );
@@ -471,14 +527,12 @@ export async function imageToImage(file, prompt) {
         console.error("❌ Upload failed:", uploadError);
         perfLogger.end("Image to Image");
 
-        // Hide progress on error
-        if (isMobileDevice() && window.showMobileProgress) {
+        if (isMobile() && window.showMobileProgress) {
           window.showMobileProgress(false);
         }
 
-        // Better error messages for mobile
         let errorMsg = getFriendlyErrorMessage(uploadError.message);
-        if (isMobileDevice() && uploadError.message.includes("timeout")) {
+        if (isMobile() && uploadError.message.includes("timeout")) {
           errorMsg = "Slow connection - try smaller image";
         }
 
@@ -505,8 +559,7 @@ export async function imageToImage(file, prompt) {
           console.log(`✅ Image transformation successful`);
           perfLogger.end("Image to Image");
 
-          // Hide progress on success
-          if (isMobileDevice() && window.showMobileProgress) {
+          if (isMobile() && window.showMobileProgress) {
             window.showMobileProgress(false);
           }
 
@@ -517,8 +570,7 @@ export async function imageToImage(file, prompt) {
           console.log(`✅ Image transformation successful (direct URL)`);
           perfLogger.end("Image to Image");
 
-          // Hide progress on success
-          if (isMobileDevice() && window.showMobileProgress) {
+          if (isMobile() && window.showMobileProgress) {
             window.showMobileProgress(false);
           }
 
@@ -530,8 +582,7 @@ export async function imageToImage(file, prompt) {
     console.log(`⚠️ No valid result from API, showing placeholder`);
     perfLogger.end("Image to Image");
 
-    // Hide progress on completion
-    if (isMobileDevice() && window.showMobileProgress) {
+    if (isMobile() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
 
@@ -546,14 +597,12 @@ export async function imageToImage(file, prompt) {
     console.error("❌ Image to Image failed:", error);
     perfLogger.end("Image to Image");
 
-    // Hide progress on error
-    if (isMobileDevice() && window.showMobileProgress) {
+    if (isMobile() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
 
-    // Enhanced error handling for mobile
     let errorMsg = getFriendlyErrorMessage(error?.message);
-    if (isMobileDevice()) {
+    if (isMobile()) {
       if (error.message.includes("timeout")) {
         errorMsg = "Request timeout - check connection";
       } else if (error.message.includes("memory")) {
@@ -568,7 +617,7 @@ export async function imageToImage(file, prompt) {
   }
 }
 
-// Helper functions (unchanged but with logging)
+// Helper functions (keeping your working patterns)
 export async function generateHeadshot(file, prompt) {
   console.log("👤 Generating headshot...");
   return await imageToImage(
@@ -614,109 +663,36 @@ export function getFriendlyErrorMessage(raw = "") {
   const msg = String(raw || "").toLowerCase();
 
   if (msg.includes("rate") || msg.includes("quota")) {
-    return "Rate limit - wait a few minutes";
+    return isMobile()
+      ? "Rate limit reached. Wait 60 seconds."
+      : "Rate limit - wait a few minutes";
   }
   if (
     msg.includes("timeout") ||
     msg.includes("network") ||
     msg.includes("abort")
   ) {
-    return "Connection slow - check network";
+    return isMobile()
+      ? "Slow connection. Try smaller image."
+      : "Connection timeout - check network";
   }
   if (msg.includes("upload") || msg.includes("imgbb")) {
     return "Upload failed - try smaller image";
   }
   if (msg.includes("too large") || msg.includes("file size")) {
-    return "Image too large - try smaller file";
+    return isMobile()
+      ? "Image too large. Max 15MB on mobile."
+      : "Image too large - try smaller file";
   }
-  if (msg.includes("compression") || msg.includes("processing")) {
-    return "Could not process image";
+  if (msg.includes("all api keys") || msg.includes("available api keys")) {
+    return isMobile()
+      ? "Service busy. Wait 60 seconds and retry."
+      : "All APIs busy - try again shortly";
   }
 
-  return "Try again with different settings";
-}
-
-// Enhanced mobile debugging with progress indicators
-export function enableMobileDebugging() {
-  if (isMobileDevice()) {
-    // Override console.log to show on screen for mobile debugging
-    const originalLog = console.log;
-    const debugDiv = document.createElement("div");
-    debugDiv.id = "mobile-debug";
-    debugDiv.style.cssText = `
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      max-height: 250px; 
-      overflow-y: auto; 
-      background: rgba(0,0,0,0.9); 
-      color: #00ff00; 
-      font-family: monospace; 
-      font-size: 11px; 
-      padding: 10px; 
-      z-index: 9999; 
-      display: none;
-      border-bottom: 2px solid #00ff00;
-    `;
-    document.body.appendChild(debugDiv);
-
-    // Add progress indicator
-    const progressDiv = document.createElement("div");
-    progressDiv.id = "mobile-progress";
-    progressDiv.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #00ff00, #00aa00);
-      z-index: 10000;
-      display: none;
-      animation: progress 2s ease-in-out infinite;
-    `;
-
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes progress {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-      }
-    `;
-    document.head.appendChild(style);
-    document.body.appendChild(progressDiv);
-
-    // Toggle debug with triple tap
-    let tapCount = 0;
-    document.addEventListener("touchend", () => {
-      tapCount++;
-      if (tapCount === 3) {
-        debugDiv.style.display =
-          debugDiv.style.display === "none" ? "block" : "none";
-        tapCount = 0;
-      }
-      setTimeout(() => (tapCount = 0), 500);
-    });
-
-    console.log = (...args) => {
-      originalLog.apply(console, args);
-      const message = args.join(" ");
-      debugDiv.innerHTML =
-        `${new Date().toLocaleTimeString()}: ${message}<br>` +
-        debugDiv.innerHTML;
-      if (debugDiv.children.length > 50) {
-        debugDiv.removeChild(debugDiv.lastChild);
-      }
-    };
-
-    // Show progress during operations
-    window.showMobileProgress = (show = true) => {
-      progressDiv.style.display = show ? "block" : "none";
-    };
-
-    console.log("🔍 Mobile debugging enabled - triple tap to toggle");
-    console.log("📱 Mobile optimizations active");
-  }
+  return isMobile()
+    ? "Try again with smaller image"
+    : "Try again with different settings";
 }
 
 export async function suggestPromptIdeas(topic) {
@@ -754,37 +730,119 @@ export async function suggestPromptIdeas(topic) {
     "Zen garden with leaves",
   ];
 }
-// Performance monitoring
-export function getPerformanceInfo() {
-  const info = {
-    isMobile: isMobile(),
-    userAgent: navigator.userAgent,
-    connection: navigator.connection?.effectiveType || "unknown",
-    memory: window.performance?.memory
-      ? {
-          used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
-          total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024),
-          limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024),
-        }
-      : null,
-    timing: window.performance?.timing
-      ? {
-          loadTime:
-            performance.timing.loadEventEnd -
-            performance.timing.navigationStart,
-          domReady:
-            performance.timing.domContentLoadedEventEnd -
-            performance.timing.navigationStart,
-        }
-      : null,
-  };
 
-  console.log("📊 Performance Info:", info);
-  return info;
+// Debug and utility functions
+export function getApiKeyStatus() {
+  const now = Date.now();
+  const status = [];
+
+  for (let i = 0; i < RAPIDAPI_KEYS.length; i++) {
+    const available = canUseApiKey(i);
+    const key = `rapidapi_key_${i}`;
+    const usage = apiKeyUsage.get(key) || [];
+    const recentCount = usage.filter(
+      (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
+    ).length;
+
+    status.push({
+      index: i + 1,
+      available,
+      recentRequests: recentCount,
+      maxRequests: MAX_REQUESTS_PER_MINUTE,
+    });
+  }
+
+  const availableCount = status.filter((s) => s.available).length;
+
+  console.log("📊 RapidAPI Key Status:", {
+    available: availableCount,
+    total: RAPIDAPI_KEYS.length,
+    details: status,
+  });
+
+  return { availableCount, total: RAPIDAPI_KEYS.length, details: status };
 }
 
-// Auto-enable debugging on mobile
-if (typeof window !== "undefined" && isMobileDevice()) {
-  enableMobileDebugging();
-  getPerformanceInfo();
+export function resetRateLimits() {
+  apiKeyUsage.clear();
+  console.log("🔄 Rate limits reset");
+}
+
+// Enhanced mobile debugging (keeping your working version)
+export function enableMobileDebugging() {
+  if (isMobile()) {
+    const originalLog = console.log;
+    const debugDiv = document.createElement("div");
+    debugDiv.id = "mobile-debug";
+    debugDiv.style.cssText = `
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      max-height: 250px; 
+      overflow-y: auto; 
+      background: rgba(0,0,0,0.9); 
+      color: #00ff00; 
+      font-family: monospace; 
+      font-size: 11px; 
+      padding: 10px; 
+      z-index: 9999; 
+      display: none;
+      border-bottom: 2px solid #00ff00;
+    `;
+    document.body.appendChild(debugDiv);
+
+    const progressDiv = document.createElement("div");
+    progressDiv.id = "mobile-progress";
+    progressDiv.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #00ff00, #00aa00);
+      z-index: 10000;
+      display: none;
+      animation: progress 2s ease-in-out infinite;
+    `;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes progress {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(progressDiv);
+
+    let tapCount = 0;
+    document.addEventListener("touchend", () => {
+      tapCount++;
+      if (tapCount === 3) {
+        debugDiv.style.display =
+          debugDiv.style.display === "none" ? "block" : "none";
+        tapCount = 0;
+      }
+      setTimeout(() => (tapCount = 0), 500);
+    });
+
+    console.log = (...args) => {
+      originalLog.apply(console, args);
+      const message = args.join(" ");
+      debugDiv.innerHTML =
+        `${new Date().toLocaleTimeString()}: ${message}<br>` +
+        debugDiv.innerHTML;
+      if (debugDiv.children.length > 50) {
+        debugDiv.removeChild(debugDiv.lastChild);
+      }
+    };
+
+    window.showMobileProgress = (show = true) => {
+      progressDiv.style.display = show ? "block" : "none";
+    };
+
+    console.log("🔍 Mobile debugging enabled - triple tap to toggle");
+    console.log("📱 Mobile optimizations active");
+  }
 }
