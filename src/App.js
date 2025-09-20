@@ -14,7 +14,6 @@ import ImageToImagePage from "./pages/ImageToImagePage";
 import HeadshotPage from "./pages/HeadshotPage";
 import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
 import ImageEditorPage from "./pages/ImageEditorPage";
-import ImageToVideoPage from "./pages/ImageToVideoPage";
 import PreviousImagesPage from "./pages/PreviousImagesPage";
 import AuthPage from "./pages/AuthPage";
 import CreditHistoryPage from "./pages/CreditHistoryPage";
@@ -87,7 +86,7 @@ function App() {
             </RequireAuth>
           }
         />
-        <Route
+        {/* <Route
           path="/image-to-video"
           element={
             <RequireAuth>
@@ -96,7 +95,7 @@ function App() {
               </DashboardLayout>
             </RequireAuth>
           }
-        />
+        /> */}
         <Route
           path="/previous-images"
           element={
