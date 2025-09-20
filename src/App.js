@@ -3,6 +3,7 @@ import "./App.css";
 import "./index.css";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./authContext";
+import { Analytics } from "@vercel/analytics/react";
 import {
   HiOutlineQuestionMarkCircle,
   HiOutlineBadgeCheck,
@@ -13,6 +14,7 @@ import ImageToImagePage from "./pages/ImageToImagePage";
 import HeadshotPage from "./pages/HeadshotPage";
 import BackgroundRemovalPage from "./pages/BackgroundRemovalPage";
 import ImageEditorPage from "./pages/ImageEditorPage";
+import ImageToVideoPage from "./pages/ImageToVideoPage";
 import PreviousImagesPage from "./pages/PreviousImagesPage";
 import AuthPage from "./pages/AuthPage";
 import CreditHistoryPage from "./pages/CreditHistoryPage";
@@ -86,6 +88,16 @@ function App() {
           }
         />
         <Route
+          path="/image-to-video"
+          element={
+            <RequireAuth>
+              <DashboardLayout>
+                <ImageToVideoPage />
+              </DashboardLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/previous-images"
           element={
             <RequireAuth>
@@ -132,6 +144,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Analytics />
     </div>
   );
 }
