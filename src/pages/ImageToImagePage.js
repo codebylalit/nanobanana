@@ -43,7 +43,7 @@ export default function ImageToImagePage() {
     return () => {
       URL.revokeObjectURL(url);
     };
-  }, [file, previewUrl]);
+  }, [file]); // Removed previewUrl from dependencies to prevent infinite loop
 
   const [presets, setPresets] = React.useState([]);
   React.useEffect(() => {

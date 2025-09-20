@@ -456,6 +456,90 @@ export function getFriendlyErrorMessage(error = "") {
   return "Something went wrong";
 }
 
+// Missing functions that were in the original version
+export async function improvePrompt(userPrompt) {
+  try {
+    const result = await callAPI(`Improve this prompt: ${userPrompt}`);
+    try {
+      const parsed = JSON.parse(result);
+      return parsed.text || parsed.response || result.trim() || userPrompt;
+    } catch {
+      return result.trim() || userPrompt;
+    }
+  } catch (e) {
+    console.warn("Improve prompt failed:", e);
+    return `${userPrompt} — detailed, high quality`;
+  }
+}
+
+export async function suggestPromptIdeas(topic) {
+  try {
+    const result = await callAPI(
+      `List 8 creative prompts for: ${
+        topic || "art"
+      }. Return only the prompts, one per line, without numbers or bullets.`
+    );
+
+    let raw = result;
+    try {
+      const parsed = JSON.parse(result);
+      if (parsed.message) {
+        raw = parsed.message;
+      } else if (parsed.text) {
+        raw = parsed.text;
+      } else if (parsed.response) {
+        raw = parsed.response;
+      } else if (parsed.prompts) {
+        raw = parsed.prompts;
+      } else {
+        raw = result;
+      }
+    } catch {
+      raw = result;
+    }
+
+    const lines = raw
+      .split(/\n+/)
+      .map((l) => l.replace(/^[-*\d\.\s]+/, "").trim())
+      .filter(Boolean)
+      .slice(0, 8);
+
+    if (lines.length >= 3) {
+      console.log(`✅ Generated ${lines.length} prompt ideas`);
+      return lines;
+    }
+  } catch (e) {
+    console.warn("Suggest prompts failed:", e);
+  }
+
+  const fallbackPrompts = [
+    "Cyberpunk street with neon lights",
+    "Mountain cabin at sunset",
+    "Geometric patterns in pastels",
+    "Dew drops on petals",
+    "Futuristic city skyline",
+    "Cozy library with warm light",
+    "Abstract digital patterns",
+    "Zen garden with leaves",
+  ];
+
+  console.log("📝 Using fallback prompt ideas");
+  return fallbackPrompts;
+}
+
+export async function editImageAdjustments(file, options) {
+  console.log("🎨 Applying adjustments...");
+  const adjustments = Object.entries(options || {})
+    .filter(([, v]) => v !== 0 && v != null)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(", ");
+
+  return await imageToImage(
+    file,
+    `Enhance: ${adjustments || "improve quality"}`
+  );
+}
+
 // CRITICAL FIX 6: Mobile debugging that actually works
 export function enableMobileDebug() {
   if (!deviceInfo.isMobile) return;
