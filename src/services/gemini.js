@@ -1,8 +1,21 @@
-// ImgBB-optimized Gemini API service
+// ImgBB-only Gemini API service (mobile optimized)
 const RAPIDAPI_URL =
   "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
 
 const RAPIDAPI_KEYS = [
+  "5def448890msh1dee7ee52790518p1cf21ejsnaf19597d61ec",
+  "7fdc303ae4msh9781fc64209f968p1f6cc1jsnfebc43ac3654",
+  "a4fde24ae0msh026d67a6ff832ddp13eb3bjsn628bcb556410",
+  "bfebd81595msh3d2b9f6a1d00cefp1b1783jsn1782d7b41d90",
+  "6338b2c519mshb9b9c7fc1ede6d5p14c35bjsn4c6b7c825900",
+  "509e1fefdfmshc23df0836c71f1ep1cbdedjsn983160b969f7",
+  "13144781e5msha558a40cb816aa7p18fb70jsn3c0ff999ea47",
+  "dc328116d9mshf39067e4d6098e2p17bca4jsndb179a489d49",
+  "ef011a07a3msh0fceac212781e08p1d4e8bjsn824e743344f0",
+  "fee2943b1dmsh976699deb810f6fp1de527jsnc682c33c0fba",
+  "652bf87408msh92776cc22ca52ecp1f8a64jsnf6965a425473",
+  "e8870d278bmshe41389b1d6c6e24p161897jsn1c349d5d158d",
+  "2d2574972emsh66a64b66fbbfed9p1c9a86jsn2eee815aa52d",
   "35b7f88f82msh6d25d050022cf22p1a7c69jsn186f478ca907",
   "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96",
   "1edab2b6f9msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
@@ -10,29 +23,27 @@ const RAPIDAPI_KEYS = [
   "f82066f4c3msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
 ];
 
-// Multiple ImgBB API keys for redundancy
+// ImgBB API keys - get from https://api.imgbb.com/
 const IMGBB_KEYS = [
-  "976c43da17048b8595498ac1ba0fa639", // Get from imgbb.com
-  "YOUR_IMGBB_KEY_2", // Backup key 1
-  "YOUR_IMGBB_KEY_3", // Backup key 2
+  "976c43da17048b8595498ac1ba0fa639",
+  // Add more keys for higher rate limits
 ];
 
-// Device detection for optimization
 const isMobile = () =>
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   );
 
-// Smart image compression before upload
-async function compressImageForUpload(file) {
+// Mobile-optimized image compression
+async function compressForMobile(file) {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = new Image();
 
     img.onload = () => {
-      // Adaptive sizing based on device
-      const maxSize = isMobile() ? 1200 : 1920;
+      // More aggressive compression for mobile
+      const maxSize = isMobile() ? 1024 : 1600;
       let { width, height } = img;
 
       if (width > maxSize || height > maxSize) {
@@ -47,15 +58,19 @@ async function compressImageForUpload(file) {
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Higher quality since we're uploading to ImgBB, not embedding in JSON
-      const quality = isMobile() ? 0.85 : 0.92;
+      // Higher compression for mobile
+      const quality = isMobile() ? 0.8 : 0.9;
       canvas.toBlob(
         (blob) => {
           const compressedFile = new File([blob], file.name, {
             type: "image/jpeg",
           });
           console.log(
-            `Compressed: ${file.size} → ${compressedFile.size} bytes (${width}x${height})`
+            `Compressed: ${(file.size / 1024 / 1024).toFixed(1)}MB → ${(
+              compressedFile.size /
+              1024 /
+              1024
+            ).toFixed(1)}MB`
           );
           resolve(compressedFile);
         },
@@ -69,157 +84,117 @@ async function compressImageForUpload(file) {
   });
 }
 
-// Upload to ImgBB with multiple key fallback
+// ImgBB upload with correct endpoint and expiration
 async function uploadToImgBB(file) {
   let lastError;
 
   for (const apiKey of IMGBB_KEYS) {
-    if (!apiKey || apiKey.startsWith("976c43da17048b8595498ac1ba0fa639")) {
-      continue; // Skip placeholder keys
+    if (!apiKey || apiKey.startsWith("YOUR_")) {
+      continue;
     }
 
     try {
       const formData = new FormData();
       formData.append("image", file);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      // Use expiration for temporary images (600 seconds = 10 minutes)
+      const expiration = 3600; // 1 hour - adjust as needed
+      const uploadUrl = `https://api.imgbb.com/1/upload?expiration=${expiration}&key=${apiKey}`;
 
-      const response = await fetch(
-        `https://api.imgbb.com/1/upload?key=${apiKey}`,
-        {
-          method: "POST",
-          body: formData,
-          signal: controller.signal,
-        }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000); // 25s timeout for mobile
+
+      console.log(
+        `Uploading to ImgBB (${(file.size / 1024 / 1024).toFixed(1)}MB)...`
       );
 
-      clearTimeout(timeoutId);
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
 
       if (!response.ok) {
-        throw new Error(`ImgBB error: ${response.status}`);
+        const errorText = await response.text().catch(() => "");
+        throw new Error(`ImgBB HTTP ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
 
       if (result.success && result.data?.url) {
-        console.log("ImgBB upload successful:", result.data.url);
+        console.log(`ImgBB upload successful: ${result.data.url}`);
         return result.data.url;
+      }
+
+      if (result.error) {
+        throw new Error(
+          `ImgBB API error: ${result.error.message || result.error}`
+        );
       }
 
       throw new Error("ImgBB returned no URL");
     } catch (error) {
-      console.warn(`ImgBB key ${apiKey.slice(0, 6)}... failed:`, error.message);
-      lastError = error.message;
+      const errorMsg = error.message;
+      console.warn(`ImgBB key ${apiKey.slice(0, 6)}... failed: ${errorMsg}`);
+      lastError = errorMsg;
 
-      // If rate limited, try next key immediately
-      if (error.message.includes("429") || error.message.includes("rate")) {
+      // If rate limited or quota exceeded, try next key
+      if (
+        errorMsg.includes("429") ||
+        errorMsg.includes("rate") ||
+        errorMsg.includes("quota")
+      ) {
+        console.log("Rate limit hit, trying next key...");
+        continue;
+      }
+
+      // If timeout or network error, try next key
+      if (
+        error.name === "AbortError" ||
+        errorMsg.includes("timeout") ||
+        errorMsg.includes("network")
+      ) {
+        console.log("Network issue, trying next key...");
         continue;
       }
     }
   }
 
-  throw new Error(`All ImgBB keys failed: ${lastError}`);
+  throw new Error(`ImgBB upload failed: ${lastError}`);
 }
 
-// Fallback upload services if ImgBB fails
-async function uploadToFallbackService(file) {
-  const fallbackServices = [
-    async () => {
-      // File.io upload
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("https://file.io", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error(`File.io failed: ${response.status}`);
-
-      const result = await response.json();
-      if (result.success && result.link) return result.link;
-      throw new Error("File.io no URL returned");
-    },
-
-    async () => {
-      // TmpFiles upload
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("https://tmpfiles.org/api/v1/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error(`TmpFiles failed: ${response.status}`);
-
-      const result = await response.json();
-      if (result.status === "success" && result.data?.url) {
-        return result.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
-      }
-      throw new Error("TmpFiles no URL returned");
-    },
-  ];
-
-  let lastError;
-  for (const service of fallbackServices) {
-    try {
-      const url = await service();
-      console.log("Fallback upload successful:", url);
-      return url;
-    } catch (error) {
-      console.warn("Fallback service failed:", error.message);
-      lastError = error.message;
-    }
-  }
-
-  throw new Error(`All upload services failed: ${lastError}`);
-}
-
-// Main upload function with intelligent fallback
+// Main upload function
 async function uploadImage(file) {
   try {
     // Step 1: Compress image
-    const compressedFile = await compressImageForUpload(file);
+    const compressedFile = await compressForMobile(file);
 
-    // Step 2: Try ImgBB first (best reliability and permanence)
-    try {
-      return await uploadToImgBB(compressedFile);
-    } catch (imgbbError) {
-      console.warn(
-        "ImgBB failed, trying fallback services:",
-        imgbbError.message
-      );
-
-      // Step 3: Fallback to other services
-      return await uploadToFallbackService(compressedFile);
-    }
+    // Step 2: Upload to ImgBB only
+    return await uploadToImgBB(compressedFile);
   } catch (error) {
-    console.error("Image upload failed:", error);
-    throw new Error(`Upload failed: ${error.message}`);
+    console.error("Upload failed:", error);
+    throw error;
   }
 }
 
-// Optimized API call using URLs instead of base64
+// Streamlined API call
 async function callGeminiAPI(prompt, imageUrls = []) {
   let lastError;
 
   for (const key of RAPIDAPI_KEYS) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      const timeout = isMobile() ? 45000 : 60000;
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const payload = {
-        prompt: prompt.slice(0, 500), // Reasonable prompt length
-        image: imageUrls.slice(0, 1), // Single image
+        prompt: prompt.slice(0, 400),
+        image: imageUrls.slice(0, 1),
         stream: false,
         return: "url_image",
       };
-
-      console.log(
-        `API call with key ${key.slice(0, 6)}..., images: ${imageUrls.length}`
-      );
 
       const response = await fetch(RAPIDAPI_URL, {
         method: "POST",
@@ -240,7 +215,6 @@ async function callGeminiAPI(prompt, imageUrls = []) {
           .text()
           .catch(() => `HTTP ${response.status}`);
 
-        // Try next key on quota/rate limit
         if (
           response.status === 429 ||
           errorText.includes("rate") ||
@@ -256,7 +230,6 @@ async function callGeminiAPI(prompt, imageUrls = []) {
 
       const responseText = await response.text();
 
-      // Handle empty responses
       if (
         !responseText ||
         responseText.trim() === "" ||
@@ -267,7 +240,6 @@ async function callGeminiAPI(prompt, imageUrls = []) {
         continue;
       }
 
-      // Check for API errors
       try {
         const parsed = JSON.parse(responseText);
         if (parsed.error) {
@@ -287,26 +259,22 @@ async function callGeminiAPI(prompt, imageUrls = []) {
 
       return responseText;
     } catch (err) {
-      if (err.name === "AbortError") {
-        console.warn("Request timeout, trying next key...");
-        lastError = "Timeout";
-      } else {
-        console.warn(`Key failed: ${err.message}`);
-        lastError = err.message;
-      }
+      const errorMsg =
+        err.name === "AbortError" ? "Request timeout" : err.message;
+      console.warn(`Key failed: ${errorMsg}`);
+      lastError = errorMsg;
     }
   }
 
   throw new Error(`All API keys failed: ${lastError}`);
 }
 
-// Create placeholder images
+// Simple placeholder creation
 function createPlaceholder(label, subtitle, type = "info") {
   const colors = {
     info: ["#1a1a2e", "#16213e"],
     error: ["#dc2626", "#991b1b"],
     warning: ["#f59e0b", "#d97706"],
-    success: ["#059669", "#047857"],
   };
 
   const [color1, color2] = colors[type] || colors.info;
@@ -319,15 +287,15 @@ function createPlaceholder(label, subtitle, type = "info") {
       </linearGradient>
     </defs>
     <rect width='100%' height='100%' fill='url(#g)'/>
-    <text x='50%' y='45%' text-anchor='middle' fill='#FACC15' font-size='18' font-family='system-ui' font-weight='bold'>${label}</text>
-    <text x='50%' y='55%' text-anchor='middle' fill='#ddd' font-size='11' font-family='system-ui'>${subtitle}</text>
-    <text x='50%' y='65%' text-anchor='middle' fill='#888' font-size='9' font-family='system-ui'>Gemini AI</text>
+    <text x='50%' y='45%' text-anchor='middle' fill='#FACC15' font-size='16' font-family='system-ui' font-weight='bold'>${label}</text>
+    <text x='50%' y='55%' text-anchor='middle' fill='#ddd' font-size='10' font-family='system-ui'>${subtitle}</text>
+    <text x='50%' y='65%' text-anchor='middle' fill='#888' font-size='8' font-family='system-ui'>Gemini AI</text>
   </svg>`;
 
   return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
-// Main API functions
+// Main functions
 export async function textToImage(prompt) {
   if (!prompt?.trim()) {
     throw new Error("Prompt is required");
@@ -349,7 +317,7 @@ export async function textToImage(prompt) {
     }
 
     return {
-      url: createPlaceholder("Generated Image", prompt.slice(0, 40) + "..."),
+      url: createPlaceholder("Generated Image", prompt.slice(0, 40)),
       generated: false,
     };
   } catch (error) {
@@ -372,22 +340,48 @@ export async function imageToImage(file, prompt) {
   try {
     let imageUrl;
 
-    // Handle direct URLs
     if (typeof file === "string" && file.startsWith("http")) {
       imageUrl = file;
-    }
-    // Handle File objects - upload to ImgBB
-    else if (file instanceof File) {
+    } else if (file instanceof File) {
       try {
-        console.log("Uploading image to ImgBB...");
+        console.log("Uploading to ImgBB...");
         imageUrl = await uploadImage(file);
-        console.log("Image uploaded successfully:", imageUrl);
       } catch (uploadError) {
         console.error("Upload failed:", uploadError);
+
+        // Provide specific error based on failure type
+        if (
+          uploadError.message.includes("rate") ||
+          uploadError.message.includes("quota")
+        ) {
+          return {
+            url: createPlaceholder(
+              "Rate Limit Hit",
+              "Please try again in a few minutes",
+              "warning"
+            ),
+            generated: false,
+          };
+        }
+
+        if (
+          uploadError.message.includes("timeout") ||
+          uploadError.message.includes("network")
+        ) {
+          return {
+            url: createPlaceholder(
+              "Network Error",
+              "Check connection and try again",
+              "error"
+            ),
+            generated: false,
+          };
+        }
+
         return {
           url: createPlaceholder(
             "Upload Failed",
-            "Could not upload image. Try again or use a direct URL.",
+            "Could not upload image",
             "error"
           ),
           generated: false,
@@ -397,7 +391,6 @@ export async function imageToImage(file, prompt) {
       throw new Error("Invalid image input");
     }
 
-    // Transform the image using the uploaded URL
     const result = await callGeminiAPI(
       `Transform: ${prompt || "artistic style"}`,
       [imageUrl]
@@ -418,7 +411,7 @@ export async function imageToImage(file, prompt) {
     return {
       url: createPlaceholder(
         "Transformed Image",
-        prompt?.slice(0, 30) + "..." || "Style applied"
+        prompt?.slice(0, 30) || "Style applied"
       ),
       generated: false,
     };
@@ -514,20 +507,17 @@ export async function suggestPromptIdeas(topic) {
 export function getFriendlyErrorMessage(raw = "") {
   const msg = String(raw || "").toLowerCase();
 
-  if (msg.includes("upload failed") || msg.includes("imgbb")) {
-    return "Image upload failed - check connection and try again";
+  if (msg.includes("rate") || msg.includes("quota")) {
+    return "Rate limit hit - try again in a few minutes";
   }
-  if (msg.includes("timeout")) {
-    return "Request timed out - try again";
+  if (msg.includes("timeout") || msg.includes("network")) {
+    return "Connection issue - check network and retry";
+  }
+  if (msg.includes("upload") || msg.includes("imgbb")) {
+    return "Upload failed - try again";
   }
   if (msg.includes("não continha uma imagem") || msg.includes("no image")) {
     return "Could not generate image - try different prompt";
-  }
-  if (msg.includes("rate") || msg.includes("quota") || msg.includes("429")) {
-    return "Service busy - try again in a moment";
-  }
-  if (msg.includes("network") || msg.includes("fetch")) {
-    return "Network error - check connection";
   }
   if (msg.includes("processing failed")) {
     return "Could not process image - try different file";
@@ -536,22 +526,18 @@ export function getFriendlyErrorMessage(raw = "") {
   return "Something went wrong - please try again";
 }
 
-// Setup instructions
-export function getImgBBSetup() {
+// Check if ImgBB is configured
+export function isImgBBConfigured() {
+  return IMGBB_KEYS.some((key) => key && !key.startsWith("YOUR_"));
+}
+
+export function getImgBBStatus() {
+  const configured = isImgBBConfigured();
   return {
-    title: "ImgBB Setup Required",
-    steps: [
-      "1. Go to https://imgbb.com and create a free account",
-      "2. Go to https://api.imgbb.com/ and get your API key",
-      "3. Replace the IMGBB_KEYS array with your actual keys",
-      "4. Consider getting 2-3 keys for redundancy (free tier: 5000 uploads/month each)",
-    ],
-    benefits: [
-      "✓ Much faster than base64 uploads",
-      "✓ Works reliably on mobile browsers",
-      "✓ Higher image quality support",
-      "✓ Permanent image hosting",
-      "✓ No payload size issues",
-    ],
+    configured,
+    message: configured
+      ? "ImgBB configured and ready"
+      : "Add your ImgBB API key to IMGBB_KEYS array",
+    setupUrl: "https://api.imgbb.com/",
   };
 }
