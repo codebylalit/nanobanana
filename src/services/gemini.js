@@ -697,20 +697,34 @@ export function getFriendlyErrorMessage(raw = "") {
 
 export async function suggestPromptIdeas(topic) {
   try {
+    // call your Gemini API
     const result = await callGeminiAPI(
       `List 8 creative prompts: ${topic || "art"}`,
       []
     );
 
     let raw = result;
-    try {
-      const parsed = JSON.parse(result);
-      raw = parsed.text || parsed.response || result;
-    } catch {}
 
+    // Only try to parse JSON if it actually looks like JSON
+    if (typeof result === "string" && /^[\[{]/.test(result.trim())) {
+      try {
+        const parsed = JSON.parse(result);
+        raw = parsed.text || parsed.response || parsed.message || result;
+      } catch (e) {
+        // ignore parse errors and just use the original result
+        raw = result;
+      }
+    }
+
+    // Normalise to a string
+    if (typeof raw !== "string") {
+      raw = String(raw);
+    }
+
+    // Split by newlines, remove numbering/bullets, trim, filter out empty lines
     const lines = raw
       .split(/\n+/)
-      .map((l) => l.replace(/^[-*\d\.\s]+/, "").trim())
+      .map((l) => l.replace(/^\s*[-*\d.]+\s*/, "").trim())
       .filter(Boolean)
       .slice(0, 8);
 
@@ -719,6 +733,7 @@ export async function suggestPromptIdeas(topic) {
     console.warn("Suggest prompts failed:", e);
   }
 
+  // Fallback prompts
   return [
     "Cyberpunk street with neon lights",
     "Mountain cabin at sunset",
@@ -726,9 +741,7 @@ export async function suggestPromptIdeas(topic) {
     "Dew drops on petals",
     "Futuristic city skyline",
     "Cozy library with warm light",
-    "Abstract digital patterns",
-    "Zen garden with leaves",
-  ];
+  ]
 }
 
 // Debug and utility functions
