@@ -12,16 +12,83 @@
     "prompt": "Ultra‑realistic 9:16 vertical fisheye selfie with the subject plus two stylized game mascots (Sonic and Mario). High camera angle, 8–10mm fisheye distortion, small bright white living room, soft bounced daylight, subtle bloom. Keep the human fully photoreal; render the characters with stylized realism: clean bold outlines, saturated primary palette, correct perspective and occlusion, matching light direction, crisp contact shadows on the floor. Fun exaggerated expressions, no logos or watermarks."
   },
   {
+    "id": "retro vintage",
+    "title": "Retro Vintage Man",
+    "image": "/presets/man-rose.jpg",
+    "prompt": "Create a retro vintage grainy but bright image of the reference picture but draped in a perfect light blue color Pinteresty aesthetic linen shirt with white linen pant and holding a rose flower in hands. It must feel like a 90s movie and romanticising environment . The boy is standing against a solid wall deep shadows"
+  }, {
+    "id": "tailored slate-black suit",
+    "title": "Tailored Slate-Black Suit",
+    "image": "/presets/professional-man.jpg",
+    "prompt": "A hyper-realistic cinematic editorial portrait of the uploaded person (preserve face exactly). Standing tall in a moody studio with drifting smoke under a sharp spotlight. Outfit: tailored slate-black suit with slim trousers and a slightly unbuttoned white silk shirt. Both hands casually in pockets, shoulders relaxed, confident gaze slightly upward."
+  }, {
+    "id": "sunny-outdoor",
+    "title": "A Sunny Outdoor",
+    "image": "/presets/sunny-outdoor.jpg",
+    "prompt": "A sunny outdoor lifestyle portrait of a woman sitting gracefully on white stone stairs, wearing a delicate floral bikini. She sits with her legs crossed and arms resting naturally, her wavy dark hair falling loosely over her shoulder. Soft dappled shadows from nearby foliage fall across her body and face, adding texture and depth. Her expression is calm and relaxed, embodying a summery aesthetic. The setting features clean white stucco walls framing the staircase, creating strong geometric lines and balance. Vibrant flowers cascade, adding a bold pop of color against the neutral backdrop. A glimpse of clear blue sky in the upper portion enhances the bright, serene mood. A subtle, ethereal glow emanates from the bougainvillea, casting faint, warm reflections on the stairs, suggesting a magical, summery aura. Lens: 85mm prime, aperture f/2.8, shutter speed 1/500s, ISO 100, shallow depth of field with sharp focus on the woman's face and upper body, natural sunlight with soft dappled shadows, daylight white balance. Negative: no subtitles, no captions, no text/logos, no UI, no excessive sharpening, no HDR halos, no chromatic aberration, no lens dirt, no cartoon/anime look, no abrupt cuts or zooms, no color tint, no sepia, no cyan tint, no illustration, no CGI, no plastic skin, no over-smooth skin, no motion blur on subject, no blown highlights, no posterization, no extra limbs, no duplicate legs, no readable text or logos, no watermark."
+
+  },
+   {
+    "id": "Maroon-velvet-blazer",
+    "title": "Maroon velvet blazer",
+    "image": "/presets/suite-man.jpg",
+    "prompt": "Hyper-realistic cinematic portrait on a deep burgundy backdrop. Maroon velvet blazer, black silk shirt, slim trousers. Leaning on elegant chair, one arm draped, confident gaze. Rich waves with highlights. Golden spotlight, dramatic shadows, ultra-detailed fabrics, skin tones, luxury editorial vibe. 85mm lens, 9:16 Instagram style."
+  }, {
+    "id": "South-Asian-woman",
+    "title": "South Asian woman",
+    "image": "/presets/tradition.jpg",
+    "prompt": "Ultra-realistic editorial portrait of a graceful South Asian woman with a poised, regal expression. She wears a deep brown sequinned saree with intricate mirror and thread embroidery across the fabric, subtly transitioning into maroon near the hem. The saree has sheer sleeves and densely embellished borders, worn in a classic drape with soft pleats and full arm coverage. Her blouse has a modest V-neckline."
+  }, {
     "id": "giant-over-wall",
     "title": "Giant Over Wall",
     "image": "/presets/Giant over wall.jpg",
     "prompt": "Transform this photo into a surreal photomanipulation. Duplicate the same person in the image: keep one version at normal scale standing in the yard, and create another much larger version of the same person as a giant leaning over the wall, looking down at the smaller self. Maintain the original background, natural lighting, muted tones, and realistic shadows to make the scene look dreamlike yet believable"
+  }, {
+    "id": "cinematic-light",
+    "title": "Cinematic Studio Light",
+    "image": "/presets/cinematic-light.jpg",
+    "prompt": "Prompt: This is a photo of me. Craft a moody studio portrait of the uploaded person, bathed in golden-orange spotlight that creates a glowing circular halo behind them on the wall. The warm light should sculpt the face and upper body with soft, sunset-like tones, while casting a strong head shadow to the right. Style the person. His eyes are closed and chin tilted slightly up."
+  },
+   {
+    "id": "bmw-in-hills",
+    "title": "BMW in Hills",
+    "image": "/presets/Bmw.jpg",
+    "prompt": " A stylish subject (attached image, exactly same face) stands confidently on a misty hill-station road wearing a  un tucked crisp white Calvin Klein T-shirt ( Brand name in Blue color) , light-blue faded jeans, and clean white Nike sneakers. subject has an elegant upswept hairstyle, , a sleek white iWatch on one wrist,  Beside is a brand-new bright black BMW parked at an angle. On the car’s bonnet sits a majestic Maine Coon cat wearing playful heart-shaped sunglasses, with a Starbucks coffee cup, iPhone pro and earpods placed next to it. The backdrop features rolling green hills veiled in cool mist, drifting clouds, and winding mountain roads. The scene is captured in ultra-realistic, photorealistic 8K resolution with soft diffused daylight, gentle cinematic shadows, and a cool fresh hill-station ambiance, creating a polished high-fashion editorial feel"
+  },
+ 
+  {
+    "id": "radha-style",
+    "title": "Radha Style",
+    "image": "/presets/radha.jpg",
+    "prompt": "Create a portrait of the above reference with a serene expression, where the girl looks like Radha with maroon very long wavy hair flying & minimal kolka art in the forehead a peacock feather in her very long hair. She's wearing a pink and white contrast chiffon lehenga along with golden jewellery add a flute in her hand Keep the background solid white wall. Also, background is minimal, lit with a gradient of warm blue and warm red Hd neon light reflecting on the picture, creating"
+  },{
+    "id": "garba night",
+    "title": "Garba Night",
+    "image": "/presets/women-in-garba.jpg",
+    "prompt": "Bright cinematic image of a woman spinning in red-white lehenga, sleeveless, dupatta fluttering, dandiya in hands, soft gentle smile, long curly hair with white flower, garba dancers blurred behind, night festival lighting with soft glow"
+  },{
+    "id": "young man sitting",
+    "title": "Young man sitting",
+    "image": "/presets/youngman-sitting.jpg",
+    "prompt": "A realistic ultra-clear close-up shot 120mm zoom lens portrait of a stylish young man sitting, right hand touching modern brown hanging swing chair. He has hair, face, eye mouths (same upload image generateland looking the camera conference. He is dressed in a light beige textured button-up shirt with sleeves rolled up, black baggy pants, and white and black color sneakers. A smartwatch.The background features outdoor chairs, greenery, and a colorful amusement park-like at sunsets time"
   },
   {
     "id": "cartoonified-city",
     "title": "Cartoonified City Scene",
     "image": "/presets/Cartoonified city.jpg",
     "prompt": "A person wearing a vibrant purple varsity jacket with embroidered flowers, accessories including a black hat and gold chain necklace, smiling, with detailed facial features and hair, standing and facing the viewer, posing in front of a stylized city scene with tall buildings, a large volcano, and purple trees, on a pink basketball court, cartoonish Minions in the background, bright and vivid colors, cartoon style, anime-inspired, whimsical atmosphere, photorealistic details, detailed background, vibrant lighting, detailed skin, bright color palette (purple, pink, yellow, white, black), flat design elements, stylized background."
+  },
+  {
+    "id": "man-in-bar",
+    "title": "Man In Bar",
+    "image": "/presets/man-in-bar.jpg",
+    "prompt": "A cinematic low-light portrait of a stylish South Asian man lounging on a vintage leather couch, wearing an open button silk shirt, layered necklace, and round sunglasses. He holds a cigar in one hand and a crystal glass of whiskey in the other. Warm golden light highlights the smoke around him, while the background stays dark and moody. Expression confident, exuding power and calm authority. Ultra photorealistic, cinematic shadows, 8K quality."
+  },
+  {
+    "id": "man-hologram",
+    "title": "Man On Hologram",
+    "image": "/presets/man-hologram.jpg",
+    "prompt": "  A man looking intently at a holographic projection of himself, which is emanating from a small device on a table. The man has dark hair and a beard, and he is wearing a dark blue t-shirt and a watch. His expression is one of curiosity and slight confusion. The holographic figure is glowing blue and appears to be in an active pose, gesturing with one hand. The background is a slightly blurred indoor setting, possibly a home or office"
   },
   {
     "id": "cartoon-duo-scooter",
