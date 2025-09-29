@@ -6,6 +6,7 @@ import {
   improvePrompt,
   suggestPromptIdeas,
 } from "../services/gemini";
+import { useToast } from "../toastContext";
 import {
   HiOutlineExclamation,
   HiOutlineDownload,
@@ -16,6 +17,7 @@ import {
 
 export default function HeadshotPage() {
   const { credits, consumeCredits } = useCredits();
+  const { show } = useToast();
   const [file, setFile] = React.useState(null);
   const [prompt, setPrompt] = React.useState("");
   const [img, setImg] = React.useState(null);
@@ -39,11 +41,49 @@ export default function HeadshotPage() {
   }
 
   async function onImprove() {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      show({
+        title: "No prompt",
+        message: "Please enter a prompt first",
+        type: "warning",
+      });
+      return;
+    }
+
+    if (credits < 1) {
+      show({
+        title: "No credits",
+        message: "You need at least 1 credit to improve prompts",
+        type: "error",
+      });
+      return;
+    }
+
     setImproving(true);
     try {
+      console.log("🔧 Starting prompt improvement...");
       const better = await improvePrompt(prompt);
-      setPrompt(better);
+
+      if (better && better.trim() && better !== prompt) {
+        setPrompt(better);
+        show({
+          title: "Prompt improved!",
+          message: "Your prompt has been enhanced",
+          type: "success",
+        });
+        console.log("✅ Prompt improved successfully");
+      } else {
+        show({
+          title: "No changes",
+          message: "The prompt couldn't be improved at this time",
+          type: "info",
+        });
+        console.log("⚠️ No improvement made to prompt");
+      }
+    } catch (e) {
+      console.error("❌ Prompt improvement failed:", e);
+      const errorMsg = e?.message || "Failed to improve prompt";
+      show({ title: "Improvement failed", message: errorMsg, type: "error" });
     } finally {
       setImproving(false);
     }

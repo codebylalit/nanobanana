@@ -8,17 +8,13 @@ import {
   getFriendlyErrorMessage,
 } from "../services/gemini";
 import { useToast } from "../toastContext";
-import {
-  HiOutlineExclamation,
-  HiOutlineDownload,
-  HiOutlineRefresh,
-} from "react-icons/hi";
+import { HiOutlineDownload, HiOutlineRefresh } from "react-icons/hi";
 
 export default function ImageToImagePage() {
   const { credits, consumeCredits, initialized } = useCredits();
   const [file, setFile] = React.useState(null);
   const [prompt, setPrompt] = React.useState("");
-  const [autoActionFigure, setAutoActionFigure] = React.useState(false);
+  // const [autoActionFigure, setAutoActionFigure] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState(null);
   // kept for compatibility; no longer used after moving presets to modal
   // const [savedManualPrompt, setSavedManualPrompt] = React.useState("");
@@ -43,7 +39,7 @@ export default function ImageToImagePage() {
     return () => {
       URL.revokeObjectURL(url);
     };
-  }, [file]); // Removed previewUrl from dependencies to prevent infinite loop
+  }, [file, previewUrl]);
 
   const [presets, setPresets] = React.useState([]);
   React.useEffect(() => {
@@ -54,7 +50,7 @@ export default function ImageToImagePage() {
   }, []);
 
   function onChoosePreset(preset) {
-    setAutoActionFigure(false);
+    // setAutoActionFigure(false); // deprecated
     // saved manual prompt no longer used
     setPrompt(preset.prompt);
     setShowPresetModal(false);
@@ -93,11 +89,47 @@ export default function ImageToImagePage() {
   }
 
   async function onImprove() {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      show({
+        title: "No prompt",
+        message: "Please enter a prompt first",
+        type: "warning",
+      });
+      return;
+    }
+    if (credits < 1) {
+      show({
+        title: "No credits",
+        message: "You need at least 1 credit to improve prompts",
+        type: "error",
+      });
+      return;
+    }
+
     setImproving(true);
     try {
       const better = await improvePrompt(prompt);
-      setPrompt(better);
+      if (better && better !== prompt) {
+        setPrompt(better);
+        show({
+          title: "Prompt improved",
+          message: "Your prompt has been enhanced",
+          type: "success",
+        });
+      } else {
+        show({
+          title: "No changes",
+          message: "The prompt couldn't be improved at this time",
+          type: "info",
+        });
+      }
+    } catch (e) {
+      console.error("Improve prompt error:", e);
+      show({
+        title: "Improvement failed",
+        message: "Could not improve prompt. Please try again.",
+        type: "error",
+      });
     } finally {
       setImproving(false);
     }

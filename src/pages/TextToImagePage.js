@@ -9,7 +9,6 @@ import {
 } from "../services/gemini";
 import { useToast } from "../toastContext";
 import {
-  HiOutlineExclamation,
   HiOutlineDownload,
   HiOutlinePencil,
   HiOutlineRefresh,
@@ -58,13 +57,47 @@ export default function TextToImagePage() {
   }
 
   async function onImprove() {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      show({
+        title: "No prompt",
+        message: "Please enter a prompt first",
+        type: "warning",
+      });
+      return;
+    }
+    if (credits < 1) {
+      show({
+        title: "No credits",
+        message: "You need at least 1 credit to improve prompts",
+        type: "error",
+      });
+      return;
+    }
+
     setImproving(true);
     try {
       const better = await improvePrompt(prompt);
+      if (better && better !== prompt) {
       setPrompt(better);
+        show({
+          title: "Prompt improved",
+          message: "Your prompt has been enhanced",
+          type: "success",
+        });
+      } else {
+        show({
+          title: "No changes",
+          message: "The prompt couldn't be improved at this time",
+          type: "info",
+        });
+      }
     } catch (e) {
-      // silent fallback
+      console.error("Improve prompt error:", e);
+      show({
+        title: "Improvement failed",
+        message: "Could not improve prompt. Please try again.",
+        type: "error",
+      });
     } finally {
       setImproving(false);
     }
@@ -232,7 +265,9 @@ export default function TextToImagePage() {
            {loading ? (
              <div className="text-center">
                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-400 mx-auto mb-3"></div>
-               <p className="text-gray-700 text-sm">Generating your image...</p>
+                <p className="text-gray-700 text-sm">
+                  Generating your image...
+                </p>
                <p className="text-gray-500 text-xs mt-1">
                  This may take a few moments
                </p>
@@ -295,5 +330,4 @@ export default function TextToImagePage() {
      </div>
    </div>
  );
-
 }

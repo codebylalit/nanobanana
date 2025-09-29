@@ -10,6 +10,7 @@ import {
   HiOutlineUser,
   HiOutlineScissors,
   HiOutlinePhotograph,
+  HiOutlineVideoCamera,
 } from "react-icons/hi";
 import { HiOutlineChevronRight } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";
@@ -85,6 +86,12 @@ export default function DashboardLayout({ children }) {
             to="/image-editor"
             label="AI Image Editor"
             icon={HiOutlinePhotograph}
+            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+          />
+          <SidebarLink
+            to="/image-to-video"
+            label="Image to Video"
+            icon={HiOutlineVideoCamera}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
           <SidebarLink
@@ -167,8 +174,10 @@ function CreditsBadge() {
   const navigate = useNavigate();
   return (
     <div className="flex items-center gap-2 sm:gap-3 text-gray-800">
-      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-2 sm:px-3 py-1 text-xs cursor-pointer sm:text-sm bg-white"
-    onClick={()=>navigate("/dashboard-pricing")}>
+      <div
+        className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-2 sm:px-3 py-1 text-xs cursor-pointer sm:text-sm bg-white"
+        onClick={() => navigate("/dashboard-pricing")}
+      >
         <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
         <span className="hidden sm:inline">Credits: </span>
         <span>{initialized ? credits : "..."}</span>

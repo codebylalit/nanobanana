@@ -1,8 +1,11 @@
 // Mobile-Optimized Gemini API service via RapidAPI
+// "https://nano-banana-gemini-ai-image-generator-free-100-api.p.rapidapi.com/api/nano-banana";
 const RAPIDAPI_URL =
   "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
 
 const RAPIDAPI_KEYS = [
+  "8e95a9f995msh7d61cf3391a1392p100708jsna9cfce8e482d",
+  "458abdd670mshd48264ddea2fb7ap1f48d9jsn8e9b796c1cd4",
   "5def448890msh1dee7ee52790518p1cf21ejsnaf19597d61ec",
   "7fdc303ae4msh9781fc64209f968p1f6cc1jsnfebc43ac3654",
   "a4fde24ae0msh026d67a6ff832ddp13eb3bjsn628bcb556410",
@@ -646,16 +649,89 @@ export async function editImageAdjustments(file, options) {
 
 export async function improvePrompt(userPrompt) {
   try {
-    const result = await callGeminiAPI(`Improve: ${userPrompt}`, []);
+    console.log("🔧 Improving prompt:", userPrompt);
+
+    if (!userPrompt || typeof userPrompt !== "string" || !userPrompt.trim()) {
+      console.warn("🔧 Invalid prompt provided:", userPrompt);
+      return userPrompt || "";
+    }
+
+    // Make Gemini output a rewritten prompt instead of a question
+    const result = await callGeminiAPI(
+      `Rewrite this prompt into a more descriptive, detailed prompt for image generation. Do not ask questions. Return only the rewritten prompt: "${userPrompt.trim()}"`,
+      []
+    );
+
+    console.log("🔧 Raw API response:", result);
+
+    if (!result || typeof result !== "string") {
+      console.warn("🔧 Invalid response format:", result);
+      return userPrompt;
+    }
+
+    // Try to parse as JSON first
     try {
       const parsed = JSON.parse(result);
-      return parsed.text || parsed.response || result.trim() || userPrompt;
-    } catch {
+      console.log("🔧 Parsed JSON:", parsed);
+
+      // Check various possible response fields
+      if (parsed.text) return parsed.text.trim();
+      if (parsed.response) return parsed.response.trim();
+      if (parsed.message) return parsed.message.trim();
+      if (parsed.prompt) return parsed.prompt.trim();
+      if (parsed.rewritten_prompt) return parsed.rewritten_prompt.trim();
+      if (parsed.improved_prompt) return parsed.improved_prompt.trim();
+
+      // If it's an object but no known fields, try to extract text content
+      if (typeof parsed === "object") {
+        const textContent = Object.values(parsed).find(
+          (v) => typeof v === "string" && v.trim().length > 0
+        );
+        if (textContent) return textContent.trim();
+      }
+
       return result.trim() || userPrompt;
+    } catch (parseError) {
+      console.log("🔧 Not JSON, treating as plain text");
+
+      // If not JSON, treat as plain text
+      const cleaned = result.trim();
+
+      // Remove common prefixes that might be added by the API
+      const prefixes = [
+        "Here's an improved prompt:",
+        "Improved prompt:",
+        "Rewritten prompt:",
+        "Here's the rewritten prompt:",
+        "The improved prompt is:",
+        "Here's a better prompt:",
+        "Better prompt:",
+        "Enhanced prompt:",
+        "Here's the enhanced prompt:",
+      ];
+
+      let finalPrompt = cleaned;
+      for (const prefix of prefixes) {
+        if (finalPrompt.toLowerCase().startsWith(prefix.toLowerCase())) {
+          finalPrompt = finalPrompt.substring(prefix.length).trim();
+          break;
+        }
+      }
+
+      // Remove quotes if the entire response is wrapped in them
+      if (
+        (finalPrompt.startsWith('"') && finalPrompt.endsWith('"')) ||
+        (finalPrompt.startsWith("'") && finalPrompt.endsWith("'"))
+      ) {
+        finalPrompt = finalPrompt.slice(1, -1).trim();
+      }
+
+      console.log("🔧 Final improved prompt:", finalPrompt);
+      return finalPrompt || userPrompt;
     }
   } catch (e) {
-    console.warn("⚠️ Improve prompt failed:", e);
-    return `${userPrompt} — detailed, high quality`;
+    console.error("🔧 improvePrompt error:", e);
+    return userPrompt; // fallback
   }
 }
 
@@ -706,7 +782,7 @@ export async function suggestPromptIdeas(topic) {
     let raw = result;
 
     // Only try to parse JSON if it actually looks like JSON
-    if (typeof result === "string" && /^[\[{]/.test(result.trim())) {
+    if (typeof result === "string" && /^[[{]/.test(result.trim())) {
       try {
         const parsed = JSON.parse(result);
         raw = parsed.text || parsed.response || parsed.message || result;
@@ -741,7 +817,7 @@ export async function suggestPromptIdeas(topic) {
     "Dew drops on petals",
     "Futuristic city skyline",
     "Cozy library with warm light",
-  ]
+  ];
 }
 
 // Debug and utility functions
