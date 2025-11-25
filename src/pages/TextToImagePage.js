@@ -1,5 +1,6 @@
 import React from "react";
 import { useCredits } from "../creditsContext";
+import { useAuth } from "../authContext";
 import { addHistoryItem } from "../historyStore";
 import {
   textToImage,
@@ -16,6 +17,7 @@ import {
 
 export default function TextToImagePage() {
   const { credits, consumeCredits, initialized } = useCredits();
+  const { user } = useAuth();
   const [prompt, setPrompt] = React.useState("");
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
@@ -23,6 +25,27 @@ export default function TextToImagePage() {
   const [ideas, setIdeas] = React.useState([]);
   const [improving, setImproving] = React.useState(false);
   const { show } = useToast();
+  const [userApiKey, setUserApiKey] = React.useState(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.uid) {
+        setUserApiKey(null);
+        return;
+      }
+      try {
+        const { getUserApiKey } = await import("../userApiKeyService");
+        const key = await getUserApiKey(user.uid);
+        if (!cancelled) setUserApiKey(key || null);
+      } catch (e) {
+        console.error("Failed to load user API key", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   async function onGenerate() {
     if (credits < 1) return;
@@ -31,7 +54,7 @@ export default function TextToImagePage() {
     setError(null);
 
     try {
-      const result = await textToImage(prompt);
+      const result = await textToImage(prompt, userApiKey);
       setImg(result.url);
       if (result.generated) {
         const ok = await consumeCredits(1);
@@ -76,7 +99,7 @@ export default function TextToImagePage() {
 
     setImproving(true);
     try {
-      const better = await improvePrompt(prompt);
+      const better = await improvePrompt(prompt, userApiKey);
       if (better && better !== prompt) {
       setPrompt(better);
         show({
@@ -106,7 +129,7 @@ export default function TextToImagePage() {
   async function onSuggest() {
     setIdeas(["Loading ideas..."]);
     try {
-      const list = await suggestPromptIdeas(prompt);
+      const list = await suggestPromptIdeas(prompt, userApiKey);
       setIdeas(list);
     } catch (e) {
       setIdeas(["Try again later"]);

@@ -1,7 +1,7 @@
-// Mobile-Optimized Gemini API service via RapidAPI
-// "https://nano-banana-gemini-ai-image-generator-free-100-api.p.rapidapi.com/api/nano-banana";
-const RAPIDAPI_URL =
-  "https://gemini-2-5-flash-image-nano-banana1.p.rapidapi.com/api/gemini";
+// Mobile-Optimized Gemini API service using official Google Gemini HTTP API
+// Using the Nano Banana image model endpoint (v1beta)
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 const RAPIDAPI_KEYS = [
   "8e95a9f995msh7d61cf3391a1392p100708jsna9cfce8e482d",
@@ -101,138 +101,92 @@ function recordApiKeyUsage(keyIndex) {
   apiKeyUsage.get(key).push(Date.now());
 }
 
-// RapidAPI call with proper key rotation (like your Gemini approach)
-async function callGeminiAPI(prompt, imageUrls = [], retryCount = 0) {
-  if (!RAPIDAPI_KEYS.length) {
-    throw new Error("Missing RapidAPI keys");
+// Gemini call using only the per-user Gemini API key passed from the frontend.
+// Shared bundled keys are no longer used.
+async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 0 }) {
+  const trimmedPrompt = (prompt || "").slice(0, isMobile() ? 350 : 400);
+  const images = Array.isArray(imageUrls) ? imageUrls.slice(0, 1) : [];
+
+  if (!userApiKey || typeof userApiKey !== "string" || !userApiKey.trim()) {
+    throw new Error(
+      "Missing Gemini API key. Please add your key in the Profile page."
+    );
   }
 
   perfLogger.start("Gemini API Call");
 
-  // Find available API keys
-  const availableKeys = [];
-  for (let i = 0; i < RAPIDAPI_KEYS.length; i++) {
-    if (canUseApiKey(i)) {
-      availableKeys.push(i);
+  const controller = new AbortController();
+  const timeout = isMobile() ? 45000 : 30000;
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  // Build Google Gemini generateContent payload
+  const contents = [
+    {
+      parts: [
+        { text: trimmedPrompt },
+        // If an image URL is provided, send it as a separate text part so the
+        // model can reference it. This keeps the client-side API simple.
+        ...(images.length
+          ? [
+              {
+                text: `Reference image URL: ${images[0]}`,
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
+  const payload = {
+    contents,
+  };
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": userApiKey.trim(),
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response
+        .text()
+        .catch(() => `HTTP ${response.status}`);
+      throw new Error(`API error ${response.status}: ${errorText}`);
     }
-  }
 
-  if (availableKeys.length === 0) {
-    console.error("❌ All RapidAPI keys are rate limited");
-    throw new Error(
-      "All API keys are temporarily rate limited. Please wait a minute and try again."
-    );
-  }
+    const responseJson = await response.json();
 
-  console.log(
-    `📊 Available API keys: ${availableKeys.length}/${RAPIDAPI_KEYS.length}`
-  );
-
-  // Try available keys with proper error handling
-  const maxRetries = Math.min(3, availableKeys.length);
-
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const keyIndex = availableKeys[attempt];
-    const key = RAPIDAPI_KEYS[keyIndex];
-
-    try {
-      // Record usage before making request
-      recordApiKeyUsage(keyIndex);
-
-      const controller = new AbortController();
-      const timeout = isMobile() ? 45000 : 30000; // Reasonable timeouts
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-      const payload = {
-        prompt: prompt.slice(0, isMobile() ? 350 : 400),
-        image: imageUrls.slice(0, 1),
-        stream: false,
-        return: "url_image",
-      };
-
-      console.log(
-        `🔑 Trying RapidAPI key ${keyIndex + 1} (attempt ${
-          attempt + 1
-        }/${maxRetries})...`
-      );
-
-      const response = await fetch(RAPIDAPI_URL, {
-        method: "POST",
-        headers: {
-          "x-rapidapi-key": key,
-          "x-rapidapi-host":
-            "gemini-2-5-flash-image-nano-banana1.p.rapidapi.com",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      // Handle rate limiting
-      if (response.status === 429) {
-        console.log(`⚠️ Rate limit hit on key ${keyIndex + 1}, trying next...`);
-        if (isMobile() && attempt < maxRetries - 1) {
-          const delay = Math.min(1000 * Math.pow(2, attempt), 3000);
-          console.log(`⏱️ Mobile backoff: ${delay}ms`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-        continue;
-      }
-
-      if (!response.ok) {
-        const errorText = await response
-          .text()
-          .catch(() => `HTTP ${response.status}`);
-        console.warn(`❌ API error ${response.status}: ${errorText}`);
-
-        // Don't retry on 4xx errors (except 429)
-        if (
-          response.status >= 400 &&
-          response.status < 500 &&
-          response.status !== 429
-        ) {
-          throw new Error(`API error ${response.status}: ${errorText}`);
-        }
-        continue;
-      }
-
-      const responseText = await response.text();
-
-      if (
-        !responseText ||
-        responseText.trim() === "" ||
-        responseText === "{}"
-      ) {
-        console.log(
-          `⚠️ Empty response from key ${keyIndex + 1}, trying next...`
-        );
-        continue;
-      }
-
-      console.log(`✅ Success with RapidAPI key ${keyIndex + 1}`);
-      perfLogger.end("Gemini API Call");
-      perfLogger.memory();
-      return responseText;
-    } catch (error) {
-      const errorMsg =
-        error.name === "AbortError" ? "Request timeout" : error.message;
-      console.warn(`❌ API key ${keyIndex + 1} failed: ${errorMsg}`);
-
-      // Add delay between retries on mobile
-      if (isMobile() && attempt < maxRetries - 1) {
-        const delay = Math.min(500 * (attempt + 1), 2000);
-        console.log(`⏱️ Mobile retry delay: ${delay}ms`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
+    // Try to extract a useful string from Gemini's generateContent response.
+    // We keep returning a string here so existing callers (textToImage, etc.)
+    // can continue to treat it as raw text / JSON.
+    let textOutput = "";
+    const candidates = responseJson?.candidates || [];
+    if (candidates.length) {
+      const parts = candidates[0]?.content?.parts || [];
+      textOutput = parts
+        .map((p) => (typeof p.text === "string" ? p.text : ""))
+        .join("\n")
+        .trim();
     }
-  }
 
-  perfLogger.end("Gemini API Call");
-  throw new Error(
-    "All available RapidAPI keys failed. Please try again in a few minutes."
-  );
+    if (!textOutput) {
+      throw new Error("Empty response from Gemini API");
+    }
+
+    perfLogger.end("Gemini API Call");
+    perfLogger.memory();
+    return textOutput;
+  } catch (error) {
+    perfLogger.end("Gemini API Call");
+    throw error;
+  }
 }
 
 // Image compression (keeping your working version)
@@ -451,7 +405,7 @@ function createPlaceholder(label, subtitle, type = "info") {
 }
 
 // Main functions (based on your working Gemini patterns)
-export async function textToImage(prompt) {
+export async function textToImage(prompt, userApiKey) {
   if (!prompt?.trim()) {
     throw new Error("Prompt is required");
   }
@@ -459,7 +413,11 @@ export async function textToImage(prompt) {
   perfLogger.start("Text to Image");
 
   try {
-    const result = await callGeminiAPI(`Create image: ${prompt.trim()}`, []);
+    const result = await callGeminiAPI({
+      prompt: `Create image: ${prompt.trim()}`,
+      imageUrls: [],
+      userApiKey,
+    });
 
     if (result?.trim()) {
       try {
@@ -496,7 +454,7 @@ export async function textToImage(prompt) {
   }
 }
 
-export async function imageToImage(file, prompt) {
+export async function imageToImage(file, prompt, userApiKey) {
   if (!file) {
     throw new Error("Image is required");
   }
@@ -549,10 +507,11 @@ export async function imageToImage(file, prompt) {
     }
 
     console.log(`🔄 Processing with Gemini API...`);
-    const result = await callGeminiAPI(
-      `Transform: ${prompt || "artistic style"}`,
-      [imageUrl]
-    );
+    const result = await callGeminiAPI({
+      prompt: `Transform: ${prompt || "artistic style"}`,
+      imageUrls: [imageUrl],
+      userApiKey,
+    });
 
     if (result?.trim()) {
       try {
@@ -621,20 +580,25 @@ export async function imageToImage(file, prompt) {
 }
 
 // Helper functions (keeping your working patterns)
-export async function generateHeadshot(file, prompt) {
+export async function generateHeadshot(file, prompt, userApiKey) {
   console.log("👤 Generating headshot...");
   return await imageToImage(
     file,
-    `Professional headshot: ${prompt || "clean background"}`
+    `Professional headshot: ${prompt || "clean background"}`,
+    userApiKey
   );
 }
 
-export async function removeBackground(file) {
+export async function removeBackground(file, userApiKey) {
   console.log("🎭 Removing background...");
-  return await imageToImage(file, "Remove background, isolate subject");
+  return await imageToImage(
+    file,
+    "Remove background, isolate subject",
+    userApiKey
+  );
 }
 
-export async function editImageAdjustments(file, options) {
+export async function editImageAdjustments(file, options, userApiKey) {
   console.log("🎨 Applying adjustments...");
   const adjustments = Object.entries(options || {})
     .filter(([, v]) => v !== 0 && v != null)
@@ -643,11 +607,12 @@ export async function editImageAdjustments(file, options) {
 
   return await imageToImage(
     file,
-    `Enhance: ${adjustments || "improve quality"}`
+    `Enhance: ${adjustments || "improve quality"}`,
+    userApiKey
   );
 }
 
-export async function improvePrompt(userPrompt) {
+export async function improvePrompt(userPrompt, userApiKey) {
   try {
     console.log("🔧 Improving prompt:", userPrompt);
 
@@ -657,10 +622,11 @@ export async function improvePrompt(userPrompt) {
     }
 
     // Make Gemini output a rewritten prompt instead of a question
-    const result = await callGeminiAPI(
-      `Rewrite this prompt into a more descriptive, detailed prompt for image generation. Do not ask questions. Return only the rewritten prompt: "${userPrompt.trim()}"`,
-      []
-    );
+    const result = await callGeminiAPI({
+      prompt: `Rewrite this prompt into a more descriptive, detailed prompt for image generation. Do not ask questions. Return only the rewritten prompt: "${userPrompt.trim()}"`,
+      imageUrls: [],
+      userApiKey,
+    });
 
     console.log("🔧 Raw API response:", result);
 
@@ -771,13 +737,14 @@ export function getFriendlyErrorMessage(raw = "") {
     : "Try again with different settings";
 }
 
-export async function suggestPromptIdeas(topic) {
+export async function suggestPromptIdeas(topic, userApiKey) {
   try {
     // call your Gemini API
-    const result = await callGeminiAPI(
-      `List 8 creative prompts: ${topic || "art"}`,
-      []
-    );
+    const result = await callGeminiAPI({
+      prompt: `List 8 creative prompts: ${topic || "art"}`,
+      imageUrls: [],
+      userApiKey,
+    });
 
     let raw = result;
 

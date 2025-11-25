@@ -6,6 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { updateProfile } from "firebase/auth";
 import { getFeatureOptIn, setFeatureOptIn } from "../userPrefs";
+import {
+  getUserApiKey as getGeminiUserApiKey,
+  upsertUserApiKey as saveGeminiUserApiKey,
+  deleteUserApiKey as removeGeminiUserApiKey,
+} from "../userApiKeyService";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -20,12 +25,37 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = React.useState(false);
   const [displayName, setDisplayName] = React.useState("");
   const [savingName, setSavingName] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState("");
+  const [apiKeyLoading, setApiKeyLoading] = React.useState(false);
+  const [apiKeySaving, setApiKeySaving] = React.useState(false);
 
   React.useEffect(() => {
     if (user?.uid) {
       setFeatureOptInState(getFeatureOptIn(user.uid));
       setDisplayName(user.displayName || "");
     }
+  }, [user]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.uid) {
+        setApiKey("");
+        return;
+      }
+      setApiKeyLoading(true);
+      try {
+        const key = await getGeminiUserApiKey(user.uid);
+        if (!cancelled) setApiKey(key || "");
+      } catch (e) {
+        console.error("Failed to load stored API key", e);
+      } finally {
+        if (!cancelled) setApiKeyLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   if (!user) {
@@ -208,6 +238,85 @@ export default function ProfilePage() {
               </dd>
             </div>
           </dl>
+        </section>
+
+        {/* Gemini API key management */}
+        <section className="rounded-xl sm:rounded-2xl border border-gray-200 bg-white p-3 sm:p-6">
+          <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
+            Gemini API key
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-600 mb-3">
+            Bring your own Google Gemini API key for image generation. This key
+            is stored securely in your account.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={
+                apiKeyLoading
+                  ? "Loading your saved key..."
+                  : "Enter your Gemini API key"
+              }
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+            <button
+              type="button"
+              disabled={apiKeySaving || !apiKey.trim()}
+              onClick={async () => {
+                if (!user?.uid || !apiKey.trim()) return;
+                try {
+                  setApiKeySaving(true);
+                  await saveGeminiUserApiKey(user.uid, apiKey.trim());
+                  show({
+                    title: "Saved",
+                    message: "Gemini API key updated.",
+                    type: "success",
+                  });
+                } catch (err) {
+                  show({
+                    title: "Error",
+                    message:
+                      err?.message || "Failed to save Gemini API key.",
+                    type: "error",
+                  });
+                } finally {
+                  setApiKeySaving(false);
+                }
+              }}
+              className="rounded-lg bg-yellow-400 text-black font-semibold px-3 sm:px-4 py-2 text-xs sm:text-sm hover:bg-yellow-300 disabled:opacity-50"
+            >
+              {apiKeySaving ? "Saving..." : apiKey ? "Update key" : "Save key"}
+            </button>
+            {apiKey && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!user?.uid) return;
+                  try {
+                    await removeGeminiUserApiKey(user.uid);
+                    setApiKey("");
+                    show({
+                      title: "Removed",
+                      message: "Gemini API key removed.",
+                      type: "success",
+                    });
+                  } catch (err) {
+                    show({
+                      title: "Error",
+                      message:
+                        err?.message || "Failed to remove Gemini API key.",
+                      type: "error",
+                    });
+                  }
+                }}
+                className="rounded-lg border border-gray-300 px-3 sm:px-4 py-2 text-xs sm:text-sm hover:bg-gray-50"
+              >
+                Remove
+              </button>
+            )}
+          </div>
         </section>
 
         {/* Community gallery */}

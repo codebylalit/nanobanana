@@ -1,5 +1,6 @@
 import React from "react";
 import { useCredits } from "../creditsContext";
+import { useAuth } from "../authContext";
 import { addHistoryItem } from "../historyStore";
 import { removeBackground } from "../services/gemini";
 import {
@@ -11,15 +12,37 @@ import {
 
 export default function BackgroundRemovalPage() {
   const { credits, consumeCredits } = useCredits();
+  const { user } = useAuth();
   const [file, setFile] = React.useState(null);
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [userApiKey, setUserApiKey] = React.useState(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.uid) {
+        setUserApiKey(null);
+        return;
+      }
+      try {
+        const { getUserApiKey } = await import("../userApiKeyService");
+        const key = await getUserApiKey(user.uid);
+        if (!cancelled) setUserApiKey(key || null);
+      } catch (e) {
+        console.error("Failed to load user API key", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   async function onProcess() {
     if (credits < 1 || !file) return;
     setLoading(true);
     try {
-      const result = await removeBackground(file);
+      const result = await removeBackground(file, userApiKey);
       setImg(result.url);
       if (result.generated) {
         const ok = await consumeCredits(1);

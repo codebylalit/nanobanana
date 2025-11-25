@@ -1,5 +1,6 @@
 import React from "react";
 import { useCredits } from "../creditsContext";
+import { useAuth } from "../authContext";
 import { addHistoryItem } from "../historyStore";
 import {
   imageToImage,
@@ -12,6 +13,7 @@ import { HiOutlineDownload, HiOutlineRefresh } from "react-icons/hi";
 
 export default function ImageToImagePage() {
   const { credits, consumeCredits, initialized } = useCredits();
+  const { user } = useAuth();
   const [file, setFile] = React.useState(null);
   const [prompt, setPrompt] = React.useState("");
   // const [autoActionFigure, setAutoActionFigure] = React.useState(false);
@@ -25,6 +27,27 @@ export default function ImageToImagePage() {
   const [improving, setImproving] = React.useState(false);
   const [showPresetModal, setShowPresetModal] = React.useState(false);
   const { show } = useToast();
+  const [userApiKey, setUserApiKey] = React.useState(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.uid) {
+        setUserApiKey(null);
+        return;
+      }
+      try {
+        const { getUserApiKey } = await import("../userApiKeyService");
+        const key = await getUserApiKey(user.uid);
+        if (!cancelled) setUserApiKey(key || null);
+      } catch (e) {
+        console.error("Failed to load user API key", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Deprecated action-figure toggle logic removed; preset is available via modal
 
@@ -63,7 +86,7 @@ export default function ImageToImagePage() {
     setError(null);
 
     try {
-      const result = await imageToImage(file, prompt);
+      const result = await imageToImage(file, prompt, userApiKey);
       setImg(result.url);
       if (result.generated) {
         const ok = await consumeCredits(1);
@@ -108,7 +131,7 @@ export default function ImageToImagePage() {
 
     setImproving(true);
     try {
-      const better = await improvePrompt(prompt);
+      const better = await improvePrompt(prompt, userApiKey);
       if (better && better !== prompt) {
         setPrompt(better);
         show({
@@ -138,7 +161,10 @@ export default function ImageToImagePage() {
   async function onSuggest() {
     setIdeas(["Loading ideas..."]);
     try {
-      const list = await suggestPromptIdeas(prompt || "image editing styles");
+      const list = await suggestPromptIdeas(
+        prompt || "image editing styles",
+        userApiKey
+      );
       setIdeas(list);
     } catch (e) {
       setIdeas(["Try again later"]);

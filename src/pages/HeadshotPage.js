@@ -1,5 +1,6 @@
 import React from "react";
 import { useCredits } from "../creditsContext";
+import { useAuth } from "../authContext";
 import { addHistoryItem } from "../historyStore";
 import {
   generateHeadshot,
@@ -17,6 +18,7 @@ import {
 
 export default function HeadshotPage() {
   const { credits, consumeCredits } = useCredits();
+  const { user } = useAuth();
   const { show } = useToast();
   const [file, setFile] = React.useState(null);
   const [prompt, setPrompt] = React.useState("");
@@ -24,12 +26,33 @@ export default function HeadshotPage() {
   const [loading, setLoading] = React.useState(false);
   const [ideas, setIdeas] = React.useState([]);
   const [improving, setImproving] = React.useState(false);
+  const [userApiKey, setUserApiKey] = React.useState(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.uid) {
+        setUserApiKey(null);
+        return;
+      }
+      try {
+        const { getUserApiKey } = await import("../userApiKeyService");
+        const key = await getUserApiKey(user.uid);
+        if (!cancelled) setUserApiKey(key || null);
+      } catch (e) {
+        console.error("Failed to load user API key", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   async function onGenerate() {
     if (credits < 1 || !file) return;
     setLoading(true);
     try {
-      const result = await generateHeadshot(file, prompt);
+      const result = await generateHeadshot(file, prompt, userApiKey);
       const url = result?.url || result;
       setImg(url);
       addHistoryItem({ type: "headshot", prompt, url, ts: Date.now() });
@@ -62,7 +85,7 @@ export default function HeadshotPage() {
     setImproving(true);
     try {
       console.log("🔧 Starting prompt improvement...");
-      const better = await improvePrompt(prompt);
+      const better = await improvePrompt(prompt, userApiKey);
 
       if (better && better.trim() && better !== prompt) {
         setPrompt(better);
@@ -92,7 +115,10 @@ export default function HeadshotPage() {
   async function onSuggest() {
     setIdeas(["Loading ideas..."]);
     try {
-      const list = await suggestPromptIdeas("professional headshot styles");
+      const list = await suggestPromptIdeas(
+        "professional headshot styles",
+        userApiKey
+      );
       setIdeas(list);
     } catch (e) {
       setIdeas(["Try again later"]);
