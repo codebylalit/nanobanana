@@ -1,35 +1,14 @@
 // Mobile-Optimized Gemini API service using official Google Gemini HTTP API
-// Using the Nano Banana image model endpoint (v1beta)
+// Hybrid Mode: Gemini 2.0 Flash (Text) + Pollinations (Image Generation)
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-const RAPIDAPI_KEYS = [
-  "8e95a9f995msh7d61cf3391a1392p100708jsna9cfce8e482d",
-  "458abdd670mshd48264ddea2fb7ap1f48d9jsn8e9b796c1cd4",
-  "5def448890msh1dee7ee52790518p1cf21ejsnaf19597d61ec",
-  "7fdc303ae4msh9781fc64209f968p1f6cc1jsnfebc43ac3654",
-  "a4fde24ae0msh026d67a6ff832ddp13eb3bjsn628bcb556410",
-  "bfebd81595msh3d2b9f6a1d00cefp1b1783jsn1782d7b41d90",
-  "6338b2c519mshb9b9c7fc1ede6d5p14c35bjsn4c6b7c825900",
-  "509e1fefdfmshc23df0836c71f1ep1cbdedjsn983160b969f7",
-  "13144781e5msha558a40cb816aa7p18fb70jsn3c0ff999ea47",
-  "dc328116d9mshf39067e4d6098e2p17bca4jsndb179a489d49",
-  "ef011a07a3msh0fceac212781e08p1d4e8bjsn824e743344f0",
-  "fee2943b1dmsh976699deb810f6fp1de527jsnc682c33c0fba",
-  "652bf87408msh92776cc22ca52ecp1f8a64jsnf6965a425473",
-  "e8870d278bmshe41389b1d6c6e24p161897jsn1c349d5d158d",
-  "2d2574972emsh66a64b66fbbfed9p1c9a86jsn2eee815aa52d",
-  "35b7f88f82msh6d25d050022cf22p1a7c69jsn186f478ca907",
-  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96",
-  "1edab2b6f9msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
-  "3c7e94fa19msh34f0e004e88042ep145455jsn8582a03edfeb",
-  "f82066f4c3msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
-];
+// RAPIDAPI KEYS REMOVED
 
 const IMGBB_KEYS = ["976c43da17048b8595498ac1ba0fa639"];
 
 // Enhanced mobile detection (fixed - no force mobile)
-const isMobile = () => {
+export const isMobile = () => {
   const mobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
@@ -299,8 +278,8 @@ async function compressForMobile(file) {
   });
 }
 
-// ImgBB upload (keeping your working version)
-async function uploadToImgBB(file, retryCount = 0) {
+// Re-export helper for use in videoService
+export async function uploadToImgBB(file, retryCount = 0) {
   perfLogger.start("ImgBB Upload");
   const maxRetries = isMobile() ? 2 : 3;
 
@@ -406,50 +385,24 @@ function createPlaceholder(label, subtitle, type = "info") {
 
 // Main functions (based on your working Gemini patterns)
 export async function textToImage(prompt, userApiKey) {
-  if (!prompt?.trim()) {
-    throw new Error("Prompt is required");
-  }
+  if (!prompt?.trim()) throw new Error("Prompt is required");
 
   perfLogger.start("Text to Image");
-
+  
   try {
-    const result = await callGeminiAPI({
-      prompt: `Create image: ${prompt.trim()}`,
-      imageUrls: [],
-      userApiKey,
-    });
-
-    if (result?.trim()) {
-      try {
-        const parsed = JSON.parse(result);
-        const imageUrl = parsed.url || parsed.image_url || parsed.image;
-        if (imageUrl) {
-          perfLogger.end("Text to Image");
-          return { url: imageUrl, generated: true };
-        }
-      } catch {
-        if (result.startsWith("http")) {
-          perfLogger.end("Text to Image");
-          return { url: result.trim(), generated: true };
-        }
-      }
-    }
+    const encodedPrompt = encodeURIComponent(prompt.trim());
+    const seed = Math.floor(Math.random() * 1000);
+    // Using Pollinations.ai - free, unlimited, no-key
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?nologo=true&seed=${seed}&width=1024&height=1024&model=flux`;
 
     perfLogger.end("Text to Image");
-    return {
-      url: createPlaceholder("Generated Image", prompt.slice(0, 30)),
-      generated: false,
-    };
+    return { url: imageUrl, generated: true };
   } catch (error) {
-    console.error("❌ Text to Image failed:", error);
+    console.error("Generation failed:", error);
     perfLogger.end("Text to Image");
     return {
-      url: createPlaceholder(
-        "Generation Failed",
-        getFriendlyErrorMessage(error?.message),
-        "error"
-      ),
-      generated: false,
+      url: createPlaceholder("Generation Failed", error.message, "error"),
+      generated: false
     };
   }
 }
@@ -469,6 +422,7 @@ export async function imageToImage(file, prompt, userApiKey) {
   try {
     let imageUrl;
 
+    // 1. Get a public URL for the image (Pollinations needs a URL)
     if (typeof file === "string" && file.startsWith("http")) {
       imageUrl = file;
     } else if (file instanceof File) {
@@ -492,13 +446,8 @@ export async function imageToImage(file, prompt, userApiKey) {
           window.showMobileProgress(false);
         }
 
-        let errorMsg = getFriendlyErrorMessage(uploadError.message);
-        if (isMobile() && uploadError.message.includes("timeout")) {
-          errorMsg = "Slow connection - try smaller image";
-        }
-
         return {
-          url: createPlaceholder("Upload Failed", errorMsg, "error"),
+          url: createPlaceholder("Upload Failed", getFriendlyErrorMessage(uploadError.message), "error"),
           generated: false,
         };
       }
@@ -506,55 +455,25 @@ export async function imageToImage(file, prompt, userApiKey) {
       throw new Error("Invalid image input");
     }
 
-    console.log(`🔄 Processing with Gemini API...`);
-    const result = await callGeminiAPI({
-      prompt: `Transform: ${prompt || "artistic style"}`,
-      imageUrls: [imageUrl],
-      userApiKey,
-    });
+    console.log(`🔄 Processing with Pollinations AI...`);
+    
+    // 2. Use Pollinations AI for Image-to-Image
+    // Format: https://image.pollinations.ai/prompt/{prompt}?image={url}&model=flux
+    const encodedPrompt = encodeURIComponent(prompt.trim());
+    const encodedImage = encodeURIComponent(imageUrl);
+    const seed = Math.floor(Math.random() * 1000);
+    
+    const resultUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?image=${encodedImage}&nologo=true&seed=${seed}&width=1024&height=1024&model=flux`;
 
-    if (result?.trim()) {
-      try {
-        const parsed = JSON.parse(result);
-        const resultUrl = parsed.url || parsed.image_url || parsed.image;
-        if (resultUrl) {
-          console.log(`✅ Image transformation successful`);
-          perfLogger.end("Image to Image");
-
-          if (isMobile() && window.showMobileProgress) {
-            window.showMobileProgress(false);
-          }
-
-          return { url: resultUrl, generated: true };
-        }
-      } catch {
-        if (result.startsWith("http")) {
-          console.log(`✅ Image transformation successful (direct URL)`);
-          perfLogger.end("Image to Image");
-
-          if (isMobile() && window.showMobileProgress) {
-            window.showMobileProgress(false);
-          }
-
-          return { url: result.trim(), generated: true };
-        }
-      }
-    }
-
-    console.log(`⚠️ No valid result from API, showing placeholder`);
+    console.log(`✅ Image transformation URL generated`);
     perfLogger.end("Image to Image");
 
     if (isMobile() && window.showMobileProgress) {
       window.showMobileProgress(false);
     }
 
-    return {
-      url: createPlaceholder(
-        "Transformed Image",
-        prompt?.slice(0, 20) || "Style applied"
-      ),
-      generated: false,
-    };
+    return { url: resultUrl, generated: true };
+
   } catch (error) {
     console.error("❌ Image to Image failed:", error);
     perfLogger.end("Image to Image");
@@ -563,17 +482,8 @@ export async function imageToImage(file, prompt, userApiKey) {
       window.showMobileProgress(false);
     }
 
-    let errorMsg = getFriendlyErrorMessage(error?.message);
-    if (isMobile()) {
-      if (error.message.includes("timeout")) {
-        errorMsg = "Request timeout - check connection";
-      } else if (error.message.includes("memory")) {
-        errorMsg = "Not enough memory - try smaller image";
-      }
-    }
-
     return {
-      url: createPlaceholder("Transform Failed", errorMsg, "error"),
+      url: createPlaceholder("Transform Failed", getFriendlyErrorMessage(error?.message), "error"),
       generated: false,
     };
   }
@@ -739,39 +649,35 @@ export function getFriendlyErrorMessage(raw = "") {
 
 export async function suggestPromptIdeas(topic, userApiKey) {
   try {
-    // call your Gemini API
+    // Force Gemini to return a strict JSON array to avoid conversational filler
     const result = await callGeminiAPI({
-      prompt: `List 8 creative prompts: ${topic || "art"}`,
+      prompt: `Generate 8 distinct, creative image generation prompts about "${topic || "art"}". Return ONLY a raw JSON array of strings. Example: ["prompt 1", "prompt 2"]. Do not include any other text or markdown formatting.`,
       imageUrls: [],
       userApiKey,
     });
 
-    let raw = result;
+    let prompts = [];
 
-    // Only try to parse JSON if it actually looks like JSON
-    if (typeof result === "string" && /^[[{]/.test(result.trim())) {
-      try {
-        const parsed = JSON.parse(result);
-        raw = parsed.text || parsed.response || parsed.message || result;
-      } catch (e) {
-        // ignore parse errors and just use the original result
-        raw = result;
+    // 1. Try parsing as JSON (most reliable)
+    try {
+      // Strip potential markdown code blocks
+      const cleanJson = result.replace(/```json/g, "").replace(/```/g, "").trim();
+      const parsed = JSON.parse(cleanJson);
+      if (Array.isArray(parsed)) {
+        prompts = parsed;
       }
+    } catch (e) {
+      // 2. Fallback: Regex parsing if JSON fails
+      console.warn("JSON parse failed, using regex fallback");
+      prompts = result
+        .split(/\n+/)
+        .map((l) => l.replace(/^[\d\-\*\•\s]+/, "").replace(/^\*\*.*?\*\*:\s*/, "").trim()) // Remove bullets & bold titles
+        .filter((l) => l.length > 10 && !l.toLowerCase().startsWith("sure") && !l.toLowerCase().startsWith("here"));
     }
 
-    // Normalise to a string
-    if (typeof raw !== "string") {
-      raw = String(raw);
+    if (prompts.length > 0) {
+      return prompts.slice(0, 8);
     }
-
-    // Split by newlines, remove numbering/bullets, trim, filter out empty lines
-    const lines = raw
-      .split(/\n+/)
-      .map((l) => l.replace(/^\s*[-*\d.]+\s*/, "").trim())
-      .filter(Boolean)
-      .slice(0, 8);
-
-    if (lines.length) return lines;
   } catch (e) {
     console.warn("Suggest prompts failed:", e);
   }
@@ -789,34 +695,7 @@ export async function suggestPromptIdeas(topic, userApiKey) {
 
 // Debug and utility functions
 export function getApiKeyStatus() {
-  const now = Date.now();
-  const status = [];
-
-  for (let i = 0; i < RAPIDAPI_KEYS.length; i++) {
-    const available = canUseApiKey(i);
-    const key = `rapidapi_key_${i}`;
-    const usage = apiKeyUsage.get(key) || [];
-    const recentCount = usage.filter(
-      (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
-    ).length;
-
-    status.push({
-      index: i + 1,
-      available,
-      recentRequests: recentCount,
-      maxRequests: MAX_REQUESTS_PER_MINUTE,
-    });
-  }
-
-  const availableCount = status.filter((s) => s.available).length;
-
-  console.log("📊 RapidAPI Key Status:", {
-    available: availableCount,
-    total: RAPIDAPI_KEYS.length,
-    details: status,
-  });
-
-  return { availableCount, total: RAPIDAPI_KEYS.length, details: status };
+  return { availableCount: 1, total: 1, details: [] };
 }
 
 export function resetRateLimits() {
