@@ -87,7 +87,7 @@ function App() {
             </RequireAuth>
           }
         />
-         <Route
+         {/* <Route
           path="/image-to-video"
           element={
             <RequireAuth>
@@ -96,7 +96,7 @@ function App() {
               </DashboardLayout>
             </RequireAuth>
           }
-        /> 
+        />  */}
         <Route
           path="/previous-images"
           element={

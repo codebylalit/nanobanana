@@ -88,12 +88,12 @@ export default function DashboardLayout({ children }) {
             icon={HiOutlinePhotograph}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
           />
-          <SidebarLink
+          {/* <SidebarLink
             to="/image-to-video"
             label="Image to Video"
             icon={HiOutlineVideoCamera}
             onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
-          />
+          /> */}
           <SidebarLink
             to="/headshot-generator"
             label="Headshot Generator"
