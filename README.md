@@ -48,6 +48,11 @@ REACT_APP_FIREBASE_APP_ID=<app-id>
 
 # Payments (Razorpay)
 REACT_APP_RAZORPAY_KEY_ID=<your-razorpay-key>
+
+# Video Generation (Veo3 API)
+# Set this to your backend endpoint that integrates with Veo3
+# Example: https://your-backend.com/api/generate-video
+REACT_APP_VIDEO_API_URL=<your-veo3-backend-url>
 ```
 
 1. Run
@@ -68,6 +73,77 @@ Supabase Edge Functions (example names):
 - `functions/v1/verify` – verify payment, add credits
 
 Update the Supabase URL in `src/services/paymentService.js` or, preferably, refactor to read from `REACT_APP_SUPABASE_URL`.
+
+## Video Generation (Veo3 Integration)
+
+The app includes an Image-to-Video feature that can integrate with Google's Veo3 API. Currently, it uses a placeholder implementation.
+
+### To enable real Veo3 video generation:
+
+1. **Set up a backend service** that integrates with Veo3 API
+2. **Configure the environment variable**:
+   ```env
+   REACT_APP_VIDEO_API_URL=https://your-backend.com/api/generate-video
+   ```
+3. **Your backend should**:
+   - Accept POST requests with `image` (file) and `prompt` (text) fields
+   - Return JSON with `{ "url": "video-url" }` on success
+   - Handle Veo3 API authentication and processing
+
+### Current Status
+The app now includes a complete Google Veo 3 integration with a secure backend service.
+
+### Backend Setup (veo3-backend/)
+
+1. **Install dependencies**:
+   ```bash
+   cd veo3-backend
+   npm install
+   ```
+
+2. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Google Cloud credentials
+   ```
+
+3. **Required environment variables**:
+   ```env
+   GOOGLE_CLOUD_PROJECT_ID=your-project-id
+   GOOGLE_APPLICATION_CREDENTIALS=./path/to/service-account.json
+   # OR
+   GOOGLE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
+   ```
+
+4. **Start the backend**:
+   ```bash
+   npm start
+   # or for development with auto-reload
+   npm run dev
+   ```
+
+### Frontend Configuration
+
+1. **Set the backend URL** in your React app's `.env`:
+   ```env
+   REACT_APP_VIDEO_API_URL=http://localhost:5000/api/generate-video
+   ```
+
+2. **The frontend will automatically**:
+   - Check backend health on page load
+   - Handle file uploads and image URLs
+   - Display proper error messages
+   - Show loading states during generation
+
+### Google Cloud Setup
+
+1. **Enable Vertex AI API** in your Google Cloud project
+2. **Create a service account** with Vertex AI User permissions
+3. **Download the service account key** JSON file
+4. **Configure authentication** using one of these methods:
+   - Set `GOOGLE_APPLICATION_CREDENTIALS` to the key file path
+   - Set `GOOGLE_SERVICE_ACCOUNT_KEY` with the JSON content
+   - Use `gcloud auth application-default login` for local development
 
 ## Database (Supabase SQL)
 
