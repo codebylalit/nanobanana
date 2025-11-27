@@ -303,7 +303,7 @@ async function compressForMobile(file) {
 }
 
 // ImgBB upload (keeping your working version)
-async function uploadToImgBB(file, retryCount = 0) {
+export async function uploadToImgBB(file, retryCount = 0) {
   perfLogger.start("ImgBB Upload");
   const maxRetries = isMobile() ? 2 : 3;
 
