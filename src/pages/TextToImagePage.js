@@ -14,6 +14,8 @@ import {
   HiOutlinePencil,
   HiOutlineRefresh,
 } from "react-icons/hi";
+import Modal from "../components/Modal";
+import { useNavigate } from "react-router-dom";
 
 export default function TextToImagePage() {
   const { credits, consumeCredits, initialized } = useCredits();
@@ -26,18 +28,26 @@ export default function TextToImagePage() {
   const [improving, setImproving] = React.useState(false);
   const { show } = useToast();
   const [userApiKey, setUserApiKey] = React.useState(null);
+  const [showApiKeyModal, setShowApiKeyModal] = React.useState(false);
+  const [apiKeyInput, setApiKeyInput] = React.useState("");
+  const [savingApiKey, setSavingApiKey] = React.useState(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
       if (!user?.uid) {
         setUserApiKey(null);
+        setShowApiKeyModal(false);
         return;
       }
       try {
         const { getUserApiKey } = await import("../userApiKeyService");
         const key = await getUserApiKey(user.uid);
-        if (!cancelled) setUserApiKey(key || null);
+        if (!cancelled) {
+          setUserApiKey(key || null);
+          setShowApiKeyModal(!key);
+        }
       } catch (e) {
         console.error("Failed to load user API key", e);
       }
@@ -241,7 +251,7 @@ export default function TextToImagePage() {
          <div className="mt-4 hidden sm:block">
            <button
              onClick={onGenerate}
-             disabled={loading || credits < 1 || !prompt.trim()}
+             disabled={loading || (!userApiKey && credits < 1) || !prompt.trim()}
              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-yellow-400 text-black font-bold px-4 py-3 text-sm sm:text-base hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-md disabled:opacity-50 disabled:hover:scale-100"
            >
              {loading ? (
@@ -252,7 +262,7 @@ export default function TextToImagePage() {
              ) : (
                <>
                  <HiOutlinePencil className="w-5 h-5" />
-                 Generate (1 credit)
+                 {userApiKey ? "Generate (Free with API Key)" : "Generate (1 credit)"}
                </>
              )}
            </button>
@@ -334,7 +344,7 @@ export default function TextToImagePage() {
        <div className="max-w-full mx-auto">
          <button
            onClick={onGenerate}
-           disabled={loading || credits < 1 || !prompt.trim()}
+           disabled={loading || (!userApiKey && credits < 1) || !prompt.trim()}
            className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-bold px-3 py-3 text-sm hover:bg-yellow-300 transition disabled:opacity-50"
          >
            {loading ? (
@@ -345,12 +355,66 @@ export default function TextToImagePage() {
            ) : (
              <>
                <HiOutlinePencil className="w-5 h-5" />
-               Generate (1 credit)
+               {userApiKey ? "Generate (Free with API Key)" : "Generate (1 credit)"}
              </>
            )}
          </button>
        </div>
      </div>
+      <Modal
+        open={showApiKeyModal && !!user}
+        onClose={() => setShowApiKeyModal(false)}
+        title="Use Your Own API Key (Free)"
+      >
+        <div className="mb-3 text-gray-800 text-sm">
+          Add your Google Gemini API key to use the app for free. Your credits will not be consumed if you use your own key.<br />
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-yellow-700 underline"
+          >
+            Get your Gemini API key
+          </a>
+        </div>
+        <input
+          type="password"
+          value={apiKeyInput}
+          onChange={e => setApiKeyInput(e.target.value)}
+          placeholder="Paste your Gemini API key here"
+          className="w-full mb-3 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+        />
+        <div className="flex gap-2">
+          <button
+            className="rounded-lg bg-yellow-400 text-black font-semibold px-4 py-2 text-sm hover:bg-yellow-300 disabled:opacity-50"
+            disabled={!apiKeyInput.trim() || savingApiKey}
+            onClick={async () => {
+              if (!user?.uid || !apiKeyInput.trim()) return;
+              setSavingApiKey(true);
+              try {
+                const { upsertUserApiKey } = await import("../userApiKeyService");
+                await upsertUserApiKey(user.uid, apiKeyInput.trim());
+                setUserApiKey(apiKeyInput.trim());
+                setShowApiKeyModal(false);
+                setApiKeyInput("");
+                show({ title: "Saved", message: "API key added. Enjoy free usage!", type: "success" });
+              } catch (err) {
+                show({ title: "Error", message: err?.message || "Failed to save API key.", type: "error" });
+              } finally {
+                setSavingApiKey(false);
+              }
+            }}
+          >
+            {savingApiKey ? "Saving..." : "Save Key"}
+          </button>
+          <button
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+            onClick={() => setShowApiKeyModal(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
    </div>
  );
 }
