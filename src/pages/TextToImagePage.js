@@ -58,7 +58,7 @@ export default function TextToImagePage() {
   }, [user]);
 
   async function onGenerate() {
-    if (credits < 1) return;
+    if (!userApiKey && credits < 1) return;
 
     setLoading(true);
     setError(null);

@@ -88,7 +88,7 @@ export default function ImageToImagePage() {
   }
 
   async function onGenerate() {
-    if (credits < 1 || !file) return;
+    if (!userApiKey && credits < 1 || !file) return;
 
     setLoading(true);
     setError(null);
