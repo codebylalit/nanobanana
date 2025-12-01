@@ -1,7 +1,7 @@
 // Mobile-Optimized Gemini API service using official Google Gemini HTTP API
 // Using a stable public model endpoint (v1beta)
-const GEMINI_MODEL_ID = "gemini-2.5-flash-image";
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL_ID}:streamGenerateContent`;
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 
 const IMGBB_KEYS = ["976c43da17048b8595498ac1ba0fa639"];
@@ -89,7 +89,7 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
     contents,
     generationConfig: {
       responseModalities: ["IMAGE", "TEXT"]
-    }
+    },
   };
 
 
