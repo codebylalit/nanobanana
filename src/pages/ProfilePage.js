@@ -246,8 +246,7 @@ export default function ProfilePage() {
             Gemini API key
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 mb-3">
-            Bring your own Google Gemini API key for image generation. This key
-            is stored securely in your account.
+            Bring your own Google Gemini API key for image generation. This key is stored securely in your account and used directly with Google (not via RapidAPI).
           </p>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
             <input

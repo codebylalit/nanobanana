@@ -42,7 +42,6 @@ export default function Hero() {
               </span>
             </span>
           </p>
-
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight mb-4 sm:mb-6 lg:mb-8 leading-tight text-gray-900">
             Create epic <span className="text-yellow-500">AI images</span>
           </h1>

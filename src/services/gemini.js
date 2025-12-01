@@ -1,30 +1,8 @@
 // Mobile-Optimized Gemini API service using official Google Gemini HTTP API
 // Using a stable public model endpoint (v1beta)
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:streamGenerateContent";
+const GEMINI_MODEL_ID = "gemini-2.5-flash-image";
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL_ID}:streamGenerateContent`;
 
-const RAPIDAPI_KEYS = [
-  "8e95a9f995msh7d61cf3391a1392p100708jsna9cfce8e482d",
-  "458abdd670mshd48264ddea2fb7ap1f48d9jsn8e9b796c1cd4",
-  "5def448890msh1dee7ee52790518p1cf21ejsnaf19597d61ec",
-  "7fdc303ae4msh9781fc64209f968p1f6cc1jsnfebc43ac3654",
-  "a4fde24ae0msh026d67a6ff832ddp13eb3bjsn628bcb556410",
-  "bfebd81595msh3d2b9f6a1d00cefp1b1783jsn1782d7b41d90",
-  "6338b2c519mshb9b9c7fc1ede6d5p14c35bjsn4c6b7c825900",
-  "509e1fefdfmshc23df0836c71f1ep1cbdedjsn983160b969f7",
-  "13144781e5msha558a40cb816aa7p18fb70jsn3c0ff999ea47",
-  "dc328116d9mshf39067e4d6098e2p17bca4jsndb179a489d49",
-  "ef011a07a3msh0fceac212781e08p1d4e8bjsn824e743344f0",
-  "fee2943b1dmsh976699deb810f6fp1de527jsnc682c33c0fba",
-  "652bf87408msh92776cc22ca52ecp1f8a64jsnf6965a425473",
-  "e8870d278bmshe41389b1d6c6e24p161897jsn1c349d5d158d",
-  "2d2574972emsh66a64b66fbbfed9p1c9a86jsn2eee815aa52d",
-  "35b7f88f82msh6d25d050022cf22p1a7c69jsn186f478ca907",
-  "0c8ddd99f9msha85f88a8629814dp16cca4jsn6791b6b71e96",
-  "1edab2b6f9msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
-  "3c7e94fa19msh34f0e004e88042ep145455jsn8582a03edfeb",
-  "f82066f4c3msh6ff409c9a4b0b1fp17f2a5jsnf22db7c4bb79",
-];
 
 const IMGBB_KEYS = ["976c43da17048b8595498ac1ba0fa639"];
 
@@ -71,35 +49,6 @@ const perfLogger = {
   },
 };
 
-// Rate limiting tracking (like your Gemini code approach)
-const apiKeyUsage = new Map();
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const MAX_REQUESTS_PER_MINUTE = 3; // Conservative for RapidAPI
-
-function canUseApiKey(keyIndex) {
-  const now = Date.now();
-  const key = `rapidapi_key_${keyIndex}`;
-
-  if (!apiKeyUsage.has(key)) {
-    apiKeyUsage.set(key, []);
-  }
-
-  const usage = apiKeyUsage.get(key);
-  const recent = usage.filter(
-    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
-  );
-  apiKeyUsage.set(key, recent);
-
-  return recent.length < MAX_REQUESTS_PER_MINUTE;
-}
-
-function recordApiKeyUsage(keyIndex) {
-  const key = `rapidapi_key_${keyIndex}`;
-  if (!apiKeyUsage.has(key)) {
-    apiKeyUsage.set(key, []);
-  }
-  apiKeyUsage.get(key).push(Date.now());
-}
 
 // Gemini call using only the per-user Gemini API key passed from the frontend.
 // Shared bundled keys are no longer used.
@@ -140,7 +89,7 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
     contents,
     generationConfig: {
       responseModalities: ["IMAGE", "TEXT"]
-    },
+    }
   };
 
 
@@ -401,7 +350,7 @@ function createPlaceholder(label, subtitle, type = "info") {
     <rect width='100%' height='100%' fill='url(#g)'/>
     <text x='50%' y='40%' text-anchor='middle' fill='#FACC15' font-size='14' font-family='system-ui' font-weight='bold'>${label}</text>
     <text x='50%' y='50%' text-anchor='middle' fill='#ddd' font-size='10' font-family='system-ui'>${subtitle}</text>
-    <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='system-ui'>Gemini AI via RapidAPI</text>
+    <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='system-ui'>Gemini AI</text>
   </svg>`;
 
   return `data:image/svg+xml;base64,${btoa(svg)}`;
@@ -421,10 +370,12 @@ export async function textToImage(prompt, userApiKey) {
       imageUrls: [],
       userApiKey,
     });
+    console.log('Gemini raw result:', result);
 
     if (result?.trim()) {
       try {
         const parsed = JSON.parse(result);
+        console.log('Gemini parsed object:', parsed);
         const imageUrl = parsed.url || parsed.image_url || parsed.image;
         if (imageUrl) {
           perfLogger.end("Text to Image");
@@ -791,41 +742,7 @@ export async function suggestPromptIdeas(topic, userApiKey) {
 }
 
 // Debug and utility functions
-export function getApiKeyStatus() {
-  const now = Date.now();
-  const status = [];
 
-  for (let i = 0; i < RAPIDAPI_KEYS.length; i++) {
-    const available = canUseApiKey(i);
-    const key = `rapidapi_key_${i}`;
-    const usage = apiKeyUsage.get(key) || [];
-    const recentCount = usage.filter(
-      (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
-    ).length;
-
-    status.push({
-      index: i + 1,
-      available,
-      recentRequests: recentCount,
-      maxRequests: MAX_REQUESTS_PER_MINUTE,
-    });
-  }
-
-  const availableCount = status.filter((s) => s.available).length;
-
-  console.log("📊 RapidAPI Key Status:", {
-    available: availableCount,
-    total: RAPIDAPI_KEYS.length,
-    details: status,
-  });
-
-  return { availableCount, total: RAPIDAPI_KEYS.length, details: status };
-}
-
-export function resetRateLimits() {
-  apiKeyUsage.clear();
-  console.log("🔄 Rate limits reset");
-}
 
 // Enhanced mobile debugging (keeping your working version)
 export function enableMobileDebugging() {

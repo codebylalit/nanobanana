@@ -1,7 +1,7 @@
 import { supabase } from "./supabaseClient";
 
-// Provider constant for Gemini via RapidAPI
-const PROVIDER = "gemini_rapidapi";
+// Provider constant for Gemini direct (Google)
+const PROVIDER = "gemini_google";
 
 export async function getUserApiKey(userId) {
   if (!userId) return null;

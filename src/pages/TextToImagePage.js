@@ -374,7 +374,7 @@ export default function TextToImagePage() {
             rel="noopener noreferrer"
             className="text-yellow-700 underline"
           >
-            Get your Gemini API key
+            Get your Gemini API key from Google
           </a>
         </div>
         <input
