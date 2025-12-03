@@ -347,30 +347,42 @@ export async function uploadToImgBB(file, retryCount = 0) {
 }
 
 // Helper function to create placeholders (like your Gemini code)
-function createPlaceholder(label, subtitle, type = "info") {
+function createPlaceholder(label = "Placeholder", subtitle = "", type = "info") {
   const colors = {
-    info: ["#1a1a2e", "#16213e"],
-    error: ["#dc2626", "#991b1b"],
-    warning: ["#f59e0b", "#d97706"],
+    info: ["#4F46E5", "#7C3AED"],
+    error: ["#DC2626", "#EA580C"],
+    success: ["#059669", "#10B981"],
   };
 
   const [color1, color2] = colors[type] || colors.info;
   const size = isMobile() ? 300 : 400;
 
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>
-    <defs>
-      <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-        <stop offset='0' stop-color='${color1}'/>
-        <stop offset='1' stop-color='${color2}'/>
-      </linearGradient>
-    </defs>
-    <rect width='100%' height='100%' fill='url(#g)'/>
-    <text x='50%' y='40%' text-anchor='middle' fill='#FACC15' font-size='14' font-family='system-ui' font-weight='bold'>${label}</text>
-    <text x='50%' y='50%' text-anchor='middle' fill='#ddd' font-size='10' font-family='system-ui'>${subtitle}</text>
-    <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='system-ui'>Gemini AI</text>
-  </svg>`;
+  // Create a clean SVG with only ASCII characters
+  const svg = `
+    <svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>
+      <defs>
+        <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+          <stop offset='0' stop-color='${color1}'/>
+          <stop offset='1' stop-color='${color2}'/>
+        </linearGradient>
+      </defs>
+      <rect width='100%' height='100%' fill='url(#g)'/>
 
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
+      <text x='50%' y='40%' text-anchor='middle' fill='#FACC15' font-size='14' font-family='sans-serif' font-weight='bold'>${label}</text>
+      <text x='50%' y='50%' text-anchor='middle' fill='#ddd' font-size='10' font-family='sans-serif'>${subtitle}</text>
+      <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='sans-serif'>Nano Banana</text>
+    </svg>
+  `;
+
+  try {
+    // Properly encode the SVG string to handle special characters
+    const encodedSvg = encodeURIComponent(svg).replace(/'/g, "%27").replace(/"/g, "%22");
+    return `data:image/svg+xml,${encodedSvg}`;
+  } catch (e) {
+    console.error("Error creating placeholder:", e);
+    // Fallback to a simple data URL
+    return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI1JSIgZm9udC1mYW1pbHk9ImFyaWFsIiBmb250LXNpemU9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwMDAwIj5JbWFnZSBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg==";
+  }
 }
 
 // Main functions (based on your working Gemini patterns)
@@ -484,61 +496,73 @@ export async function imageToImage(file, prompt, userApiKey) {
 
     console.log(`🔄 Processing with Gemini API...`);
     const result = await callGeminiAPI({
-      prompt: `Transform: ${prompt || "artistic style"}`,
+      prompt: `Transform this image with the following style: ${prompt || "artistic style"}. Return the transformed image as an inline data URL.`,
       imageUrls: [imageUrl],
       userApiKey,
     });
 
-    if (result && typeof result === 'object' && result.imageDataUrl) {
-      perfLogger.end("Image to Image");
-      if (isMobile() && window.showMobileProgress) {
-        window.showMobileProgress(false);
+    console.log('Gemini API raw response:', JSON.stringify(result, null, 2));
+
+    // Handle different response formats
+    if (result) {
+      // Case 1: Direct image data URL in response
+      if (typeof result === 'string' && result.startsWith('data:image/')) {
+        console.log('✅ Received direct image data URL from API');
+        perfLogger.end("Image to Image");
+        if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
+        return { url: result, generated: true };
       }
-      return { url: result.imageDataUrl, generated: true };
-    }
+      
+      // Case 2: Response with imageDataUrl property
+      if (typeof result === 'object' && result.imageDataUrl) {
+        console.log('✅ Received imageDataUrl from API');
+        perfLogger.end("Image to Image");
+        if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
+        return { url: result.imageDataUrl, generated: true };
+      }
 
-    if (typeof result === 'string' && result.trim()) {
-      try {
-        const parsed = JSON.parse(result);
-        const resultUrl = parsed.url || parsed.image_url || parsed.image;
-        if (resultUrl) {
-          console.log(`✅ Image transformation successful`);
-          perfLogger.end("Image to Image");
-
-          if (isMobile() && window.showMobileProgress) {
-            window.showMobileProgress(false);
+      // Case 3: Response with candidates array (Gemini 1.5+ format)
+      if (result.candidates && Array.isArray(result.candidates) && result.candidates.length > 0) {
+        const candidate = result.candidates[0];
+        console.log('Processing Gemini candidate response:', JSON.stringify(candidate, null, 2));
+        
+        // Check for inline data in parts
+        if (candidate.content && candidate.content.parts) {
+          for (const part of candidate.content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+              const imageDataUrl = `data:image/png;base64,${part.inlineData.data}`;
+              console.log('✅ Extracted image data from candidate parts');
+              perfLogger.end("Image to Image");
+              if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
+              return { url: imageDataUrl, generated: true };
+            } else if (part.text) {
+              // Sometimes Gemini returns a text response with a URL
+              const urlMatch = part.text.match(/https?:\/\/[^\s]+/);
+              if (urlMatch) {
+                console.log('✅ Extracted URL from candidate text:', urlMatch[0]);
+                perfLogger.end("Image to Image");
+                if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
+                return { url: urlMatch[0], generated: true };
+              }
+            }
           }
-
-          return { url: resultUrl, generated: true };
         }
-      } catch {
-        if (result.startsWith("http")) {
-          console.log(`✅ Image transformation successful (direct URL)`);
-          perfLogger.end("Image to Image");
+      }
 
-          if (isMobile() && window.showMobileProgress) {
-            window.showMobileProgress(false);
-          }
-
-          return { url: result.trim(), generated: true };
-        }
+      // Case 4: Try to extract URL from text response
+      const responseText = typeof result === 'string' ? result : JSON.stringify(result);
+      const urlMatch = responseText.match(/https?:\/\/[^\s\"\']+/);
+      if (urlMatch) {
+        console.log('✅ Extracted URL from response text:', urlMatch[0]);
+        perfLogger.end("Image to Image");
+        if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
+        return { url: urlMatch[0], generated: true };
       }
     }
 
-    console.log(`⚠️ No valid result from API, showing placeholder`);
-    perfLogger.end("Image to Image");
-
-    if (isMobile() && window.showMobileProgress) {
-      window.showMobileProgress(false);
-    }
-
-    return {
-      url: createPlaceholder(
-        "Transformed Image",
-        prompt?.slice(0, 20) || "Style applied"
-      ),
-      generated: false,
-    };
+    // If we get here, we couldn't find a valid image in the response
+    console.warn('⚠️ No valid image data found in API response. Full response:', result);
+    throw new Error('The API response did not contain any valid image data. Please try again.');
 
   } catch (error) {
     console.error("❌ Image to Image failed:", error);
@@ -564,37 +588,32 @@ export async function imageToImage(file, prompt, userApiKey) {
   }
 }
 
-// Helper functions (keeping your working patterns)
+// Helper functions for different image processing tasks
 export async function generateHeadshot(file, prompt, userApiKey) {
-  console.log("👤 Generating headshot...");
-  return await imageToImage(
-    file,
-    `Professional headshot: ${prompt || "clean background"}`,
-    userApiKey
-  );
+  const enhancedPrompt = `Create a professional headshot with these characteristics: ${prompt || 'professional, well-lit, business appropriate'}. 
+    The image should look natural and high-quality, suitable for professional profiles.`;
+  return imageToImage(file, enhancedPrompt, userApiKey);
 }
 
 export async function removeBackground(file, userApiKey) {
-  console.log("🎭 Removing background...");
-  return await imageToImage(
-    file,
-    "Remove background, isolate subject",
-    userApiKey
-  );
+  const prompt = `Remove the background from this image and make it transparent. 
+    The subject should be cleanly cut out with smooth edges. 
+    Return only the subject with a transparent background.`;
+  return imageToImage(file, prompt, userApiKey);
 }
 
 export async function editImageAdjustments(file, options, userApiKey) {
-  console.log("🎨 Applying adjustments...");
-  const adjustments = Object.entries(options || {})
-    .filter(([, v]) => v !== 0 && v != null)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join(", ");
-
-  return await imageToImage(
-    file,
-    `Enhance: ${adjustments || "improve quality"}`,
-    userApiKey
-  );
+  const adjustments = [];
+  if (options.brightness) adjustments.push(`brightness: ${options.brightness}%`);
+  if (options.contrast) adjustments.push(`contrast: ${options.contrast}%`);
+  if (options.saturation) adjustments.push(`saturation: ${options.saturation}%`);
+  if (options.temperature) adjustments.push(`temperature: ${options.temperature}%`);
+  
+  const prompt = `Apply these exact image adjustments: ${adjustments.join(', ')}. 
+    Maintain the original composition and content while only adjusting the specified properties. 
+    The result should look natural and high-quality.`;
+    
+  return imageToImage(file, prompt, userApiKey);
 }
 
 export async function improvePrompt(userPrompt, userApiKey) {

@@ -31,11 +31,13 @@ import PromptHelper from "./components/PromptHelper";
 import PlanCard from "./components/PlanCard";    
 import ImageToVideoPage from "./pages/ImageToVideoPage";
 import DashboardLayout from "./layouts/DashboardLayout";
+import OfficeXLanding from "./pages/OfficeXLanding";
 // Payments removedl nvcz
 function App() {
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Routes>
+        <Route path="/officex" element={<OfficeXLanding />} />
         <Route path="/" element={<PublicLanding />} />
         <Route
           path="/text-to-image"
