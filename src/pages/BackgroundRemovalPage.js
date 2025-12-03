@@ -39,7 +39,7 @@ export default function BackgroundRemovalPage() {
   }, [user]);
 
   async function onProcess() {
-    if (credits < 1 || !file) return;
+    if (!userApiKey && credits < 1 || !file) return;
     setLoading(true);
     try {
       const result = await removeBackground(file, userApiKey);
@@ -109,7 +109,7 @@ export default function BackgroundRemovalPage() {
                 <button
                   onClick={onProcess}
                   className="w-full inline-flex items-center justify-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl bg-yellow-400 text-black font-bold px-4 sm:px-8 py-2.5 sm:py-4 text-sm sm:text-base hover:bg-yellow-300 hover:scale-105 transition-all duration-200 shadow-md sm:shadow-xl hover:shadow-yellow-400/25 disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
-                  disabled={loading || credits < 1 || !file}
+                  disabled={!userApiKey && credits < 1 || !file}
                 >
                   {loading ? (
                     <>
@@ -129,7 +129,7 @@ export default function BackgroundRemovalPage() {
 
           {/* Status Messages */}
           <div className="space-y-2 sm:space-y-4">
-            {credits < 1 && (
+            {!userApiKey && credits < 1 && (
               <div className="rounded-xl sm:rounded-2xl border border-yellow-200 bg-yellow-50 p-2.5 sm:p-4 text-yellow-700">
                 <div className="flex items-start gap-2 sm:gap-3">
                   <HiOutlineExclamation className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 flex-shrink-0" />
@@ -220,7 +220,7 @@ export default function BackgroundRemovalPage() {
         <div className="max-w-7xl mx-auto">
           <button
             onClick={onProcess}
-            disabled={loading || credits < 1 || !file}
+            disabled={!userApiKey && credits < 1 || !file}
             className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 text-black font-bold px-3 py-2.5 text-sm hover:bg-yellow-300 transition disabled:opacity-50"
           >
             {loading ? (

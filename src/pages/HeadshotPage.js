@@ -49,7 +49,7 @@ export default function HeadshotPage() {
   }, [user]);
 
   async function onGenerate() {
-    if (credits < 1 || !file) return;
+    if (!userApiKey && credits < 1 || !file) return;
     setLoading(true);
     try {
       const result = await generateHeadshot(file, prompt, userApiKey);
@@ -73,7 +73,7 @@ export default function HeadshotPage() {
       return;
     }
 
-    if (credits < 1) {
+    if (!userApiKey && credits < 1) {
       show({
         title: "No credits",
         message: "You need at least 1 credit to improve prompts",
@@ -189,14 +189,14 @@ export default function HeadshotPage() {
                   <button
                     onClick={onImprove}
                     className="rounded-lg sm:rounded-xl border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold hover:bg-gray-50 disabled:opacity-60"
-                    disabled={improving || credits < 1}
+                    disabled={improving || (!userApiKey && credits < 1)}
                   >
                     {improving ? "Improving…" : "Improve prompt"}
                   </button>
                   <button
                     onClick={onSuggest}
                     className="rounded-lg sm:rounded-xl border border-gray-300 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold hover:bg-gray-50 disabled:opacity-60"
-                    disabled={credits < 1}
+                    disabled={!userApiKey && credits < 1}
                   >
                     Suggest ideas
                   </button>
@@ -210,7 +210,7 @@ export default function HeadshotPage() {
                     </h3>
                     <button
                       onClick={onSuggest}
-                      disabled={credits < 1}
+                      disabled={!userApiKey && credits < 1}
                       className="flex items-center gap-1 text-xs sm:text-sm font-medium text-yellow-600 hover:text-yellow-700 disabled:opacity-50"
                     >
                       <HiOutlineRefresh className="w-4 h-4" /> Refresh
@@ -244,7 +244,7 @@ export default function HeadshotPage() {
                 <button
                   onClick={onGenerate}
                   className="w-full flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-yellow-400 text-black font-bold px-4 sm:px-8 py-2.5 sm:py-4 text-sm sm:text-base hover:bg-yellow-300 transition shadow-md disabled:opacity-50"
-                  disabled={loading || credits < 1 || !file}
+                  disabled={loading || (!userApiKey && credits < 1) || !file}
                 >
                   {loading ? (
                     <>

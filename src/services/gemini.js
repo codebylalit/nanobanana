@@ -1,7 +1,7 @@
 // Mobile-Optimized Gemini API service using official Google Gemini HTTP API
 // Using a stable public model endpoint (v1beta)
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+  "https://gemini-proxy.namdevlalit914.workers.dev"; // Replace with your deployed Worker URL
 
 
 const IMGBB_KEYS = ["976c43da17048b8595498ac1ba0fa639"];
@@ -114,27 +114,31 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
     }
 
     const responseJson = await response.json();
+    console.log("Gemini FULL JSON response:", responseJson);
 
     // Try to extract a useful string from Gemini's generateContent response.
     // We keep returning a string here so existing callers (textToImage, etc.)
     // can continue to treat it as raw text / JSON.
     let textOutput = "";
+    let imageDataUrl = null;
     const candidates = responseJson?.candidates || [];
     if (candidates.length) {
       const parts = candidates[0]?.content?.parts || [];
-      textOutput = parts
-        .map((p) => (typeof p.text === "string" ? p.text : ""))
-        .join("\n")
-        .trim();
-    }
-
-    if (!textOutput) {
-      throw new Error("Empty response from Gemini API");
+      for (const p of parts) {
+        if (p.inlineData && p.inlineData.data) {
+          imageDataUrl = `data:image/png;base64,${p.inlineData.data}`;
+        } else if (typeof p.text === "string") {
+          textOutput += p.text + "\n";
+        }
+      }
+      textOutput = textOutput.trim();
     }
 
     perfLogger.end("Gemini API Call");
     perfLogger.memory();
-    return textOutput;
+    if (imageDataUrl) return { imageDataUrl, text: textOutput };
+    if (textOutput) return textOutput;
+    throw new Error("Empty response from Gemini API");
   } catch (error) {
     perfLogger.end("Gemini API Call");
     throw error;
@@ -372,7 +376,12 @@ export async function textToImage(prompt, userApiKey) {
     });
     console.log('Gemini raw result:', result);
 
-    if (result?.trim()) {
+    if (result && typeof result === 'object' && result.imageDataUrl) {
+      perfLogger.end("Text to Image");
+      return { url: result.imageDataUrl, generated: true };
+    }
+
+    if (typeof result === 'string' && result.trim()) {
       try {
         const parsed = JSON.parse(result);
         console.log('Gemini parsed object:', parsed);
@@ -467,7 +476,15 @@ export async function imageToImage(file, prompt, userApiKey) {
       userApiKey,
     });
 
-    if (result?.trim()) {
+    if (result && typeof result === 'object' && result.imageDataUrl) {
+      perfLogger.end("Image to Image");
+      if (isMobile() && window.showMobileProgress) {
+        window.showMobileProgress(false);
+      }
+      return { url: result.imageDataUrl, generated: true };
+    }
+
+    if (typeof result === 'string' && result.trim()) {
       try {
         const parsed = JSON.parse(result);
         const resultUrl = parsed.url || parsed.image_url || parsed.image;
@@ -509,6 +526,7 @@ export async function imageToImage(file, prompt, userApiKey) {
       ),
       generated: false,
     };
+
   } catch (error) {
     console.error("❌ Image to Image failed:", error);
     perfLogger.end("Image to Image");
