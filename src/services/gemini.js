@@ -68,39 +68,54 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
   const timeout = isMobile() ? 45000 : 30000;
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-  // Build Google Gemini generateContent payload
-  const contents = [
-    {
-      role: "user",
-      parts: [
-        { text: trimmedPrompt },
-        ...(images.length
-          ? [
-              {
-                text: `Reference image URL: ${images[0]}`,
-              },
-            ]
-          : []),
-      ],
-    },
-  ];
-
-  const payload = {
-    contents,
-    generationConfig: {
-      responseModalities: ["IMAGE", "TEXT"]
-    },
-  };
-
-
   try {
+    // If we have an image URL, fetch it and convert to base64
+    let imageData = null;
+    if (images.length > 0 && images[0]) {
+      try {
+        console.log("📥 Fetching image from URL:", images[0]);
+        const response = await fetch(images[0]);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        imageData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        console.log("✅ Image loaded successfully");
+      } catch (error) {
+        console.error("❌ Error loading image:", error);
+        throw new Error("Failed to process the image. Please try again.");
+      }
+    }
+
+    // Build the request payload
+    const contents = {
+      contents: [{
+        role: "user",
+        parts: [
+          { text: trimmedPrompt },
+          ...(imageData ? [{
+            inlineData: {
+              mimeType: "image/jpeg",
+              data: imageData
+            }
+          }] : [])
+        ]
+      }]
+    };
+
+    console.log("Sending request to Gemini API...");
     const response = await fetch(GEMINI_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": userApiKey.trim(),
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(contents),
       signal: controller.signal,
     });
 
@@ -116,32 +131,30 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
     const responseJson = await response.json();
     console.log("Gemini FULL JSON response:", responseJson);
 
-    // Try to extract a useful string from Gemini's generateContent response.
-    // We keep returning a string here so existing callers (textToImage, etc.)
-    // can continue to treat it as raw text / JSON.
-    let textOutput = "";
-    let imageDataUrl = null;
-    const candidates = responseJson?.candidates || [];
-    if (candidates.length) {
-      const parts = candidates[0]?.content?.parts || [];
-      for (const p of parts) {
-        if (p.inlineData && p.inlineData.data) {
-          imageDataUrl = `data:image/png;base64,${p.inlineData.data}`;
-        } else if (typeof p.text === "string") {
-          textOutput += p.text + "\n";
+    // Handle the response - check for both text and inlineData
+    if (responseJson.candidates?.[0]?.content?.parts) {
+      const parts = responseJson.candidates[0].content.parts;
+      for (const part of parts) {
+        if (part.inlineData && part.inlineData.data) {
+          // If we have image data, return it as a data URL
+          return { 
+            imageDataUrl: `data:image/png;base64,${part.inlineData.data}`,
+            generated: true 
+          };
+        } else if (part.text) {
+          // If we have text, return it
+          return part.text;
         }
       }
-      textOutput = textOutput.trim();
     }
 
-    perfLogger.end("Gemini API Call");
-    perfLogger.memory();
-    if (imageDataUrl) return { imageDataUrl, text: textOutput };
-    if (textOutput) return textOutput;
-    throw new Error("Empty response from Gemini API");
+    // If we get here, the response didn't contain the expected data
+    throw new Error("Unexpected response format from Gemini API");
   } catch (error) {
     perfLogger.end("Gemini API Call");
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

@@ -21,6 +21,7 @@ export default function ImageToImagePage() {
   const [previewUrl, setPreviewUrl] = React.useState(null);
   // kept for compatibility; no longer used after moving presets to modal
   // const [savedManualPrompt, setSavedManualPrompt] = React.useState("");
+  // img is always the Gemini output (data URL), previewUrl is only for user-uploaded preview
   const [img, setImg] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -61,7 +62,6 @@ export default function ImageToImagePage() {
 
   React.useEffect(() => {
     if (!file) {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
       return;
     }
@@ -70,7 +70,7 @@ export default function ImageToImagePage() {
     return () => {
       URL.revokeObjectURL(url);
     };
-  }, [file, previewUrl]);
+  }, [file]);
 
   const [presets, setPresets] = React.useState([]);
   React.useEffect(() => {
@@ -88,29 +88,36 @@ export default function ImageToImagePage() {
   }
 
   async function onGenerate() {
-    if (!userApiKey && credits < 1 || !file) return;
+    if ((!userApiKey && credits < 1) || !file) return;
 
     setLoading(true);
     setError(null);
 
     try {
       const result = await imageToImage(file, prompt, userApiKey);
-      setImg(result.url);
-      if (result.generated) {
-        const ok = await consumeCredits(1);
-        if (!ok) throw new Error("Credit deduction failed");
-        addHistoryItem({
-          type: "img2img",
-          prompt,
-          url: result.url,
-          ts: Date.now(),
-        });
+      if (result && result.url) {
+        setImg(result.url);
+        if (result.generated) {
+          // Only consume credits if the image was actually generated
+          if (!userApiKey) {
+            const ok = await consumeCredits(1);
+            if (!ok) throw new Error("Credit deduction failed");
+          }
+          // Add to history
+          await addHistoryItem({
+            type: "img2img",
+            prompt: prompt,
+            url: result.url,
+            timestamp: Date.now(),
+          });
+        }
       } else {
         const msg = getFriendlyErrorMessage("No image generated");
         setError(msg);
         show({ title: "Transformation failed", message: msg, type: "error" });
       }
     } catch (err) {
+      console.error("Generation failed:", err);
       const msg = getFriendlyErrorMessage(err?.message);
       setError(msg);
       show({ title: "Transformation failed", message: msg, type: "error" });
