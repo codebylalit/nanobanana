@@ -1,29 +1,30 @@
-// Mobile-Optimized Gemini API service using official Google Gemini HTTP API
-// Using a stable public model endpoint (v1beta)
-const GEMINI_API_URL =
-  "https://gemini-proxy.namdevlalit914.workers.dev"; // Replace with your deployed Worker URL
-
-
+// Nano Banana AI Service - Google Gemini Image Models (CORRECTED)
+const GEMINI_API_URL = "https://gemini-proxy.namdevlalit914.workers.dev";
 const IMGBB_KEYS = ["976c43da17048b8595498ac1ba0fa639"];
 
-// Enhanced mobile detection (fixed - no force mobile)
-const isMobile = () => {
-  const mobile =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-  if (mobile) {
-    console.log("📱 Mobile device detected - using optimized settings");
-    console.log("📱 User Agent:", navigator.userAgent);
-    console.log(
-      "📱 Connection:",
-      navigator.connection?.effectiveType || "unknown"
-    );
+// Real Gemini image generation models
+const NANO_BANANA_MODELS = [
+  { 
+    name: "gemini-3-pro-image-preview", // Best quality
+    displayName: "Nano Banana Pro",
+    bestFor: "text-to-image"
+  },
+  { 
+    name: "gemini-2.5-flash-image", // Faster
+    displayName: "Nano Banana Flash",
+    bestFor: "image-to-image"
+  },
+  { 
+    name: "gemini-exp-1206", // Text fallback
+    displayName: "Gemini Exp",
+    bestFor: "fallback"
   }
-  return mobile;
+];
+
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
-// Performance monitoring
 const perfLogger = {
   start: (label) => {
     if (window.performance) {
@@ -36,47 +37,55 @@ const perfLogger = {
       console.timeEnd(label);
       console.log(`✅ Completed: ${label}`);
     }
-  },
-  memory: () => {
-    if (window.performance?.memory) {
-      const mb = (bytes) => Math.round(bytes / 1024 / 1024);
-      console.log(
-        `💾 Memory - Used: ${mb(
-          performance.memory.usedJSHeapSize
-        )}MB, Limit: ${mb(performance.memory.jsHeapSizeLimit)}MB`
-      );
-    }
-  },
+  }
 };
 
-
-// Gemini call using only the per-user Gemini API key passed from the frontend.
-// Shared bundled keys are no longer used.
-async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 0 }) {
+// Enhanced Gemini API call with proper image generation config
+async function callNanoBananaAPI({ 
+  prompt, 
+  imageUrls = [], 
+  userApiKey, 
+  preferredModelIndex = null,
+  isTextToImage = false 
+}) {
   const trimmedPrompt = (prompt || "").slice(0, isMobile() ? 350 : 400);
   const images = Array.isArray(imageUrls) ? imageUrls.slice(0, 1) : [];
 
   if (!userApiKey || typeof userApiKey !== "string" || !userApiKey.trim()) {
-    throw new Error(
-      "Missing Gemini API key. Please add your key in the Profile page."
-    );
+    throw new Error("Missing Gemini API key. Please add your key in the Profile page.");
   }
 
-  perfLogger.start("Gemini API Call");
+  // Smart model selection
+  let modelIndex;
+  if (preferredModelIndex !== null) {
+    modelIndex = preferredModelIndex;
+  } else if (isTextToImage) {
+    modelIndex = 0; // Use Pro for text-to-image
+  } else if (images.length > 0) {
+    modelIndex = 1; // Use Flash for image-to-image
+  } else {
+    modelIndex = 0;
+  }
+
+  const currentModel = NANO_BANANA_MODELS[modelIndex];
+  console.log(`🍌 Using ${currentModel.displayName} (${currentModel.name})`);
+
+  perfLogger.start(`${currentModel.displayName} API Call`);
 
   const controller = new AbortController();
   const timeout = isMobile() ? 45000 : 30000;
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    // If we have an image URL, fetch it and convert to base64
     let imageData = null;
+    
+    // Load image if provided (for image-to-image)
     if (images.length > 0 && images[0]) {
       try {
         console.log("📥 Fetching image from URL:", images[0]);
         const response = await fetch(images[0]);
         if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+          throw new Error(`Failed to fetch image: ${response.status}`);
         }
         const blob = await response.blob();
         imageData = await new Promise((resolve, reject) => {
@@ -92,7 +101,9 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
       }
     }
 
-    // Build the request payload
+    // Build request body with proper image generation config
+    const isImageModel = currentModel.name.includes('image');
+    
     const contents = {
       contents: [{
         role: "user",
@@ -105,15 +116,22 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
             }
           }] : [])
         ]
-      }]
+      }],
+      generationConfig: isImageModel ? {
+        responseModalities: ["IMAGE"], // Critical for image generation
+        imageConfig: {
+          image_size: "1K" // 1024x1024
+        }
+      } : {}
     };
 
-    console.log("Sending request to Gemini API...");
+    console.log(`Sending request to ${currentModel.displayName}...`);
     const response = await fetch(GEMINI_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": userApiKey.trim(),
+        "x-model-name": currentModel.name,
       },
       body: JSON.stringify(contents),
       signal: controller.signal,
@@ -122,71 +140,199 @@ async function callGeminiAPI({ prompt, imageUrls = [], userApiKey, retryCount = 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorText = await response
-        .text()
-        .catch(() => `HTTP ${response.status}`);
+      const errorText = await response.text().catch(() => `HTTP ${response.status}`);
+      
+      // Try next model if this one failed
+      if (modelIndex < NANO_BANANA_MODELS.length - 1) {
+        console.warn(`⚠️ ${currentModel.displayName} failed, trying next model...`);
+        return callNanoBananaAPI({ 
+          prompt, 
+          imageUrls, 
+          userApiKey, 
+          preferredModelIndex: modelIndex + 1,
+          isTextToImage 
+        });
+      }
+      
       throw new Error(`API error ${response.status}: ${errorText}`);
     }
 
     const responseJson = await response.json();
-    console.log("Gemini FULL JSON response:", responseJson);
+    console.log(`✅ ${currentModel.displayName} response:`, responseJson);
 
-    // Handle the response - check for both text and inlineData
+    // Parse response for image data
     if (responseJson.candidates?.[0]?.content?.parts) {
       const parts = responseJson.candidates[0].content.parts;
+      
       for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-          // If we have image data, return it as a data URL
+        // Check for inline image data (base64)
+        if (part.inlineData?.data) {
+          const mimeType = part.inlineData.mimeType || "image/png";
+          perfLogger.end(`${currentModel.displayName} API Call`);
           return { 
-            imageDataUrl: `data:image/png;base64,${part.inlineData.data}`,
-            generated: true 
+            imageDataUrl: `data:${mimeType};base64,${part.inlineData.data}`,
+            generated: true,
+            model: currentModel.displayName
           };
-        } else if (part.text) {
-          // If we have text, return it
-          return part.text;
+        }
+        
+        // Check for text responses (shouldn't happen with IMAGE modality)
+        if (part.text) {
+          const text = part.text.trim();
+          console.warn(`⚠️ Got text response: "${text.slice(0, 100)}..."`);
+          
+          // Try next model if we got text instead of image
+          if (modelIndex < NANO_BANANA_MODELS.length - 1) {
+            console.warn(`Trying next model...`);
+            perfLogger.end(`${currentModel.displayName} API Call`);
+            return callNanoBananaAPI({ 
+              prompt, 
+              imageUrls, 
+              userApiKey, 
+              preferredModelIndex: modelIndex + 1,
+              isTextToImage 
+            });
+          }
         }
       }
     }
 
-    // If we get here, the response didn't contain the expected data
-    throw new Error("Unexpected response format from Gemini API");
+    // If we get here, no valid image was returned
+    if (modelIndex < NANO_BANANA_MODELS.length - 1) {
+      console.warn(`⚠️ ${currentModel.displayName} returned unexpected format, trying next model...`);
+      perfLogger.end(`${currentModel.displayName} API Call`);
+      return callNanoBananaAPI({ 
+        prompt, 
+        imageUrls, 
+        userApiKey, 
+        preferredModelIndex: modelIndex + 1,
+        isTextToImage 
+      });
+    }
+
+    throw new Error(`${currentModel.displayName} did not return valid image data`);
   } catch (error) {
-    perfLogger.end("Gemini API Call");
+    perfLogger.end(`${currentModel.displayName} API Call`);
+    
+    // If error and we have more models, try next one
+    if (modelIndex < NANO_BANANA_MODELS.length - 1 && !error.message.includes("API key")) {
+      console.warn(`⚠️ ${currentModel.displayName} error: ${error.message}`);
+      console.warn(`Trying next model...`);
+      return callNanoBananaAPI({ 
+        prompt, 
+        imageUrls, 
+        userApiKey, 
+        preferredModelIndex: modelIndex + 1,
+        isTextToImage 
+      });
+    }
+    
     throw error;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-// Image compression (keeping your working version)
+// Text to Image - Using Gemini image generation models
+export async function textToImage(prompt, userApiKey) {
+  if (!prompt?.trim()) {
+    throw new Error("Prompt is required");
+  }
+
+  perfLogger.start("Text to Image");
+
+  try {
+    console.log("🍌 Text-to-image: Using Nano Banana Pro");
+    
+    const result = await callNanoBananaAPI({
+      prompt: `Generate a high-quality, detailed image: ${prompt.trim()}`,
+      imageUrls: [],
+      userApiKey,
+      isTextToImage: true
+    });
+
+    console.log('Generation result:', result);
+
+    if (result && typeof result === 'object' && result.imageDataUrl) {
+      perfLogger.end("Text to Image");
+      return { 
+        url: result.imageDataUrl, 
+        generated: true, 
+        model: result.model || 'Nano Banana'
+      };
+    }
+
+    throw new Error('No valid image returned');
+
+  } catch (error) {
+    console.error("❌ Text to Image failed:", error);
+    perfLogger.end("Text to Image");
+    throw error;
+  }
+}
+
+// Image to Image - Using Gemini Flash for editing
+export async function imageToImage(file, prompt, userApiKey) {
+  if (!file) {
+    throw new Error("Image is required");
+  }
+
+  perfLogger.start("Image to Image");
+
+  try {
+    let imageUrl;
+
+    if (typeof file === "string" && file.startsWith("http")) {
+      imageUrl = file;
+    } else if (file instanceof File) {
+      // Upload image to ImgBB first
+      const compressedFile = await compressForMobile(file);
+      imageUrl = await uploadToImgBB(compressedFile);
+    } else {
+      throw new Error("Invalid image input");
+    }
+
+    console.log("🍌 Image-to-image: Using Nano Banana Flash");
+
+    const result = await callNanoBananaAPI({
+      prompt: `Transform this image: ${prompt || "enhance and improve"}`,
+      imageUrls: [imageUrl],
+      userApiKey,
+      isTextToImage: false
+    });
+
+    if (result && typeof result === 'object' && result.imageDataUrl) {
+      perfLogger.end("Image to Image");
+      return { 
+        url: result.imageDataUrl, 
+        generated: true, 
+        model: result.model || 'Nano Banana'
+      };
+    }
+
+    throw new Error('No valid image returned');
+
+  } catch (error) {
+    console.error("❌ Image to Image failed:", error);
+    perfLogger.end("Image to Image");
+    throw error;
+  }
+}
+
+// Image compression helper
 async function compressForMobile(file) {
   perfLogger.start("Image Compression");
 
   return new Promise((resolve, reject) => {
-    const maxFileSize = isMobile() ? 15 * 1024 * 1024 : 50 * 1024 * 1024; // 15MB mobile
+    const maxFileSize = isMobile() ? 15 * 1024 * 1024 : 50 * 1024 * 1024;
     if (file.size > maxFileSize) {
-      reject(
-        new Error(
-          `File too large (max ${Math.round(maxFileSize / 1024 / 1024)}MB)`
-        )
-      );
+      reject(new Error(`File too large (max ${Math.round(maxFileSize / 1024 / 1024)}MB)`));
       return;
     }
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = new Image();
-    let timeoutId;
-
-    const cleanup = () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      try {
-        if (canvas.parentNode) canvas.remove();
-        if (img.src) URL.revokeObjectURL(img.src);
-      } catch (e) {
-        console.warn("Cleanup warning:", e);
-      }
-    };
 
     img.onload = () => {
       try {
@@ -199,509 +345,138 @@ async function compressForMobile(file) {
           height = Math.floor(height * scale);
         }
 
-        if (width < 50 || height < 50) {
-          cleanup();
-          reject(new Error("Image too small after compression"));
-          return;
-        }
-
         canvas.width = width;
         canvas.height = height;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = isMobile() ? "low" : "medium";
         ctx.drawImage(img, 0, 0, width, height);
-
-        let quality = isMobile() ? 0.75 : 0.85;
-        if (file.size > 5 * 1024 * 1024) quality = isMobile() ? 0.6 : 0.75;
 
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              cleanup();
               reject(new Error("Compression failed"));
               return;
             }
-
-            const compressedFile = new File(
-              [blob],
-              file.name.replace(/\.[^/.]+$/, ".jpg"),
-              {
-                type: "image/jpeg",
-              }
-            );
-
-            const originalMB = (file.size / 1024 / 1024).toFixed(1);
-            const compressedMB = (compressedFile.size / 1024 / 1024).toFixed(1);
-            console.log(
-              `📦 Compressed: ${originalMB}MB → ${compressedMB}MB (${Math.round(
-                (1 - compressedFile.size / file.size) * 100
-              )}% reduction)`
-            );
-
-            cleanup();
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+              type: "image/jpeg",
+            });
             perfLogger.end("Image Compression");
             resolve(compressedFile);
           },
           "image/jpeg",
-          quality
+          0.85
         );
       } catch (error) {
-        cleanup();
-        reject(new Error(`Compression error: ${error.message}`));
+        reject(error);
       }
     };
 
-    img.onerror = () => {
-      cleanup();
-      reject(new Error("Invalid image file"));
-    };
-
-    timeoutId = setTimeout(
-      () => {
-        cleanup();
-        reject(new Error("Image loading timeout"));
-      },
-      isMobile() ? 30000 : 15000
-    );
-
+    img.onerror = () => reject(new Error("Invalid image file"));
     img.src = URL.createObjectURL(file);
   });
 }
 
-// ImgBB upload (keeping your working version)
+// ImgBB upload helper
 export async function uploadToImgBB(file, retryCount = 0) {
   perfLogger.start("ImgBB Upload");
-  const maxRetries = isMobile() ? 2 : 3;
+  const maxRetries = 3;
 
   try {
     const apiKey = IMGBB_KEYS[retryCount % IMGBB_KEYS.length];
-    if (!apiKey || apiKey.startsWith("YOUR_")) {
-      throw new Error("No valid ImgBB API key available");
-    }
-
     const formData = new FormData();
     formData.append("image", file);
 
-    const expiration = 3600;
-    const uploadUrl = `https://api.imgbb.com/1/upload?expiration=${expiration}&key=${apiKey}`;
-
-    const controller = new AbortController();
-    const timeout = isMobile() ? 45000 : 30000;
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    console.log(
-      `📤 Uploading ${(file.size / 1024 / 1024).toFixed(1)}MB to ImgBB... (${
-        retryCount + 1
-      }/${maxRetries + 1})`
-    );
+    const uploadUrl = `https://api.imgbb.com/1/upload?expiration=3600&key=${apiKey}`;
 
     const response = await fetch(uploadUrl, {
       method: "POST",
       body: formData,
-      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      const errorText = await response
-        .text()
-        .catch(() => `HTTP ${response.status}`);
-
-      if (
-        (response.status >= 500 || response.status === 429) &&
-        retryCount < maxRetries
-      ) {
-        const delay = isMobile() ? (retryCount + 1) * 2000 : 1500;
-        console.log(
-          `⚠️ Upload failed (${response.status}), retrying in ${
-            delay / 1000
-          }s...`
-        );
-        await new Promise((resolve) => setTimeout(resolve, delay));
+      if (retryCount < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
         return uploadToImgBB(file, retryCount + 1);
       }
-
-      throw new Error(`ImgBB error ${response.status}: ${errorText}`);
+      throw new Error(`Upload failed: ${response.status}`);
     }
 
     const result = await response.json();
-
     if (result.success && result.data?.url) {
-      console.log(`✅ Upload successful: ${result.data.url}`);
       perfLogger.end("ImgBB Upload");
       return result.data.url;
     }
 
-    throw new Error(
-      `ImgBB API error: ${result.error?.message || "No URL returned"}`
-    );
+    throw new Error("Upload failed");
   } catch (error) {
-    if (error.name === "AbortError") {
-      error.message = "Upload timeout - check your connection";
-    }
-    console.error(`❌ ImgBB upload failed:`, error.message);
     perfLogger.end("ImgBB Upload");
     throw error;
   }
 }
 
-// Helper function to create placeholders (like your Gemini code)
-function createPlaceholder(label = "Placeholder", subtitle = "", type = "info") {
-  const colors = {
-    info: ["#4F46E5", "#7C3AED"],
-    error: ["#DC2626", "#EA580C"],
-    success: ["#059669", "#10B981"],
-  };
-
-  const [color1, color2] = colors[type] || colors.info;
-  const size = isMobile() ? 300 : 400;
-
-  // Create a clean SVG with only ASCII characters
-  const svg = `
-    <svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>
-      <defs>
-        <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-          <stop offset='0' stop-color='${color1}'/>
-          <stop offset='1' stop-color='${color2}'/>
-        </linearGradient>
-      </defs>
-      <rect width='100%' height='100%' fill='url(#g)'/>
-
-      <text x='50%' y='40%' text-anchor='middle' fill='#FACC15' font-size='14' font-family='sans-serif' font-weight='bold'>${label}</text>
-      <text x='50%' y='50%' text-anchor='middle' fill='#ddd' font-size='10' font-family='sans-serif'>${subtitle}</text>
-      <text x='50%' y='60%' text-anchor='middle' fill='#888' font-size='8' font-family='sans-serif'>Nano Banana</text>
-    </svg>
-  `;
-
-  try {
-    // Properly encode the SVG string to handle special characters
-    const encodedSvg = encodeURIComponent(svg).replace(/'/g, "%27").replace(/"/g, "%22");
-    return `data:image/svg+xml,${encodedSvg}`;
-  } catch (e) {
-    console.error("Error creating placeholder:", e);
-    // Fallback to a simple data URL
-    return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI1JSIgZm9udC1mYW1pbHk9ImFyaWFsIiBmb250LXNpemU9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMDAwMDAwIj5JbWFnZSBQcmV2aWV3PC90ZXh0Pjwvc3ZnPg==";
-  }
-}
-
-// Main functions (based on your working Gemini patterns)
-export async function textToImage(prompt, userApiKey) {
-  if (!prompt?.trim()) {
-    throw new Error("Prompt is required");
-  }
-
-  perfLogger.start("Text to Image");
-
-  try {
-    const result = await callGeminiAPI({
-      prompt: `Create image: ${prompt.trim()}`,
-      imageUrls: [],
-      userApiKey,
-    });
-    console.log('Gemini raw result:', result);
-
-    if (result && typeof result === 'object' && result.imageDataUrl) {
-      perfLogger.end("Text to Image");
-      return { url: result.imageDataUrl, generated: true };
-    }
-
-    if (typeof result === 'string' && result.trim()) {
-      try {
-        const parsed = JSON.parse(result);
-        console.log('Gemini parsed object:', parsed);
-        const imageUrl = parsed.url || parsed.image_url || parsed.image;
-        if (imageUrl) {
-          perfLogger.end("Text to Image");
-          return { url: imageUrl, generated: true };
-        }
-      } catch {
-        if (result.startsWith("http")) {
-          perfLogger.end("Text to Image");
-          return { url: result.trim(), generated: true };
-        }
-      }
-    }
-
-    perfLogger.end("Text to Image");
-    return {
-      url: createPlaceholder("Generated Image", prompt.slice(0, 30)),
-      generated: false,
-    };
-  } catch (error) {
-    console.error("❌ Text to Image failed:", error);
-    perfLogger.end("Text to Image");
-    return {
-      url: createPlaceholder(
-        "Generation Failed",
-        getFriendlyErrorMessage(error?.message),
-        "error"
-      ),
-      generated: false,
-    };
-  }
-}
-
-export async function imageToImage(file, prompt, userApiKey) {
-  if (!file) {
-    throw new Error("Image is required");
-  }
-
-  perfLogger.start("Image to Image");
-
-  // Show progress indicator on mobile
-  if (isMobile() && window.showMobileProgress) {
-    window.showMobileProgress(true);
-  }
-
-  try {
-    let imageUrl;
-
-    if (typeof file === "string" && file.startsWith("http")) {
-      imageUrl = file;
-    } else if (file instanceof File) {
-      if (isMobile() && file.size > 15 * 1024 * 1024) {
-        throw new Error("File too large for mobile (max 15MB)");
-      }
-
-      try {
-        console.log(`📱 Mobile processing: ${isMobile() ? "Yes" : "No"}`);
-        console.log(
-          `📦 Compressing image (${(file.size / 1024 / 1024).toFixed(1)}MB)...`
-        );
-        const compressedFile = await compressForMobile(file);
-        console.log(`📤 Uploading to ImgBB...`);
-        imageUrl = await uploadToImgBB(compressedFile);
-      } catch (uploadError) {
-        console.error("❌ Upload failed:", uploadError);
-        perfLogger.end("Image to Image");
-
-        if (isMobile() && window.showMobileProgress) {
-          window.showMobileProgress(false);
-        }
-
-        let errorMsg = getFriendlyErrorMessage(uploadError.message);
-        if (isMobile() && uploadError.message.includes("timeout")) {
-          errorMsg = "Slow connection - try smaller image";
-        }
-
-        return {
-          url: createPlaceholder("Upload Failed", errorMsg, "error"),
-          generated: false,
-        };
-      }
-    } else {
-      throw new Error("Invalid image input");
-    }
-
-    console.log(`🔄 Processing with Gemini API...`);
-    const result = await callGeminiAPI({
-      prompt: `Transform this image with the following style: ${prompt || "artistic style"}. Return the transformed image as an inline data URL.`,
-      imageUrls: [imageUrl],
-      userApiKey,
-    });
-
-    console.log('Gemini API raw response:', JSON.stringify(result, null, 2));
-
-    // Handle different response formats
-    if (result) {
-      // Case 1: Direct image data URL in response
-      if (typeof result === 'string' && result.startsWith('data:image/')) {
-        console.log('✅ Received direct image data URL from API');
-        perfLogger.end("Image to Image");
-        if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
-        return { url: result, generated: true };
-      }
-      
-      // Case 2: Response with imageDataUrl property
-      if (typeof result === 'object' && result.imageDataUrl) {
-        console.log('✅ Received imageDataUrl from API');
-        perfLogger.end("Image to Image");
-        if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
-        return { url: result.imageDataUrl, generated: true };
-      }
-
-      // Case 3: Response with candidates array (Gemini 1.5+ format)
-      if (result.candidates && Array.isArray(result.candidates) && result.candidates.length > 0) {
-        const candidate = result.candidates[0];
-        console.log('Processing Gemini candidate response:', JSON.stringify(candidate, null, 2));
-        
-        // Check for inline data in parts
-        if (candidate.content && candidate.content.parts) {
-          for (const part of candidate.content.parts) {
-            if (part.inlineData && part.inlineData.data) {
-              const imageDataUrl = `data:image/png;base64,${part.inlineData.data}`;
-              console.log('✅ Extracted image data from candidate parts');
-              perfLogger.end("Image to Image");
-              if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
-              return { url: imageDataUrl, generated: true };
-            } else if (part.text) {
-              // Sometimes Gemini returns a text response with a URL
-              const urlMatch = part.text.match(/https?:\/\/[^\s]+/);
-              if (urlMatch) {
-                console.log('✅ Extracted URL from candidate text:', urlMatch[0]);
-                perfLogger.end("Image to Image");
-                if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
-                return { url: urlMatch[0], generated: true };
-              }
-            }
-          }
-        }
-      }
-
-      // Case 4: Try to extract URL from text response
-      const responseText = typeof result === 'string' ? result : JSON.stringify(result);
-      const urlMatch = responseText.match(/https?:\/\/[^\s\"\']+/);
-      if (urlMatch) {
-        console.log('✅ Extracted URL from response text:', urlMatch[0]);
-        perfLogger.end("Image to Image");
-        if (isMobile() && window.showMobileProgress) window.showMobileProgress(false);
-        return { url: urlMatch[0], generated: true };
-      }
-    }
-
-    // If we get here, we couldn't find a valid image in the response
-    console.warn('⚠️ No valid image data found in API response. Full response:', result);
-    throw new Error('The API response did not contain any valid image data. Please try again.');
-
-  } catch (error) {
-    console.error("❌ Image to Image failed:", error);
-    perfLogger.end("Image to Image");
-
-    if (isMobile() && window.showMobileProgress) {
-      window.showMobileProgress(false);
-    }
-
-    let errorMsg = getFriendlyErrorMessage(error?.message);
-    if (isMobile()) {
-      if (error.message.includes("timeout")) {
-        errorMsg = "Request timeout - check connection";
-      } else if (error.message.includes("memory")) {
-        errorMsg = "Not enough memory - try smaller image";
-      }
-    }
-
-    return {
-      url: createPlaceholder("Transform Failed", errorMsg, "error"),
-      generated: false,
-    };
-  }
-}
-
-// Helper functions for different image processing tasks
 export async function generateHeadshot(file, prompt, userApiKey) {
-  const enhancedPrompt = `Create a professional headshot with these characteristics: ${prompt || 'professional, well-lit, business appropriate'}. 
-    The image should look natural and high-quality, suitable for professional profiles.`;
+  const enhancedPrompt = `Create a professional headshot: ${prompt || 'professional lighting, business appropriate'}`;
   return imageToImage(file, enhancedPrompt, userApiKey);
 }
 
 export async function removeBackground(file, userApiKey) {
-  const prompt = `Remove the background from this image and make it transparent. 
-    The subject should be cleanly cut out with smooth edges. 
-    Return only the subject with a transparent background.`;
+  const prompt = `Remove the background completely and make it transparent.`;
   return imageToImage(file, prompt, userApiKey);
 }
 
 export async function editImageAdjustments(file, options, userApiKey) {
   const adjustments = [];
-  if (options.brightness) adjustments.push(`brightness: ${options.brightness}%`);
-  if (options.contrast) adjustments.push(`contrast: ${options.contrast}%`);
-  if (options.saturation) adjustments.push(`saturation: ${options.saturation}%`);
-  if (options.temperature) adjustments.push(`temperature: ${options.temperature}%`);
+  if (options.brightness) adjustments.push(`brightness adjusted to ${options.brightness}%`);
+  if (options.contrast) adjustments.push(`contrast set to ${options.contrast}%`);
+  if (options.saturation) adjustments.push(`saturation at ${options.saturation}%`);
+  if (options.temperature) adjustments.push(`color temperature ${options.temperature}%`);
   
-  const prompt = `Apply these exact image adjustments: ${adjustments.join(', ')}. 
-    Maintain the original composition and content while only adjusting the specified properties. 
-    The result should look natural and high-quality.`;
-    
+  const prompt = `Apply these precise adjustments: ${adjustments.join(', ')}. Keep the original composition and subjects unchanged, only modify the specified properties. The result should look natural and professional.`;
   return imageToImage(file, prompt, userApiKey);
 }
 
 export async function improvePrompt(userPrompt, userApiKey) {
   try {
-    console.log("🔧 Improving prompt:", userPrompt);
-
     if (!userPrompt || typeof userPrompt !== "string" || !userPrompt.trim()) {
-      console.warn("🔧 Invalid prompt provided:", userPrompt);
       return userPrompt || "";
     }
 
-    // Make Gemini output a rewritten prompt instead of a question
-    const result = await callGeminiAPI({
-      prompt: `Rewrite this prompt into a more descriptive, detailed prompt for image generation. Do not ask questions. Return only the rewritten prompt: "${userPrompt.trim()}"`,
+    const result = await callNanoBananaAPI({
+      prompt: `Rewrite this into a detailed image generation prompt. Be specific, descriptive, and creative. Return ONLY the improved prompt, nothing else: "${userPrompt.trim()}"`,
       imageUrls: [],
       userApiKey,
+      preferredModelIndex: 2, // Use experimental model for text tasks
+      isTextToImage: false
     });
 
-    console.log("🔧 Raw API response:", result);
-
     if (!result || typeof result !== "string") {
-      console.warn("🔧 Invalid response format:", result);
       return userPrompt;
     }
 
-    // Try to parse as JSON first
-    try {
-      const parsed = JSON.parse(result);
-      console.log("🔧 Parsed JSON:", parsed);
+    let cleaned = result.trim();
+    
+    // Remove common AI prefixes
+    const prefixes = [
+      "Here's an improved prompt:", "Improved prompt:", "Rewritten prompt:",
+      "Here's the rewritten prompt:", "Better prompt:", "Enhanced prompt:",
+      "Here's a better version:", "Try this:"
+    ];
 
-      // Check various possible response fields
-      if (parsed.text) return parsed.text.trim();
-      if (parsed.response) return parsed.response.trim();
-      if (parsed.message) return parsed.message.trim();
-      if (parsed.prompt) return parsed.prompt.trim();
-      if (parsed.rewritten_prompt) return parsed.rewritten_prompt.trim();
-      if (parsed.improved_prompt) return parsed.improved_prompt.trim();
-
-      // If it's an object but no known fields, try to extract text content
-      if (typeof parsed === "object") {
-        const textContent = Object.values(parsed).find(
-          (v) => typeof v === "string" && v.trim().length > 0
-        );
-        if (textContent) return textContent.trim();
+    for (const prefix of prefixes) {
+      if (cleaned.toLowerCase().startsWith(prefix.toLowerCase())) {
+        cleaned = cleaned.substring(prefix.length).trim();
+        break;
       }
-
-      return result.trim() || userPrompt;
-    } catch (parseError) {
-      console.log("🔧 Not JSON, treating as plain text");
-
-      // If not JSON, treat as plain text
-      const cleaned = result.trim();
-
-      // Remove common prefixes that might be added by the API
-      const prefixes = [
-        "Here's an improved prompt:",
-        "Improved prompt:",
-        "Rewritten prompt:",
-        "Here's the rewritten prompt:",
-        "The improved prompt is:",
-        "Here's a better prompt:",
-        "Better prompt:",
-        "Enhanced prompt:",
-        "Here's the enhanced prompt:",
-      ];
-
-      let finalPrompt = cleaned;
-      for (const prefix of prefixes) {
-        if (finalPrompt.toLowerCase().startsWith(prefix.toLowerCase())) {
-          finalPrompt = finalPrompt.substring(prefix.length).trim();
-          break;
-        }
-      }
-
-      // Remove quotes if the entire response is wrapped in them
-      if (
-        (finalPrompt.startsWith('"') && finalPrompt.endsWith('"')) ||
-        (finalPrompt.startsWith("'") && finalPrompt.endsWith("'"))
-      ) {
-        finalPrompt = finalPrompt.slice(1, -1).trim();
-      }
-
-      console.log("🔧 Final improved prompt:", finalPrompt);
-      return finalPrompt || userPrompt;
     }
+
+    // Remove surrounding quotes
+    if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || 
+        (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+      cleaned = cleaned.slice(1, -1).trim();
+    }
+
+    return cleaned || userPrompt;
   } catch (e) {
-    console.error("🔧 improvePrompt error:", e);
-    return userPrompt; // fallback
+    console.error("improvePrompt error:", e);
+    return userPrompt;
   }
 }
 
@@ -709,66 +484,51 @@ export function getFriendlyErrorMessage(raw = "") {
   const msg = String(raw || "").toLowerCase();
 
   if (msg.includes("rate") || msg.includes("quota")) {
-    return isMobile()
-      ? "Rate limit reached. Wait 60 seconds."
-      : "Rate limit - wait a few minutes";
+    return isMobile() ? "Rate limit. Wait 60 seconds." : "Rate limit - wait a few minutes";
   }
-  if (
-    msg.includes("timeout") ||
-    msg.includes("network") ||
-    msg.includes("abort")
-  ) {
-    return isMobile()
-      ? "Slow connection. Try smaller image."
-      : "Connection timeout - check network";
+  if (msg.includes("timeout") || msg.includes("network") || msg.includes("abort")) {
+    return isMobile() ? "Slow connection. Try smaller image." : "Connection timeout";
+  }
+  if (msg.includes("api key") || msg.includes("authentication") || msg.includes("missing gemini")) {
+    return "Invalid API key. Check your settings.";
   }
   if (msg.includes("upload") || msg.includes("imgbb")) {
     return "Upload failed - try smaller image";
   }
   if (msg.includes("too large") || msg.includes("file size")) {
-    return isMobile()
-      ? "Image too large. Max 15MB on mobile."
-      : "Image too large - try smaller file";
+    return isMobile() ? "Image too large. Max 15MB." : "Image too large";
   }
-  if (msg.includes("all api keys") || msg.includes("available api keys")) {
-    return isMobile()
-      ? "Service busy. Wait 60 seconds and retry."
-      : "All APIs busy - try again shortly";
+  if (msg.includes("model") || msg.includes("not found")) {
+    return "Model unavailable. Check API access.";
   }
 
-  return isMobile()
-    ? "Try again with smaller image"
-    : "Try again with different settings";
+  return isMobile() ? "Try smaller image" : "Try again";
 }
 
 export async function suggestPromptIdeas(topic, userApiKey) {
   try {
-    // call your Gemini API
-    const result = await callGeminiAPI({
-      prompt: `List 8 creative prompts: ${topic || "art"}`,
+    const result = await callNanoBananaAPI({
+      prompt: `Generate 8 creative, diverse image generation prompts about: ${topic || "various art styles"}. Return only the prompts, one per line, no numbering.`,
       imageUrls: [],
       userApiKey,
+      preferredModelIndex: 2,
+      isTextToImage: false
     });
 
     let raw = result;
-
-    // Only try to parse JSON if it actually looks like JSON
     if (typeof result === "string" && /^[[{]/.test(result.trim())) {
       try {
         const parsed = JSON.parse(result);
-        raw = parsed.text || parsed.response || parsed.message || result;
+        raw = parsed.text || parsed.response || result;
       } catch (e) {
-        // ignore parse errors and just use the original result
         raw = result;
       }
     }
 
-    // Normalise to a string
     if (typeof raw !== "string") {
       raw = String(raw);
     }
 
-    // Split by newlines, remove numbering/bullets, trim, filter out empty lines
     const lines = raw
       .split(/\n+/)
       .map((l) => l.replace(/^\s*[-*\d.]+\s*/, "").trim())
@@ -780,95 +540,48 @@ export async function suggestPromptIdeas(topic, userApiKey) {
     console.warn("Suggest prompts failed:", e);
   }
 
-  // Fallback prompts
   return [
-    "Cyberpunk street with neon lights",
-    "Mountain cabin at sunset",
-    "Geometric patterns in pastels",
-    "Dew drops on petals",
-    "Futuristic city skyline",
-    "Cozy library with warm light",
+    "Cyberpunk city with neon lights and rain",
+    "Mountain cabin at golden hour sunset",
+    "Abstract geometric patterns in pastel colors",
+    "Macro photography of morning dew on flowers",
+    "Futuristic space station orbiting a planet",
+    "Cozy bookstore cafe with warm lighting"
   ];
 }
 
-// Debug and utility functions
-
-
-// Enhanced mobile debugging (keeping your working version)
 export function enableMobileDebugging() {
   if (isMobile()) {
-    const originalLog = console.log;
     const debugDiv = document.createElement("div");
     debugDiv.id = "mobile-debug";
     debugDiv.style.cssText = `
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      max-height: 250px; 
-      overflow-y: auto; 
-      background: rgba(0,0,0,0.9); 
-      color: #00ff00; 
-      font-family: monospace; 
-      font-size: 11px; 
-      padding: 10px; 
-      z-index: 9999; 
-      display: none;
-      border-bottom: 2px solid #00ff00;
+      position: fixed; top: 0; left: 0; width: 100%; max-height: 250px; 
+      overflow-y: auto; background: rgba(0,0,0,0.95); color: #00ff00; 
+      font-family: monospace; font-size: 10px; padding: 8px; 
+      z-index: 9999; display: none; border-bottom: 2px solid #00ff00;
     `;
     document.body.appendChild(debugDiv);
-
-    const progressDiv = document.createElement("div");
-    progressDiv.id = "mobile-progress";
-    progressDiv.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, #00ff00, #00aa00);
-      z-index: 10000;
-      display: none;
-      animation: progress 2s ease-in-out infinite;
-    `;
-
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes progress {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-      }
-    `;
-    document.head.appendChild(style);
-    document.body.appendChild(progressDiv);
 
     let tapCount = 0;
     document.addEventListener("touchend", () => {
       tapCount++;
       if (tapCount === 3) {
-        debugDiv.style.display =
-          debugDiv.style.display === "none" ? "block" : "none";
+        debugDiv.style.display = debugDiv.style.display === "none" ? "block" : "none";
         tapCount = 0;
       }
       setTimeout(() => (tapCount = 0), 500);
     });
 
+    const originalLog = console.log;
     console.log = (...args) => {
       originalLog.apply(console, args);
       const message = args.join(" ");
-      debugDiv.innerHTML =
-        `${new Date().toLocaleTimeString()}: ${message}<br>` +
-        debugDiv.innerHTML;
+      debugDiv.innerHTML = `${new Date().toLocaleTimeString()}: ${message}<br>` + debugDiv.innerHTML;
       if (debugDiv.children.length > 50) {
         debugDiv.removeChild(debugDiv.lastChild);
       }
     };
 
-    window.showMobileProgress = (show = true) => {
-      progressDiv.style.display = show ? "block" : "none";
-    };
-
-    console.log("🔍 Mobile debugging enabled - triple tap to toggle");
-    console.log("📱 Mobile optimizations active");
+    console.log("🍌 Nano Banana debugging enabled - triple tap to toggle");
   }
 }
