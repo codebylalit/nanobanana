@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { HiOutlineRocketLaunch } from "react-icons/hi2";
 
 export default function Hero() {
