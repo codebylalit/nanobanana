@@ -90,6 +90,7 @@ export default function PromptHelperAutoDemo() {
       isMounted = false;
       cancelAll();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChipClick = (chip) => {

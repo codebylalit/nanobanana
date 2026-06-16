@@ -3,7 +3,6 @@ import { HiOutlineRocketLaunch } from "react-icons/hi2";
 
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false);
-  const mobileTrackRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => {

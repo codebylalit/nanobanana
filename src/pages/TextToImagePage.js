@@ -15,7 +15,6 @@ import {
   HiOutlineRefresh,
 } from "react-icons/hi";
 import Modal from "../components/Modal";
-import { useNavigate } from "react-router-dom";
 
 export default function TextToImagePage() {
   const { credits, consumeCredits, initialized } = useCredits();
@@ -31,7 +30,6 @@ export default function TextToImagePage() {
   const [showApiKeyModal, setShowApiKeyModal] = React.useState(false);
   const [apiKeyInput, setApiKeyInput] = React.useState("");
   const [savingApiKey, setSavingApiKey] = React.useState(false);
-  const navigate = useNavigate();
 
   React.useEffect(() => {
     let cancelled = false;

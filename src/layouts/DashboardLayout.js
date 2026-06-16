@@ -10,7 +10,6 @@ import {
   HiOutlineUser,
   HiOutlineScissors,
   HiOutlinePhotograph,
-  HiOutlineVideoCamera,
 } from "react-icons/hi";
 import { HiOutlineChevronRight } from "react-icons/hi";
 import { HiOutlineSparkles } from "react-icons/hi2";

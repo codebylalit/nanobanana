@@ -1,7 +1,7 @@
 // Video Generation Service
 // Using Pollinations AI (Free, No Key) for video generation.
 
-import { uploadToImgBB, isMobile } from "./gemini";
+import { uploadToImgBB } from "./gemini";
 
 /**
  * Generate video from image or text
@@ -10,7 +10,6 @@ import { uploadToImgBB, isMobile } from "./gemini";
  * @param {object} options - Optional settings
  */
 export async function generateVideoFromImage(prompt, imageFile, options = {}) {
-  const { signal } = options;
 
   try {
     if (!prompt) throw new Error("Prompt is required");

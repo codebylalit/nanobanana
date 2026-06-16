@@ -17,6 +17,7 @@ root.render(
         <ToastProvider>
           <BrowserRouter>
             <App />
+            <Analytics />
           </BrowserRouter>
         </ToastProvider>
       </CreditsProvider>

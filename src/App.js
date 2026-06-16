@@ -29,7 +29,6 @@ import FAQSection from "./components/FAQSection";
 import Footer from "./components/Footer";
 import PromptHelper from "./components/PromptHelper";
 import PlanCard from "./components/PlanCard";    
-import ImageToVideoPage from "./pages/ImageToVideoPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import OfficeXLanding from "./pages/OfficeXLanding";
 // Payments removedl nvcz

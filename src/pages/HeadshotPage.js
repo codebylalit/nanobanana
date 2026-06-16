@@ -49,7 +49,7 @@ export default function HeadshotPage() {
   }, [user]);
 
   async function onGenerate() {
-    if (!userApiKey && credits < 1 || !file) return;
+    if ((!userApiKey && credits < 1) || !file) return;
     setLoading(true);
     try {
       const result = await generateHeadshot(file, prompt, userApiKey);
