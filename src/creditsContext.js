@@ -9,14 +9,14 @@ export function CreditsProvider({ children }) {
   const [credits, setCredits] = React.useState(0);
   const [initialized, setInitialized] = React.useState(false);
 
-  // Function to fetch credits from database
+  // Fetch current credits from the database
   const fetchCredits = React.useCallback(async () => {
     if (!user) return;
 
     const { data, error } = await supabase
       .from("users")
       .select("credits")
-      .eq("id", user.uid)
+      .eq("id", user.uid) // user.uid is aliased from supabase user.id
       .single();
 
     if (!error && data) {
@@ -24,7 +24,9 @@ export function CreditsProvider({ children }) {
     }
   }, [user]);
 
-  // Initialize credits for user (Supabase)
+  // Initialize credits when user session is available.
+  // The DB trigger (on_auth_user_created) auto-creates the users row
+  // with 2 starter credits on first sign-in, so no manual INSERT needed.
   React.useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -34,41 +36,16 @@ export function CreditsProvider({ children }) {
         return;
       }
 
-      // Ensure a user row exists without overwriting existing credits
-      const existing = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", user.uid)
-        .single();
-
-      if (existing.error && existing.error.code === "PGRST116") {
-        // No row found, create with starter credits
-        const insertRes = await supabase
-          .from("users")
-          .insert({ id: user.uid, credits: 2 });
-        if (insertRes.error) {
-          console.error("Error inserting user:", insertRes.error);
-          setCredits(0);
-          setInitialized(true);
-          return;
-        }
-      } else if (existing.error && existing.error.code !== "PGRST116") {
-        console.error("Error checking user existence:", existing.error);
-        setCredits(0);
-        setInitialized(true);
-        return;
-      }
-
-      // Fetch initial credits
       await fetchCredits();
 
       if (!cancelled) {
         setInitialized(true);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [user, fetchCredits]);
-
-  // No local persistence; Supabase is the source of truth
 
   const addCredits = React.useCallback(
     async (amount) => {

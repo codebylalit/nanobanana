@@ -3,8 +3,7 @@ import { useAuth } from "../authContext";
 import { useCredits } from "../creditsContext";
 import { useToast } from "../toastContext";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
-import { updateProfile } from "firebase/auth";
+import { supabase } from "../supabaseClient";
 import { getFeatureOptIn, setFeatureOptIn } from "../userPrefs";
 import {
   getUserApiKey as getGeminiUserApiKey,
@@ -119,11 +118,12 @@ export default function ProfilePage() {
                       type="button"
                       disabled={savingName}
                       onClick={async () => {
-                        try {
+                          try {
                           setSavingName(true);
-                          await updateProfile(auth.currentUser, {
-                            displayName: displayName.trim() || null,
+                          const { error } = await supabase.auth.updateUser({
+                            data: { full_name: displayName.trim() || null },
                           });
+                          if (error) throw error;
                           show({
                             title: "Saved",
                             message: "Display name updated.",

@@ -1,24 +1,6 @@
-// Initialize Firebase app. Fill REACT_APP_FIREBASE_* env vars in .env
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+// Firebase has been removed. Auth is now handled by Supabase (see authContext.js).
+// This file is kept as an empty stub to avoid breaking any stale imports
+// during the transition. Remove it entirely once all imports are cleaned up.
 
-// Import the functions you need from the SDKs you need
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAQAlTwva11rp-G-nnnpHe-xwcY2TUz2hE",
-  authDomain: "nanobanana0.firebaseapp.com",
-  projectId: "nanobanana0",
-  storageBucket: "nanobanana0.firebasestorage.app",
-  messagingSenderId: "442236679643",
-  appId: "1:442236679643:web:3ec284d5062e8fa132e3fe",
-  measurementId: "G-NCWMRZQP02"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+// ProfilePage previously used: import { auth } from "../firebase"
+// It now uses supabase.auth.updateUser() directly.

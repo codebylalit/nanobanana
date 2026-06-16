@@ -5,14 +5,16 @@ const RAZORPAY_KEY_ID =
   process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_live_m1qfDdgI9r1AGQ"; // Replace with your actual key
 
 // Supabase configuration
-const SUPABASE_URL = "https://ldiwitjpdmekzwxwxklk.supabase.co";
+const SUPABASE_URL =
+  process.env.REACT_APP_SUPABASE_URL ||
+  "https://ldiwitjpdmekzwxwxklk.supabase.co";
 const SUPABASE_ANON_KEY =
   process.env.REACT_APP_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkaXdpdGpwZG1la3p3eHd4a2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczMjI2MjYsImV4cCI6MjA3Mjg5ODYyNn0.ObaL7HjNvMxEEAdj405BdK1YIE5TT8gVOnVLCdv-NFs";
 
 // Edge Function URLs
 const CREATE_ORDER_URL = `${SUPABASE_URL}/functions/v1/create-order`;
-const VERIFY_PAYMENT_URL = `${SUPABASE_URL}/functions/v1/verify`;
+const VERIFY_PAYMENT_URL = `${SUPABASE_URL}/functions/v1/verify-payment`;
 
 // Credit packages configuration
 export const CREDIT_PACKAGES = {

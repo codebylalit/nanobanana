@@ -1,10 +1,10 @@
 import React from "react";
 import { loadHistory } from "../historyStore";
 import { getFeatureOptIn } from "../userPrefs";
-import { auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "../authContext";
 
 export default function Gallery() {
+  const { user } = useAuth();
   const [images, setImages] = React.useState([]);
   const LOCAL_GALLERY_IMAGES = React.useMemo(
     () => [
@@ -29,30 +29,27 @@ export default function Gallery() {
     []
   );
   React.useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      const isOptedIn = u?.uid ? getFeatureOptIn(u.uid) : false;
-      if (!isOptedIn) {
-        setImages(LOCAL_GALLERY_IMAGES);
-        return;
-      }
-      const history = loadHistory();
-      const urls = Array.from(
-        new Set((history || []).map((h) => h?.url).filter(Boolean))
-      ).slice(0, 12);
-      if (urls.length > 0) {
-        if (urls.length < 8) {
-          const needed = Math.max(0, 18 - urls.length);
-          const localFill = LOCAL_GALLERY_IMAGES.slice(0, needed);
-          setImages([...urls, ...localFill]);
-          return;
-        }
-        setImages(urls);
-        return;
-      }
+    const isOptedIn = user?.uid ? getFeatureOptIn(user.uid) : false;
+    if (!isOptedIn) {
       setImages(LOCAL_GALLERY_IMAGES);
-    });
-    return () => unsub();
-  }, [LOCAL_GALLERY_IMAGES]);
+      return;
+    }
+    const history = loadHistory();
+    const urls = Array.from(
+      new Set((history || []).map((h) => h?.url).filter(Boolean))
+    ).slice(0, 12);
+    if (urls.length > 0) {
+      if (urls.length < 8) {
+        const needed = Math.max(0, 18 - urls.length);
+        const localFill = LOCAL_GALLERY_IMAGES.slice(0, needed);
+        setImages([...urls, ...localFill]);
+        return;
+      }
+      setImages(urls);
+      return;
+    }
+    setImages(LOCAL_GALLERY_IMAGES);
+  }, [user, LOCAL_GALLERY_IMAGES]);
 
   return (
     <section

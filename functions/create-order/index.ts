@@ -29,7 +29,7 @@ const CREDIT_PACKAGES = {
     prices: { USD: 1700 },
     description: "120 credits = 120 images",
   },
-} as const;
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -43,6 +43,37 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // ── Supabase JWT verification (replaces Firebase token verification) ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid authorization header" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: authUser }, error: authError } =
+      await supabaseClient.auth.getUser(token);
+
+    if (authError || !authUser) {
+      console.error("Supabase auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired authentication token" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const authenticatedUserId = authUser.id;
+    console.log("Supabase user verified:", authenticatedUserId);
+    // ─────────────────────────────────────────────────────────────────────
 
     // Get the request body
     let requestBody;
@@ -61,7 +92,6 @@ serve(async (req) => {
 
     const { productId, userId, currency, currencyPreference } = requestBody;
 
-    // Debug logging
     console.log("Request body:", requestBody);
     console.log("Product ID:", productId);
     console.log("User ID:", userId);
@@ -77,6 +107,17 @@ serve(async (req) => {
       );
     }
 
+    // Security: ensure userId matches the authenticated Supabase user
+    if (userId !== authenticatedUserId) {
+      return new Response(
+        JSON.stringify({ error: "User ID mismatch - unauthorized access" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Get package info
     const packageInfo = CREDIT_PACKAGES[productId];
     if (!packageInfo) {
@@ -87,22 +128,17 @@ serve(async (req) => {
     }
 
     // Determine currency preference
-    // priority: explicit currency -> currencyPreference -> AUTO
-    const availableCurrencies = ["USD", "INR"] as Array<"USD" | "INR">;
-    const preferredCurrency = ((): "USD" | "INR" => {
-      const upper = (currency as string | undefined)?.toUpperCase();
-      if (upper && (availableCurrencies as readonly string[]).includes(upper)) {
-        return upper as "USD" | "INR";
-      }
-      const prefUpper = (
-        currencyPreference as string | undefined
-      )?.toUpperCase();
+    const availableCurrencies = ["USD", "INR"];
+    const preferredCurrency = (() => {
+      const upper = currency?.toUpperCase();
+      if (upper && availableCurrencies.includes(upper)) return upper;
+      const prefUpper = currencyPreference?.toUpperCase();
       if (prefUpper === "USD" || prefUpper === "INR") return prefUpper;
-      return availableCurrencies.includes("USD") ? "USD" : "INR";
+      return "USD";
     })();
 
     // Fetch USD->INR FX rate when needed
-    async function getUsdToInrRate(): Promise<number> {
+    async function getUsdToInrRate() {
       try {
         const apiKey = Deno.env.get("FX_API_KEY");
         const url = apiKey
@@ -114,18 +150,16 @@ serve(async (req) => {
         const rate = data?.quotes?.USDINR;
         if (typeof rate === "number" && rate > 0) return rate;
       } catch (_) {}
-      // Fallback default if API fails
-      return 83.0;
+      return 83.0; // Fallback
     }
 
-    async function tryCreateOrder(chosenCurrency: "USD" | "INR") {
-      let amount: number;
+    async function tryCreateOrder(chosenCurrency) {
+      let amount;
       if (chosenCurrency === "USD") {
         amount = packageInfo.prices.USD;
       } else {
         const usdCents = packageInfo.prices.USD;
         const rate = await getUsdToInrRate();
-        // Convert USD cents to INR paise
         amount = Math.round(usdCents * rate);
       }
       const response = await fetch("https://api.razorpay.com/v1/orders", {
@@ -151,13 +185,14 @@ serve(async (req) => {
           },
         }),
       });
-      return { ok: response.ok, response } as const;
+      return { ok: response.ok, response };
     }
 
-    // Try preferred currency, then fallback to INR if allowed
-    let selectedCurrency: "USD" | "INR" = preferredCurrency;
-    let orderData: any = null;
+    // Try preferred currency, fallback to INR if allowed
+    let selectedCurrency = preferredCurrency;
+    let orderData = null;
     let attempt = await tryCreateOrder(selectedCurrency);
+
     if (!attempt.ok) {
       const errorText = await attempt.response.text();
       console.error(
@@ -170,21 +205,14 @@ serve(async (req) => {
         !currency &&
         (!currencyPreference || currencyPreference.toUpperCase() === "AUTO");
       const fallbackCurrency = selectedCurrency === "USD" ? "INR" : "USD";
-      if (
-        canFallback &&
-        availableCurrencies.includes(fallbackCurrency as any)
-      ) {
-        console.log(
-          "Retrying order creation with fallback currency:",
-          fallbackCurrency
-        );
-        selectedCurrency = fallbackCurrency as any;
+      if (canFallback && availableCurrencies.includes(fallbackCurrency)) {
+        console.log("Retrying with fallback currency:", fallbackCurrency);
+        selectedCurrency = fallbackCurrency;
         attempt = await tryCreateOrder(selectedCurrency);
       }
     }
 
     if (!attempt.ok) {
-      // Final failure
       return new Response(
         JSON.stringify({ error: "Failed to create payment order" }),
         {

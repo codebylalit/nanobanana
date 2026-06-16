@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
@@ -16,8 +17,6 @@ async function verifySignature(
   secret: string
 ): Promise<boolean> {
   const body = orderId + "|" + paymentId;
-
-  // Create HMAC-SHA256 signature
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -25,7 +24,6 @@ async function verifySignature(
     false,
     ["sign"]
   );
-
   const signatureBuffer = await crypto.subtle.sign(
     "HMAC",
     key,
@@ -34,29 +32,24 @@ async function verifySignature(
   const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-
   return signature === expectedSignature;
 }
 
 serve(async (req) => {
-  console.log(
-    "=== VERIFY PAYMENT FUNCTION CALLED ===",
-    new Date().toISOString()
-  );
+  console.log("=== VERIFY PAYMENT CALLED ===", new Date().toISOString());
 
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Initialize Supabase client with service role key for backend operations
+    // Initialize Supabase client with service role key
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Verify Firebase authentication
+    // ── Supabase JWT verification (replaces Firebase token verification) ──
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(
@@ -68,67 +61,14 @@ serve(async (req) => {
       );
     }
 
-    const firebaseToken = authHeader.split("Bearer ")[1];
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: authUser }, error: authError } =
+      await supabaseClient.auth.getUser(token);
 
-    // Verify Firebase token with Firebase Admin SDK
-    const firebaseProjectId = Deno.env.get("FIREBASE_PROJECT_ID");
-    if (!firebaseProjectId) {
-      console.error("FIREBASE_PROJECT_ID environment variable not set");
+    if (authError || !authUser) {
+      console.error("Supabase auth error:", authError);
       return new Response(
-        JSON.stringify({ error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const firebaseVerifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${Deno.env.get(
-      "FIREBASE_WEB_API_KEY"
-    )}`;
-
-    let firebaseUserId: string;
-
-    try {
-      const firebaseResponse = await fetch(firebaseVerifyUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          idToken: firebaseToken,
-        }),
-      });
-
-      if (!firebaseResponse.ok) {
-        console.error(
-          "Firebase token verification failed:",
-          await firebaseResponse.text()
-        );
-        return new Response(
-          JSON.stringify({ error: "Invalid authentication token" }),
-          {
-            status: 401,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      const firebaseData = await firebaseResponse.json();
-      firebaseUserId = firebaseData.users?.[0]?.localId;
-
-      if (!firebaseUserId) {
-        return new Response(JSON.stringify({ error: "Invalid user token" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      console.log("Firebase user verified:", firebaseUserId);
-    } catch (error) {
-      console.error("Error verifying Firebase token:", error);
-      return new Response(
-        JSON.stringify({ error: "Authentication verification failed" }),
+        JSON.stringify({ error: "Invalid or expired authentication token" }),
         {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -136,7 +76,11 @@ serve(async (req) => {
       );
     }
 
-    // Get the request body
+    const authenticatedUserId = authUser.id;
+    console.log("Supabase user verified:", authenticatedUserId);
+    // ─────────────────────────────────────────────────────────────────────
+
+    // Parse request body
     let requestBody;
     try {
       requestBody = await req.json();
@@ -163,8 +107,7 @@ serve(async (req) => {
     if (!orderId || !paymentId || !signature || !userId) {
       return new Response(
         JSON.stringify({
-          error:
-            "Missing required fields: orderId, paymentId, signature, userId",
+          error: "Missing required fields: orderId, paymentId, signature, userId",
         }),
         {
           status: 400,
@@ -173,12 +116,10 @@ serve(async (req) => {
       );
     }
 
-    // Verify that the userId matches the authenticated Firebase user
-    if (userId !== firebaseUserId) {
+    // Security: ensure userId in body matches the authenticated Supabase user
+    if (userId !== authenticatedUserId) {
       return new Response(
-        JSON.stringify({
-          error: "User ID mismatch - unauthorized access",
-        }),
+        JSON.stringify({ error: "User ID mismatch - unauthorized access" }),
         {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -209,7 +150,7 @@ serve(async (req) => {
       status: order.status,
     });
 
-    // Check if order is already processed
+    // Already processed?
     if (order.status === "completed") {
       return new Response(
         JSON.stringify({
@@ -224,14 +165,8 @@ serve(async (req) => {
       );
     }
 
-    // Verify payment signature
+    // Verify Razorpay signature
     const razorpaySecret = Deno.env.get("RAZORPAY_KEY_SECRET") ?? "";
-    console.log("Verifying signature for:", {
-      orderId,
-      paymentId,
-      signature: signature.substring(0, 10) + "...",
-    });
-
     const isValidSignature = await verifySignature(
       orderId,
       paymentId,
@@ -240,10 +175,7 @@ serve(async (req) => {
     );
 
     if (!isValidSignature) {
-      console.error("Signature verification failed for:", {
-        orderId,
-        paymentId,
-      });
+      console.error("Signature verification failed for:", { orderId, paymentId });
       return new Response(
         JSON.stringify({ error: "Invalid payment signature" }),
         {
@@ -278,19 +210,19 @@ serve(async (req) => {
     if (!razorpayResponse.ok) {
       const errorText = await razorpayResponse.text();
       console.error("Razorpay API error:", errorText);
-      // Try to parse JSON if possible
       try {
         paymentData = JSON.parse(errorText);
       } catch (_) {}
     } else {
       paymentData = await razorpayResponse.json();
     }
+
     console.log("Razorpay payment data:", {
-      status: paymentData.status,
-      amount: paymentData.amount,
+      status: paymentData?.status,
+      amount: paymentData?.amount,
     });
 
-    // Check if payment is successful
+    // Payment must be captured
     if (!paymentData || paymentData.status !== "captured") {
       const failureCode = paymentData?.error_code || paymentData?.error?.code;
       const failureReason =
@@ -299,7 +231,7 @@ serve(async (req) => {
         paymentData?.status ||
         "Payment not successful";
 
-      // Update order with failure details
+      // Save failure details to order
       await supabaseClient
         .from("orders")
         .update({
@@ -311,7 +243,7 @@ serve(async (req) => {
         .eq("razorpay_order_id", orderId)
         .eq("user_id", userId);
 
-      console.error("Payment not captured", {
+      console.error("Payment not captured:", {
         status: paymentData?.status,
         failureCode,
         failureReason,
@@ -320,16 +252,15 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: failureReason || "Payment not successful" }),
         {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    console.log("Payment verified with Razorpay API successfully");
+    console.log("Payment verified with Razorpay successfully");
 
-    // Update order status
-    console.log("Updating order status:", { orderId: order.id, paymentId });
+    // Update order status to completed
     const { error: updateError } = await supabaseClient
       .from("orders")
       .update({
@@ -351,20 +282,10 @@ serve(async (req) => {
       );
     }
 
-    console.log("Order status updated successfully");
+    console.log("Order status updated to completed");
 
-    // Add credits to user account
+    // Add credits to user account via RPC
     console.log("Adding credits:", { userId, credits: order.credits });
-
-    // First, check if user exists
-    const { data: existingUser, error: userCheckError } = await supabaseClient
-      .from("users")
-      .select("id, credits")
-      .eq("id", userId)
-      .single();
-
-    console.log("User check result:", { existingUser, userCheckError });
-
     const { error: creditsError } = await supabaseClient.rpc("add_credits", {
       p_user_id: userId,
       p_amount: order.credits,
@@ -372,24 +293,17 @@ serve(async (req) => {
 
     if (creditsError) {
       console.error("Error adding credits:", creditsError);
-      return new Response(JSON.stringify({ error: "Failed to add credits" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Failed to add credits" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     console.log("Credits added successfully");
 
-    // Verify credits were added
-    const { data: updatedUser, error: verifyError } = await supabaseClient
-      .from("users")
-      .select("id, credits")
-      .eq("id", userId)
-      .single();
-
-    console.log("Credits verification:", { updatedUser, verifyError });
-
-    // Return success response
     return new Response(
       JSON.stringify({
         success: true,
